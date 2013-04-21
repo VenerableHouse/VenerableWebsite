@@ -1,7 +1,11 @@
 <div id="header">
   <div class="top_menu" style="height: 130px; ">
   <div class="topcorner">
-    <a href="{{url_for("login")}}">Login</a>
+    {% if not session['username'] %}
+      <a href="{{url_for("login")}}">Login</a>
+    {% else %}
+      {{session['username']}} | <a href="{{url_for("logout")}}">Logout</a>
+    {% endif %}
   </div>
   <div class="crest" style="height: 68px;" >
     <img src="static/images/crest.gif"

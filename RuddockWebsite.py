@@ -13,8 +13,6 @@ connection = engine.connect()
 
 @app.route('/')
 def home():
-  if 'username' in session:
-    return render_template('index.html', username=session['username'])
   return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -28,15 +26,10 @@ def login():
       session['username'] = request.form['username']
       return redirect(url_for('home'))
     else:
-      return "INCORRECT PASSWORD!"
+      return render_template('login.html', msg='Incorrect username or ' + \
+              ' password. Please try again!')
 
-  return '''
-    <form action="" method="post">
-      <p><input type=text name=username>
-      <p><input type=password name=password>
-      <p><input type=submit value=Login>
-    </form>
-  '''
+  return render_template('login.html')
 
 @app.route('/logout')
 def logout():
