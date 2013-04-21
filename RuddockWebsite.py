@@ -4,7 +4,8 @@ from flask import Flask, request, session, g, redirect, url_for, abort, \
 app = Flask(__name__)
 
 @app.route('/')
-def index():
+def home():
+  print 'got here'
   return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -18,7 +19,7 @@ def login():
 def logout():
     session.pop('logged_in', None)
     flash('You were logged out.')
-    return redirect(url_for('index'))
+    return redirect(url_for('home'))
 
 @app.route('/users')
 def show_users():
@@ -32,5 +33,22 @@ def show_user_profile():
     """ Procedure to show a user's profile and membership details. """
     return render_template('view_user.html')
 
+@app.route('/government')
+def show_gov():
+  return render_template('government.html')
+
+@app.route('/about_us')
+def show_about_us():
+  return render_template('about_us.html')
+
+@app.route('/news')
+def show_news():
+  return render_template('news.html')
+
+@app.route('/calendar')
+def show_calendar():
+  return render_template('calendar.html')
+
 if __name__ == "__main__":
+  app.debug = True
   app.run()
