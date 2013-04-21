@@ -1,3 +1,6 @@
+# private files
+config.py
+
 *.py[cod]
 
 # C extensions
