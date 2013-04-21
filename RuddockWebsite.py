@@ -31,6 +31,31 @@ def login():
 
   return render_template('login.html')
 
+@app.route('/change-password', methods=['GET', 'POST'])
+def change_passwd():
+  """ Procedure to process the password reset page. """
+  if 'username' not in session:
+    flash('You must be logged in for that.')
+    return redirect(url_for('login'))
+
+  if request.method == 'POST':
+    username = session['username']
+    old_password = request.form['old_password']
+    new_password = request.form['password']
+    new_password2 = request.form['password2']
+
+    if not auth.authenticate(username, old_password, connection):
+      return render_template('password_change.html', msg='Wrong old password!')
+    if new_password != new_password2:
+      return render_template('password_change.html', msg='Passwords mismatch!')
+    elif auth.passwd_reset(username, new_password, connection):
+      return redirect(url_for('home'))
+    else:
+      return render_template('password_change.html', msg='Unknown problem' + \
+              ' occured. Please contact an admin!')
+
+  return render_template('password_change.html')
+
 @app.route('/logout')
 def logout():
   session.pop('username', None)

@@ -1,3 +1,5 @@
+SALT_SIZE = 8
+
 def authenticate(user, passwd, db):
   """ Takes a username, password, and connection object as input, and checks
   if this corresponds to an actual user. Salts the password as necessary. """
@@ -16,3 +18,18 @@ def authenticate(user, passwd, db):
           + "passwd=MD5('" + passwd + "')")
 
   return query.returns_rows and query.first() != None
+
+def passwd_reset(user, newpasswd, db, salt=True):
+  """ Resets a user's password with newpasswd. Uses a random salt if salt is
+  set to true. """
+  if salt:
+    from random import choice
+    from string import uppercase, digits
+    randSalt = ''.join(choice(uppercase + digits) for i in range(SALT_SIZE))
+    newpasswd = randSalt + newpasswd
+
+  query = db.execute("UPDATE users SET salt='" + randSalt + "', passwd" \
+          + "=MD5('" + newpasswd + "') WHERE username='" + user + "'")
+
+  # check if query was successful
+  return query.rowcount == 1
