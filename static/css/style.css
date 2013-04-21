@@ -1,0 +1,139 @@
+div.title {
+    width: 100%;
+    text-align: center;
+    color: #003060;
+    font-family: Times;
+    #font-family: Tahoma, Arial, Helvetica, sans-serif;
+    font-variant: small-caps;
+    font-size: 36pt;
+    font-weight: bold;
+    height: 68px;
+}
+
+div.crest {
+    background-color: white;
+    height: 68px;
+    width: 68px;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+
+div.topcorner{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 98%;
+    font-size: 10pt;
+    height: 1.5em;
+    text-align: right;
+    font-family: Tahoma, Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+}
+
+div.navbar, div.sub_navbar {
+    width: 100%;
+    text-align: center;
+    background-color: #003060;
+    color: white;
+    height: 30px;
+    font-variant: small-caps;
+    #font-family: Times;
+    font-family: Tahoma, Arial, Helvetica, sans-serif;
+    font-size: 14pt; 
+    
+}
+
+div.sub_navbar {
+    background-color: teal;
+}
+
+div.navbar_links {
+    width: 100%;
+    display: inline;
+    text-align: center;
+}
+
+div.page_title {
+    visibility: hidden;
+    position: absolute;
+    left: 10px;
+    display: inline;
+}
+
+a.navbar, a.sub_navbar {
+    color: white;
+    text-decoration: none;
+    padding-right: 5px;
+    padding-left: 5px;
+}
+
+span.current_page {
+    font-weight: bolder;
+}
+
+div.mainbody {
+    font-family: Tahoma, Arial, Helvetica, sans-serif;
+    font-size: 10pt;
+    width: 100%;
+}
+
+tr.row_1 {
+}
+
+tr.row_2 {
+    background-color: lightgrey;
+
+}
+
+h2 {
+    text-align: center;
+}
+
+div.announcement {
+    width: 50%;
+}
+
+li.news {
+    margin-bottom: 10px;
+}
+
+div.scroll_userlist {
+    overflow: auto;
+    max-height: 200px;
+    display: block;
+}
+
+div.userlist_row {
+    display: table-row;
+}
+
+div.message_list{
+    width: 70%;
+    display: block;
+}
+
+div.message {
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+div.message_header {
+    width: 100%;
+    display: table-row;
+    background-color: lightgrey;
+}
+
+div.message_body {
+    width: 100%;
+    display: table-row;
+    margin-left: 30px;
+}
+
+
+div.footer {
+    margin-top: 5px;
+    font-size: 10pt;
+    font-family: Tahoma, Arial, Helvetica, sans-serif;
+}

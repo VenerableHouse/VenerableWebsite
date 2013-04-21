@@ -12,7 +12,7 @@ engine = create_engine(config.DB_URI, convert_unicode=True)
 connection = engine.connect()
 
 @app.route('/')
-def index():
+def home():
   if 'username' in session:
     return render_template('index.html', username=session['username'])
   return render_template('index.html')
@@ -41,7 +41,7 @@ def login():
 @app.route('/logout')
 def logout():
   session.pop('username', None)
-  return redirect(url_for('index'))
+  return redirect(url_for('home'))
 
 @app.route('/users')
 def show_users():
@@ -53,5 +53,22 @@ def show_user_profile():
   """ Procedure to show a user's profile and membership details. """
   return render_template('view_user.html')
 
+@app.route('/government')
+def show_gov():
+  return render_template('government.html')
+
+@app.route('/about_us')
+def show_about_us():
+  return render_template('about_us.html')
+
+@app.route('/news')
+def show_news():
+  return render_template('news.html')
+
+@app.route('/calendar')
+def show_calendar():
+  return render_template('calendar.html')
+
 if __name__ == "__main__":
+  app.debug = True
   app.run()

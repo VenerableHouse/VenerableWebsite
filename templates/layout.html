@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Ruddock House Website- Ruddock House</title>
+    <link rel="stylesheet" type="text/css" href="static/css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      {% include "includes/header.html" %}
+    </div>
+    <div id="content">
+      {% block body %}
+      {% endblock body %}
+    </div>
+    <div class="container">
+      {% include "includes/footer.html" %}
+    </div>
+  </body>
+</html>
