@@ -86,11 +86,13 @@ def show_user_profile(username):
           "msc", "phone", "building", "room_num", "membership", "major", \
           "uid", "isabroad"]
   select_string = ', '.join(cols)
-  query = text("SELECT :s FROM users Natural JOIN members where username=:u")
-  result = connection.execute(query, s= select_string, u=str(username))
+  query = text("SELECT * FROM users Natural JOIN members where username=:u")
+  result = connection.execute(query, u=str(username))
   if result.returns_rows and result.rowcount != 0:
-    dictionary = dict(zip(cols, result.first()))
-    return render_template('view_user.html', userinfo=dictionary)
+    cols = result.keys()
+    r = result.first()
+    dictionary = dict(zip(cols, r))
+    return render_template('view_user.html', info = dictionary)
   else:
     flash("User does not exist!")
     return redirect(url_for('home'))
