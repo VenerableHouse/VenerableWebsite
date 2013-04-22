@@ -1,6 +1,6 @@
 from flask import Flask, request, session, g, redirect, url_for, abort, \
         render_template, flash
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine, MetaData, text
 import config, auth
 
 app = Flask(__name__)
@@ -68,7 +68,7 @@ def show_users():
   keys = ['user_id', 'lname', 'fname', 'nickname', 'usenickname', 'bday', 'email', \
         'email2', 'status', 'matriculate_year', 'grad_year', 'msc', 'phone', 'building', \
         'room_num', 'membership', 'major', 'uid', 'isabroad']
-  
+
   res_dict_list = []
   for result in results:
     temp_dict = {}
@@ -79,9 +79,21 @@ def show_users():
   return render_template('userlist.html', res = res_dict_list)
 
 @app.route('/users/view/<username>')
-def show_user_profile():
+def show_user_profile(username):
   """ Procedure to show a user's profile and membership details. """
-  return render_template('view_user.html')
+  cols = ["username", "lname", "fname", "nickname", "usenickname", "bday", \
+          "email", "email2", "status", "matriculate_year", "grad_year", \
+          "msc", "phone", "building", "room_num", "membership", "major", \
+          "uid", "isabroad"]
+  select_string = ', '.join(cols)
+  query = text("SELECT :s FROM users Natural JOIN members where username=:u")
+  result = connection.execute(query, s= select_string, u=str(username))
+  if result.returns_rows and result.rowcount != 0:
+    dictionary = dict(zip(cols, result.first()))
+    return render_template('view_user.html', userinfo=dictionary)
+  else:
+    flash("User does not exist!")
+    return redirect(url_for('home'))
 
 @app.route('/government')
 def show_gov():

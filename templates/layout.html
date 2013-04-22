@@ -11,6 +11,13 @@
       <div class="container">
         {% include "includes/header.html" %}
       </div>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for message in messages %}
+            <div class="flashes">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
       <div id="content" style="margin-top:8px">
         {% block body %}
         {% endblock body %}
