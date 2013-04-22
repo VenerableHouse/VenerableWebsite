@@ -222,7 +222,7 @@ table th {
   margin-right: auto;
 }
 
-.userlist a:link {
+.userlist a:link, .userlist a:visited {
     color: #003060;
     font-size: 10px;
     text-decoration: none;
