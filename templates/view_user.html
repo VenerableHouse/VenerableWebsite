@@ -2,6 +2,11 @@
 
 {% block body %}
   <ul>
-    <li>Username: {{info['username']}}</li>
+    {% for col in display %}
+    <li>{{ col }}: 
+      {% for item in display[col] %}
+        {{ info[item] }}{% endfor %}
+      {% endfor %}
+    </li>
   </ul>
 {% endblock body %}

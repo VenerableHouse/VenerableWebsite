@@ -1,5 +1,6 @@
 from flask import Flask, request, session, g, redirect, url_for, abort, \
         render_template, flash
+from ordereddict import OrderedDict
 from sqlalchemy import create_engine, MetaData, text
 import config, auth
 
@@ -90,18 +91,25 @@ def show_users():
 @app.route('/users/view/<username>')
 def show_user_profile(username):
   """ Procedure to show a user's profile and membership details. """
-  cols = ["username", "lname", "fname", "nickname", "usenickname", "bday", \
-          "email", "email2", "status", "matriculate_year", "grad_year", \
-          "msc", "phone", "building", "room_num", "membership", "major", \
-          "uid", "isabroad"]
-  select_string = ', '.join(cols)
+  cols = [["username"], ["fname", "lname"], ["nickname"], ["bday"], \
+          ["email"], ["email2"], ["status"], ["matriculate_year"], \
+          ["grad_year"], ["msc"], ["phone"], ["building", "room_num"], \
+          ["membership"], ["major"], ["uid"], ["isabroad"]]
+  display = ["Username", "Name", "Nickname", "Birthday", "Primary Email", \
+             "Secondary Email", "Status", "Matriculation Year", \
+             "Graduation Year", "MSC", "Phone Number", "Residence", \
+             "Membership", "Major", "UID", "Is Abroad"]
+  d_dict = OrderedDict(zip(display, cols))
+  #d_dict defines the order and mapping of displayed attributes to sql columns
   query = text("SELECT * FROM users Natural JOIN members where username=:u")
   result = connection.execute(query, u=str(username))
   if result.returns_rows and result.rowcount != 0:
-    cols = result.keys()
+    result_cols = result.keys()
     r = result.first()
-    dictionary = dict(zip(cols, r))
-    return render_template('view_user.html', info = dictionary)
+    q_dict = dict(zip(result_cols, r)) #q_dict maps sql columns to values
+    if not q_dict['usenickname']:
+      d_dict.pop('Nickname')
+    return render_template('view_user.html', display = d_dict, info = q_dict)
   else:
     flash("User does not exist!")
     return redirect(url_for('home'))
