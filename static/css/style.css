@@ -212,3 +212,16 @@ table th {
     background-color: #FEEFB3;
     background-image: url('/static/images/orange_message.png');
 }
+
+.userlist {
+  width: 90%;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.userlist a:link {
+    color: #003060;
+    font-size: 10px;
+    text-decoration: none;
+}

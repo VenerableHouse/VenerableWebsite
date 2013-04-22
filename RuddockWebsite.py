@@ -71,14 +71,21 @@ def show_users():
         'email2', 'status', 'matriculate_year', 'grad_year', 'msc', 'phone', 'building', \
         'room_num', 'membership', 'major', 'uid', 'isabroad']
 
-  res_dict_list = []
+  res = []
   for result in results:
     temp_dict = {}
     for i,key in enumerate(keys):
       temp_dict[key] = result[i]
-    res_dict_list.append(temp_dict)
+    res.append(temp_dict)
 
-  return render_template('userlist.html', res = res_dict_list)
+  # get sorting arguments
+  ordr = 'ordr' in request.args
+  if 'attr' in request.args:
+    attr = request.args['attr']
+  else:
+    attr = 'lname'
+
+  return render_template('userlist.html', res = res, attr=attr, ordr=ordr)
 
 @app.route('/users/view/<username>')
 def show_user_profile(username):
