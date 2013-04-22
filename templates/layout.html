@@ -3,17 +3,21 @@
   <head>
     <title>Ruddock House Website- Ruddock House</title>
     <link rel="stylesheet" type="text/css" href="static/css/style.css" />
+    {% block head %}
+    {% endblock head %}
   </head>
   <body>
-    <div class="container">
-      {% include "includes/header.html" %}
-    </div>
-    <div id="content">
-      {% block body %}
-      {% endblock body %}
-    </div>
-    <div class="container">
-      {% include "includes/footer.html" %}
+    <div class="clearfix" id="borderbox">
+      <div class="container">
+        {% include "includes/header.html" %}
+      </div>
+      <div id="content" style="margin-top:8px">
+        {% block body %}
+        {% endblock body %}
+      </div>
+      <div class="container">
+        {% include "includes/footer.html" %}
+      </div>
     </div>
   </body>
 </html>
