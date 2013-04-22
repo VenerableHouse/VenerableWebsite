@@ -68,7 +68,7 @@ div.topcorner{
     height: 1.5em;
     text-align: right;
     font-family: Tahoma, Arial, Helvetica, sans-serif;
-    font-size: 11pt;
+    font-size: 10pt;
     margin-bottom: -11pt;
 }
 
@@ -79,7 +79,7 @@ div.navbar, div.sub_navbar {
     margin-right:-10px;
     background-color: #003060;
     color: white;
-    height: 30px;
+    height: 28px;
     font-variant: small-caps;
     font-family: Tahoma, Arial, Helvetica, sans-serif;
     font-size: 14pt; 
@@ -88,6 +88,8 @@ div.navbar, div.sub_navbar {
 
 div.sub_navbar {
     background-color: #005C5C;
+    height: 22px;
+    font-size:11pt;
 }
 
 div.sub_navbar_spacer {
