@@ -26,8 +26,8 @@ def login():
       session['username'] = request.form['username']
       return redirect(url_for('home'))
     else:
-      return render_template('login.html', msg='Incorrect username or ' + \
-              ' password. Please try again!')
+      flash('Incorrect username or password. Please try again!')
+      return render_template('login.html')
 
   return render_template('login.html')
 
@@ -45,14 +45,16 @@ def change_passwd():
     new_password2 = request.form['password2']
 
     if not auth.authenticate(username, old_password, connection):
-      return render_template('password_change.html', msg='Wrong old password!')
+      flash('Wrong old password. Please try again!')
+      return render_template('password_change.html')
     if new_password != new_password2:
-      return render_template('password_change.html', msg='Passwords mismatch!')
+      flash('New passwords do not match. Please try again!')
+      return render_template('password_change.html')
     elif auth.passwd_reset(username, new_password, connection):
       return redirect(url_for('home'))
     else:
-      return render_template('password_change.html', msg='Unknown problem' + \
-              ' occured. Please contact an admin!')
+      flash('An unknown problem has occured. Please contact an admin!')
+      return render_template('password_change.html')
 
   return render_template('password_change.html')
 

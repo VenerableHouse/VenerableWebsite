@@ -5,19 +5,25 @@
 	height: 0px;
 	visibility: hidden;
 }
+
 .clearfix {
 	display: inline-block;
 }
+
 /* Hide these rules from IE-mac \*/
+
 * html .clearfix {
 	height: 1%;
 }
+
 .clearfix {
 	display: block;
 }
+
 li.clearfix {
 	display: list-item;
 }
+
 /* End hide from IE-mac */
 
 #borderbox {
@@ -75,7 +81,6 @@ div.navbar, div.sub_navbar {
     color: white;
     height: 30px;
     font-variant: small-caps;
-    #font-family: Times;
     font-family: Tahoma, Arial, Helvetica, sans-serif;
     font-size: 14pt; 
     
@@ -124,7 +129,6 @@ tr.row_1 {
 
 tr.row_2 {
     background-color: lightgrey;
-
 }
 
 h2 {
@@ -195,4 +199,16 @@ table th {
     color:#666666;
     font-weight: bold;
     cursor: default;
+}
+
+.flashes {
+    border: 1px solid;
+    margin: 10px 0px;
+    padding:15px 10px 15px 50px;
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    font-size: 12px;
+    color: #9F6000;
+    background-color: #FEEFB3;
+    background-image: url('/static/images/orange_message.png');
 }
