@@ -64,7 +64,19 @@ def logout():
 @app.route('/users')
 def show_users():
   """ Procedure to show a list of all users, with all membership details. """
-  return render_template('userlist.html')
+  results = connection.execute('select * from members')
+  keys = ['user_id', 'lname', 'fname', 'nickname', 'usenickname', 'bday', 'email', \
+        'email2', 'status', 'matriculate_year', 'grad_year', 'msc', 'phone', 'building', \
+        'room_num', 'membership', 'major', 'uid', 'isabroad']
+  
+  res_dict_list = []
+  for result in results:
+    temp_dict = {}
+    for i,key in enumerate(keys):
+      temp_dict[key] = result[i]
+    res_dict_list.append(temp_dict)
+
+  return render_template('userlist.html', res = res_dict_list)
 
 @app.route('/users/view/<username>')
 def show_user_profile():

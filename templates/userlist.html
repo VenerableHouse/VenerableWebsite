@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block body %}
+  <table width="95%" align="center">
+  <tr>
+    <th>ID</th>
+    <th>Last</th>
+    <th>First</th>
+    <th>Email</th>
+    <th>Matr.</th>
+    <th>Grad.</th>
+    <th>MSC</th>
+    <th>Major</th>
+  </tr>
+  {% for result in res  %}
+    <tr>
+      <td>{{ result['user_id'] }}</td>
+      <td>{{ result['lname'] }}</td>
+      <td>{{ result['fname'] }}</td>
+      <td>{{ result['email'] }}</td>
+      <td>{{ result['matriculate_year'] }}</td>
+      <td>{{ result['grad_year'] }}</td>
+      <td>{{ result['msc'] }}</td>
+      <td>{{ result['major'] }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+
+{% endblock body %}
