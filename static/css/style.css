@@ -227,3 +227,39 @@ table th {
     font-size: 10px;
     text-decoration: none;
 }
+
+#view_user_box {
+  display: inline-block;
+  clear:Both;
+  min-width:300px;
+  padding:20px;
+  margin:0 auto;
+  #border-style:solid;
+  #border-width: 2px;
+  #border-color: #003060;
+  border-radius:15px;
+  background-color: #BFCBD7;
+}
+
+#view_user_name {
+  color: black;
+  font-size:36pt;
+  font-weight: bold;
+  margin-top:-10px;
+  text-align:left;
+}
+
+#view_user_subtitle {
+  font-weight:bold;
+  font-size:16pt;
+  margin-top:-5px;
+  margin-right:0px;
+  margin-left:50px;
+  text-align:right;
+}
+
+#view_user_contact {
+  font-size:11pt;
+  text-align: center;
+  margin-top:20px;
+}

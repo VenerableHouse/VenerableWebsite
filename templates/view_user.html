@@ -1,12 +1,50 @@
 {% extends "layout.html" %}
 
 {% block body %}
-  <ul>
-    {% for col in display %}
-    <li>{{ col }}: 
-      {% for item in display[col] %}
-        {{ info[item] }}{% endfor %}
-      {% endfor %}
-    </li>
-  </ul>
+  <center><div id="view_user_box">
+    <div id="view_user_name">{{ info["fname"] }} {{ info["lname"] }}</div>
+    
+    <div id="view_user_subtitle">
+    {% if info["major"] %}
+      {{ info["major"] }}, 
+    {% endif %}
+    Class of {{ info["grad_year"] }}
+    </div> 
+    
+    <div id="view_user_contact">
+    {% if info["email"] %}
+       {{ info["email"] }} 
+       {% if info["msc"] %}
+         &#8226; MSC {{ info["msc"] }}
+         {% if info["phone"] %}
+           &#8226; {{ info["phone"] }}
+         {% endif %}
+      {% else %}
+         {% if info["phone"] %}
+           &#8226; {{ info["phone"] }}
+         {% endif %}
+      {% endif %}
+    {% else %}
+      {% if info["msc"] %}
+         MSC {{ info["msc"] }}
+         {% if info["phone"] %}
+           &#8226; {{ info["phone"] }}
+         {% endif %}
+      {% else %}
+         {% if info["phone"] %}
+           {{ info["phone"] }}
+         {% endif %}
+      {% endif %}
+    {% endif %}
+    </div>
+
+    <ul>
+      {% for col in display %}
+      <li>{{ col }}: 
+        {% for item in display[col] %}
+          {{ info[item] }}{% endfor %}
+        {% endfor %}
+      </li>
+    </ul>
+  </div></center>
 {% endblock body %}
