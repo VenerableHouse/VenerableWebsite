@@ -3,6 +3,8 @@ from flask import Flask, request, session, g, redirect, url_for, abort, \
 from ordereddict import OrderedDict
 from sqlalchemy import create_engine, MetaData, text
 import config, auth
+import datetime
+from time import strftime
 
 app = Flask(__name__)
 app.debug = True
@@ -126,7 +128,8 @@ def show_user_profile(username):
     q_dict = dict(zip(result_cols, r)) #q_dict maps sql columns to values
     if not q_dict['usenickname']:
       d_dict.pop('Nickname')
-    return render_template('view_user.html', display = d_dict, info = q_dict)
+    return render_template('view_user.html', display = d_dict, info = q_dict, \
+      strftime = strftime)
   else:
     flash("User does not exist!")
     return redirect(url_for('home'))
@@ -146,6 +149,10 @@ def show_news():
 @app.route('/calendar')
 def show_calendar():
   return render_template('calendar.html')
+
+@app.route('/map')
+def show_map():
+  return render_template('map.html')
 
 if __name__ == "__main__":
   app.debug = True

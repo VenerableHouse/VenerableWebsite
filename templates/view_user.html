@@ -6,45 +6,85 @@
     
     <div id="view_user_subtitle">
     {% if info["major"] %}
-      {{ info["major"] }}, 
+    {{ info["major"] }}, 
     {% endif %}
     Class of {{ info["grad_year"] }}
     </div> 
     
+    {% if info["isabroad"] %}
+    <div id="view_user_isabroad">Currently studying abroad</div>
+    {% endif %}
+
     <div id="view_user_contact">
     {% if info["email"] %}
-       {{ info["email"] }} 
-       {% if info["msc"] %}
-         &#8226; MSC {{ info["msc"] }}
-         {% if info["phone"] %}
-           &#8226; {{ info["phone"] }}
-         {% endif %}
-      {% else %}
-         {% if info["phone"] %}
-           &#8226; {{ info["phone"] }}
-         {% endif %}
-      {% endif %}
+    <a href="&#109;&#097;&#105;&#108;&#116;&#111;:{{ info["email"] }}" style="text-decoration:none;color:black;">
+    {{ info["email"] }}</a> 
+    
+    {% if info["msc"] %}
+    &#8226; MSC {{ info["msc"] }}
+
+    {% if info["phone"] %}
+    &#8226; {{ info["phone"] }}
+    {% endif %}
+
     {% else %}
-      {% if info["msc"] %}
-         MSC {{ info["msc"] }}
-         {% if info["phone"] %}
-           &#8226; {{ info["phone"] }}
-         {% endif %}
-      {% else %}
-         {% if info["phone"] %}
-           {{ info["phone"] }}
-         {% endif %}
-      {% endif %}
+    {% if info["phone"] %}
+    &#8226; {{ info["phone"] }}
+    {% endif %}
+    {% endif %}
+    {% else %}
+    {% if info["msc"] %}
+    MSC {{ info["msc"] }}
+    {% if info["phone"] %}
+    &#8226; {{ info["phone"] }}
+    {% endif %}
+    {% else %}
+    {% if info["phone"] %}
+    {{ info["phone"] }}
+    {% endif %}
+    {% endif %}
     {% endif %}
     </div>
 
-    <ul>
-      {% for col in display %}
-      <li>{{ col }}: 
-        {% for item in display[col] %}
-          {{ info[item] }}{% endfor %}
-        {% endfor %}
-      </li>
-    </ul>
+    
+    <table>
+      <tr>
+        <td>Birthday:</td>
+        <td>{{ strftime("%B %d, %Y", info["bday"].timetuple()) }}</td>
+      </tr>
+      <tr>
+        <td>Residence:</td>
+        
+        {% if info["building"] == "Ruddock" %}
+        <td><a href="{{ url_for('show_map', room=info["room_num"]) }}" style="text-decoration:none;color:black;">
+        {{info["building"]}} {{ info["room_num"] }}</a></td>
+        {% else %}
+        <td>{{info["building"]}} {{ info["room_num"] }}</td>
+        {% endif %}
+      </tr>
+      <tr>
+        <td>Membership:</td>
+        {% if info["membership"] == 1 %}
+        <td>Full</td>
+        {% elif info["membership"] == 2 %}
+        <td>Social</td>
+        {% elif info["membership"] == 3 %}
+        <td>Associate</td>
+        {% else %}
+        <td>Other</td>
+        {% endif %}
+      </tr>
+      <tr>
+        {% if info["email2"] %}
+        <tr>  
+          <td>Alt. Email:</td>
+          <td><a href="&#109;&#097;&#105;&#108;&#116;&#111;:{{ info["email2"] }}" style="text-decoration:none;color:black;">
+            {{ info["email2"] }}</a></td>
+        </tr>
+        {% endif %}
+
+    </table>
+
+
   </div></center>
 {% endblock body %}
