@@ -2,53 +2,24 @@
 
 {% block body %}
   <table class="userlist">
-  <tr>
-    <th>ID
-      <a href="{{ url_for('show_users', attr='user_id') }}">&#9650;</a>
-      <a href="{{ url_for('show_users', attr='user_id',
-                                        ordr='rev')}}">&#9660;</a>
-    </th>
-    <th>Last
-      <a href="{{ url_for('show_users', attr='lname') }}">&#9650;</a>
-      <a href="{{ url_for('show_users', attr='lname',
-                                        ordr='reverse' )}}">&#9660;</a>
-    </th>
-    <th>First
-      <a href="{{ url_for('show_users', attr='fname') }}">&#9650;</a>
-      <a href="{{ url_for('show_users', attr='fname',
-                                        ordr='reverse' )}}">&#9660;</a>
-    </th>
-    <th>Email
-      <a href="{{ url_for('show_users', attr='email') }}">&#9650;</a>
-      <a href="{{ url_for('show_users', attr='email',
-                                        ordr='reverse' )}}">&#9660;</a>
-    </th>
-    <th>Matr.
-      <a href="{{ url_for('show_users', attr='matriculate_year') }}">&#9650;</a>
-      <a href="{{ url_for('show_users', attr='matriculate_year',
-                                        ordr='reverse' )}}">&#9660;</a>
-    </th>
-    <th>Grad.
-      <a href="{{ url_for('show_users', attr='grad_year') }}">&#9650;</a>
-      <a href="{{ url_for('show_users', attr='grad_year',
-                                        ordr='reverse' )}}">&#9660;</a>
-    </th>
-    <th>Major
-      <a href="{{ url_for('show_users', attr='major') }}">&#9650;</a>
-      <a href="{{ url_for('show_users', attr='major',
-                                        ordr='reverse' )}}">&#9660;</a>
-    </th>
-  </tr>
-  {% for result in res|sort(attribute=attr, reverse=ordr)  %}
+  {# First display header, with links to sort #}
     <tr>
-      <td>{{ result['user_id'] }}</td>
-      <td>{{ result['lname'] }}</td>
-      <td>{{ result['fname'] }}</td>
-      <td>{{ result['email'] }}</td>
-      <td>{{ result['matriculate_year'] }}</td>
-      <td>{{ result['grad_year'] }}</td>
-      <td>{{ result['major'] }}</td>
+      {% for field in fields %}
+      <th>{{ fieldMap[field] }} {# Maps sql field to display value #}
+        <a href="{{ url_for('show_users', field=field) }}">&#9650;</a>
+        <a href="{{ url_for('show_users', field=field,
+                                          dir='DESC')}}">&#9660;</a>
+      </th>
+      {% endfor %}
     </tr>
+  {# Now, display each row #}
+  {% for result in data %}
+  <tr onclick="location.href='{{ url_for('show_user_profile', 
+    username=idMap[result['user_id']]) }}'">
+    {% for field in fields %}
+    <td>{{ result[field] }}</td>
+    {% endfor %}
+  </tr>
   {% endfor %}
   </table>
 

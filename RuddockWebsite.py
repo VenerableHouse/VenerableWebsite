@@ -67,26 +67,43 @@ def logout():
 @app.route('/users')
 def show_users():
   """ Procedure to show a list of all users, with all membership details. """
-  results = connection.execute('select * from members')
-  keys = ['user_id', 'lname', 'fname', 'nickname', 'usenickname', 'bday', 'email', \
-        'email2', 'status', 'matriculate_year', 'grad_year', 'msc', 'phone', 'building', \
-        'room_num', 'membership', 'major', 'uid', 'isabroad']
+  # store which columns we want, and their displaynames
+  cols = ["user_id", "lname", "fname", "email", "matriculate_year", \
+          "grad_year", "major"]
+  display = ["ID", "Last", "First", "Email", "Matr.", "Grad.", "Major"]
+  fieldMap = dict(zip(cols, display))
 
+  # get order by information from request arguments
+  if 'field' in request.args and request.args['field'] in cols:
+    ordField = request.args['field']
+  else:
+    ordField = 'lname'
+  if 'dir' in request.args and request.args['dir'] in ['ASC', 'DESC']:
+    ordDirect = request.args['dir']
+  else:
+    ordDirect = 'ASC'
+
+  # perform query
+  query = text("SELECT * FROM members ORDER BY " + ordField + " " + ordDirect)
+  results = connection.execute(query)
+
+  # put results in a dictionary
+  result_cols = results.keys()
   res = []
   for result in results:
     temp_dict = {}
-    for i,key in enumerate(keys):
-      temp_dict[key] = result[i]
+    for i,key in enumerate(result_cols):
+      if key in cols:
+        temp_dict[key] = result[i]
     res.append(temp_dict)
 
-  # get sorting arguments
-  ordr = 'ordr' in request.args
-  if 'attr' in request.args:
-    attr = request.args['attr']
-  else:
-    attr = 'lname'
+  # we also want to map ids to usernames so we can link to individual pages
+  query = text("SELECT user_id, username FROM users")
+  results = connection.execute(query)
+  idMap = dict(list(results)) # key is id, value is username
 
-  return render_template('userlist.html', res = res, attr=attr, ordr=ordr)
+  return render_template('userlist.html', data = res, fields = cols, \
+      displays = display, idMap=idMap, fieldMap=fieldMap)
 
 @app.route('/users/view/<username>')
 def show_user_profile(username):

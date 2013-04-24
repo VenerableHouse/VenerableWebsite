@@ -228,6 +228,10 @@ table th {
     text-decoration: none;
 }
 
+.userlist tr:hover td {
+  background-color: #FFFAF0;
+}
+
 #view_user_box {
   display: inline-block;
   clear:Both;
