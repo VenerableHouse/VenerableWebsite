@@ -17,7 +17,10 @@ def authenticate(user, passwd, db):
   query = db.execute("SELECT * FROM users WHERE username='" + user + "' AND " \
           + "passwd=MD5('" + passwd + "')")
 
-  return query.returns_rows and query.first() != None
+  row = query.first()
+  if (query.returns_rows and row != None):
+    return row[0]
+  return 0
 
 def passwd_reset(user, newpasswd, db, salt=True):
   """ Resets a user's password with newpasswd. Uses a random salt if salt is

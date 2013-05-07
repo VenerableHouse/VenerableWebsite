@@ -25,8 +25,10 @@ def login():
     username = request.form['username']
     password = request.form['password']
 
-    if auth.authenticate(username, password, connection):
+    user_id = auth.authenticate(username, password, connection)
+    if user_id:
       session['username'] = request.form['username']
+      session['user_id'] = user_id
       return redirect(url_for('home'))
     else:
       flash('Incorrect username or password. Please try again!')
@@ -133,6 +135,59 @@ def show_user_profile(username):
   else:
     flash("User does not exist!")
     return redirect(url_for('home'))
+
+@app.route('/users/edit/<username>', methods=['GET', 'POST'])
+def change_user_settings(username):
+  """ Procedure to process the login page. Also handles authentication. """
+
+  if 'username' not in session:
+    flash('You must be logged in for that.')
+    return redirect(url_for('login'))
+
+  if session['username'] != username:
+    flash('You cannot edit this user\'s information.')
+    return redirect(url_for('show_user_profile', username=username))
+
+
+  params = {}
+  tags = ['nickname', 'usenickname', 'bday', 'email', 'email2', 'msc', 'phone', \
+      'building', 'room_num', 'major', 'isabroad']
+  tag_names = ["Nickname", "Use Nickname", "Birthday", "Email Address", \
+      "Alt. Email Address", "MSC", "Phone Number", "Building Name", "Room Number", \
+      "Major", "Is Abroad"]
+
+  # Get stored values from database
+  query = text("SELECT * FROM users Natural JOIN members where username=:u")
+  result = connection.execute(query, u=str(username))
+  if result.returns_rows and result.rowcount != 0:
+    result_cols = result.keys()
+    r = result.first()
+    stored_params = dict(zip(result_cols, r)) #stored_params maps sql columns to values
+
+  # Update if needed
+  if request.method == 'POST':
+
+    for (i, tag) in enumerate(tags):
+      params[tag] = request.form[tag]
+
+
+    for (i, tag) in enumerate(tags):
+      if str(params[tag]) != str(stored_params[tag]):
+        
+        new_val = str(params[tag])
+        if tag in ['usenickname', 'msc', 'room_num', 'isabroad']:
+          new_val = int(new_val)
+
+        query = text("UPDATE members SET %s = :val WHERE user_id = :u" % tag)
+        results = connection.execute(query, u=session['user_id'], val=new_val)
+  
+        flash("%s was updated!" % tag_names[i])
+
+
+  if not params:
+    params = stored_params
+
+  return render_template('edit_user.html', params = params)
 
 @app.route('/government')
 def show_gov():

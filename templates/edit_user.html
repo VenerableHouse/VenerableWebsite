@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block body %}
+  <h2>Edit Your Settings</h2>
+  <form action="" method="post">
+
+    <p>Nickname: <input type=text name=nickname {% if params["nickname"] %} value="{{ params["nickname"] }}" {% endif %}></p>
+    <p>Use Nickname: <input type="radio" name=usenickname {% if params['usenickname']==1 %} checked {% endif %} value=1>Yes<input type="radio" name=usenickname {% if params['usenickname']==0 %} checked {% endif %} value=0>No</p>
+    <p>Birthday (YYYY-MM-DD): <input type=text name=bday {% if params["bday"] %} value="{{ params["bday"] }}" {% endif %}></p>
+    <p>Primary Email: <input type=text name=email style="width:200px" {% if params["email"] %} value="{{ params["email"] }}" {% endif %}></p>
+    <p>Secondary Email: <input type=text name=email2 style="width:200px" {% if params["email2"] %} value="{{ params["email2"] }}" {% endif %}></p>
+    <p>MSC: <input type=text name=msc style="width:40px" {% if params["msc"] %} value="{{ params["msc"] }}" {% endif %}></p>
+    <p>Phone: <input type=text name=phone {% if params["phone"] %} value="{{ params["phone"] }}" {% endif %}></p>
+    <p>Building: <input type=text name=building {% if params["building"] %} value="{{ params["building"] }}" {% endif %}></p>
+    <p>Room Number: <input type=text name=room_num style="width: 40px" {% if params["room_num"] %} value="{{ params["room_num"] }}" {% endif %}></p>
+    <p>Major: <input type=text name=major style="width:200px" {% if params["major"] %} value="{{ params["major"] }}" {% endif %}></p>
+    <p>Abroad: <input type="radio" name=isabroad {% if params['isabroad']==1 %} checked {% endif %} value=1>Yes <input type="radio" name=isabroad {% if params['isabroad']==0 %} checked {% endif %}  value=0>No</p>
+
+    <p><input style="font-size:3px" type=submit value="Save Changes"></p>
+  </form>
+
+{% endblock body %}
