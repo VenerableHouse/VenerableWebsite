@@ -55,8 +55,9 @@ def forgot_passwd():
               "If you didn't request this change, disregard this email.\n" \
               "If you do want to change your password, please go to:\n" +\
               url_for('reset_passwd', u=q_dict['user_id'], r=reset_key,
-                  _external=True)
-        sendEmail(str(email), msg, "Forgotten Password")
+                  _external=True) + \
+              "\n\nThanks,\nThe Ruddock Website"
+        sendEmail(str(email), msg, "[RuddWeb] Forgotten Password")
         flash("An email has been sent.")
         redirect(url_for('home'))
       else:
@@ -280,4 +281,4 @@ def show_map():
 
 if __name__ == "__main__":
   app.debug = True
-  app.run('localhost', 4998)
+  app.run()
