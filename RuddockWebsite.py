@@ -5,6 +5,7 @@ from sqlalchemy import create_engine, MetaData, text
 import config, auth
 import datetime
 from time import strftime
+from email_utils import sendEmail
 
 app = Flask(__name__)
 app.debug = True
@@ -35,6 +36,74 @@ def login():
       return render_template('login.html')
 
   return render_template('login.html')
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_passwd():
+  """ Procedure to allow users to reset forgotten passwords. """
+  if request.method == 'POST':
+    username = request.form['username']
+    email = request.form['email']
+    query = text("SELECT * FROM users NATURAL JOIN members WHERE username=:u")
+    result = connection.execute(query, u=str(username))
+    if result.returns_rows and result.rowcount != 0:
+      result_cols = result.keys()
+      row = result.first()
+      q_dict = dict(zip(result_cols, row))
+      if q_dict['email'] == email:
+        reset_key = auth.reset_key(q_dict['passwd'], q_dict['salt'], username)
+        msg = "We received a request to reset this account's password.\n" \
+              "If you didn't request this change, disregard this email.\n" \
+              "If you do want to change your password, please go to:\n" +\
+              url_for('reset_passwd', u=q_dict['user_id'], r=reset_key,
+                  _external=True)
+        sendEmail(str(email), msg, "Forgotten Password")
+        flash("An email has been sent.")
+        redirect(url_for('home'))
+      else:
+        flash("Incorrect email.")
+        return render_template('forgot_password.html')
+    else:
+      flash("Incorrect username.")
+      return render_template('forgot_password.html')
+  return render_template('forgot_password.html')
+
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_passwd():
+  if request.method == 'POST':
+    if 'username' not in session:
+      flash('You did something naughty')
+      return redirect(url_for('forgot_passwd'))
+    new_password = request.form['password']
+    new_password2 = request.form['password2']
+
+    if new_password != new_password2:
+      flash('Passwords do not match. Please try again!')
+      return render_template('reset_password.html')
+    elif auth.passwd_reset(session['username'], new_password, connection):
+      session.pop('username')
+      flash('Password successfully changed.')
+      return redirect(url_for('home'))
+    else:
+      flash('An unknown problem has occured. Please contact an admin!')
+      return render_template('reset_password.html')
+  else:
+    user_id = request.args.get('u', None)
+    reset_key = request.args.get('r', None)
+    if user_id == None or reset_key == None:
+      flash("Missing parameter. Try generating the link again?")
+      return redirect(url_for('forgot_passwd'))
+    query = text("SELECT * FROM users NATURAL JOIN members WHERE user_id=:u")
+    result = connection.execute(query, u=str(user_id))
+    if result.returns_rows and result.rowcount != 0:
+      result_cols = result.keys()
+      row = result.first()
+      q_dict = dict(zip(result_cols, row))
+      if int(reset_key) == auth.reset_key(q_dict['passwd'], q_dict['salt'],
+                                          q_dict['username']):
+        session['username'] = q_dict['username']
+        return render_template('reset_password.html')
+      flash("Incorrect reset_key. Try generating the link again?")
+    return redirect(url_for('forgot_passwd'))
 
 @app.route('/change-password', methods=['GET', 'POST'])
 def change_passwd():
@@ -173,14 +242,14 @@ def change_user_settings(username):
 
     for (i, tag) in enumerate(tags):
       if str(params[tag]) != str(stored_params[tag]):
-        
+
         new_val = str(params[tag])
         if tag in ['usenickname', 'msc', 'room_num', 'isabroad']:
           new_val = int(new_val)
 
         query = text("UPDATE members SET %s = :val WHERE user_id = :u" % tag)
         results = connection.execute(query, u=session['user_id'], val=new_val)
-  
+
         flash("%s was updated!" % tag_names[i])
 
 
@@ -211,4 +280,4 @@ def show_map():
 
 if __name__ == "__main__":
   app.debug = True
-  app.run()
+  app.run('localhost', 4998)

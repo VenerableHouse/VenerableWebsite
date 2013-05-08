@@ -36,3 +36,9 @@ def passwd_reset(user, newpasswd, db, salt=True):
 
   # check if query was successful
   return query.rowcount == 1
+
+def reset_key(hashed_pw, salt, username):
+  if salt == None:
+    return hash(username + hashed_pw)
+  else:
+    return hash(salt + hashed_pw)
