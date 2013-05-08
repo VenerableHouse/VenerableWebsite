@@ -1,3 +1,4 @@
+from email_utils import sendEmail
 SALT_SIZE = 8
 
 def authenticate(user, passwd, db):
@@ -22,7 +23,7 @@ def authenticate(user, passwd, db):
     return row[0]
   return 0
 
-def passwd_reset(user, newpasswd, db, salt=True):
+def passwd_reset(user, newpasswd, db, salt=True, email=None):
   """ Resets a user's password with newpasswd. Uses a random salt if salt is
   set to true. """
   if salt:
@@ -34,8 +35,23 @@ def passwd_reset(user, newpasswd, db, salt=True):
   query = db.execute("UPDATE users SET salt='" + randSalt + "', passwd" \
           + "=MD5('" + newpasswd + "') WHERE username='" + user + "'")
 
-  # check if query was successful
-  return query.rowcount == 1
+  if (query.rowcount == 1):
+    if email:
+      # notify user that their password was changed
+      try:
+        msg = "Your password has been successfully changed.\n" + \
+              "If you did not request a password change, please" + \
+              " email imss@ruddock.caltech.edu immediately.\n" + \
+              "\n\nThanks,\nThe Ruddock Website"
+        sendEmail(str(email), msg, "[RuddWeb] Changed Password")
+      except Exception as e:
+        sendEmail("imss@ruddock.caltech.edu",
+                  "Something went wrong when trying to email user " + user + \
+                  " after changing their password. You should look into this." + \
+                  "\n\nException: " + str(e), "[RuddWeb] EMAIL ERROR")
+    return 1
+  else:
+    return 0
 
 def reset_key(hashed_pw, salt, username):
   if salt == None:

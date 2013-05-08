@@ -77,10 +77,16 @@ def reset_passwd():
     new_password = request.form['password']
     new_password2 = request.form['password2']
 
+    # Get the user's email
+    query = text("SELECT email FROM members WHERE user_id=:id")
+    result = connection.execute(query, id=str(session['user_id']))
+    email = result.first()[0]
+
     if new_password != new_password2:
       flash('Passwords do not match. Please try again!')
       return render_template('reset_password.html')
-    elif auth.passwd_reset(session['username'], new_password, connection):
+    elif auth.passwd_reset(session['username'], new_password, connection, \
+                           email=email):
       session.pop('username')
       flash('Password successfully changed.')
       return redirect(url_for('home'))
@@ -119,13 +125,19 @@ def change_passwd():
     new_password = request.form['password']
     new_password2 = request.form['password2']
 
+    # Get the user's email
+    query = text("SELECT email FROM members WHERE user_id=:id")
+    result = connection.execute(query, id=str(session['user_id']))
+    email = result.first()[0]
+
     if not auth.authenticate(username, old_password, connection):
       flash('Wrong old password. Please try again!')
       return render_template('password_change.html')
     if new_password != new_password2:
       flash('New passwords do not match. Please try again!')
       return render_template('password_change.html')
-    elif auth.passwd_reset(username, new_password, connection):
+    elif auth.passwd_reset(username, new_password, connection, email=email):
+      flash('Password successfully changed.')
       return redirect(url_for('home'))
     else:
       flash('An unknown problem has occured. Please contact an admin!')
