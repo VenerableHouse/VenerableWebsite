@@ -40,6 +40,10 @@ def login():
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_passwd():
   """ Procedure to allow users to reset forgotten passwords. """
+  if 'username' in session:
+    flash("You're already logged in!")
+    return redirect(url_for('home'))
+
   if request.method == 'POST':
     username = request.form['username']
     email = request.form['email']
@@ -99,7 +103,7 @@ def reset_passwd():
     if user_id == None or reset_key == None:
       flash("Missing parameter. Try generating the link again?")
       return redirect(url_for('forgot_passwd'))
-    query = text("SELECT * FROM users NATURAL JOIN members WHERE user_id=:u")
+    query = text("SELECT * FROM users WHERE user_id=:u")
     result = connection.execute(query, u=str(user_id))
     if result.returns_rows and result.rowcount != 0:
       result_cols = result.keys()
@@ -204,7 +208,7 @@ def show_user_profile(username):
              "Membership", "Major", "UID", "Is Abroad"]
   d_dict = OrderedDict(zip(display, cols))
   #d_dict defines the order and mapping of displayed attributes to sql columns
-  query = text("SELECT * FROM users Natural JOIN members where username=:u")
+  query = text("SELECT * FROM users NATURAL JOIN members WHERE username=:u")
   result = connection.execute(query, u=str(username))
   if result.returns_rows and result.rowcount != 0:
     result_cols = result.keys()
@@ -239,7 +243,7 @@ def change_user_settings(username):
       "Major", "Is Abroad"]
 
   # Get stored values from database
-  query = text("SELECT * FROM users Natural JOIN members where username=:u")
+  query = text("SELECT * FROM users NATURAL JOIN members WHERE username=:u")
   result = connection.execute(query, u=str(username))
   if result.returns_rows and result.rowcount != 0:
     result_cols = result.keys()

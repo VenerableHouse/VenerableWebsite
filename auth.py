@@ -1,12 +1,13 @@
 from email_utils import sendEmail
+from sqlalchemy import text
 SALT_SIZE = 8
 
 def authenticate(user, passwd, db):
   """ Takes a username, password, and connection object as input, and checks
   if this corresponds to an actual user. Salts the password as necessary. """
   # get salt and add to password if necessary
-  saltQuery = db.execute("SELECT salt FROM users WHERE username='" + user \
-          + "'")
+  saltQuery = db.execute(text("SELECT salt FROM users WHERE username=:u"),
+                         u = user)
   # if there's a salt set, then use it
   if saltQuery.returns_rows:
     salt = saltQuery.first()
@@ -15,8 +16,8 @@ def authenticate(user, passwd, db):
       passwd = salt[0] + passwd
 
   # query whether there's a match for the username and password
-  query = db.execute("SELECT * FROM users WHERE username='" + user + "' AND " \
-          + "passwd=MD5('" + passwd + "')")
+  query = db.execute(text("SELECT * FROM users WHERE username=:u AND " \
+                          + "passwd=MD5(:p)"), u = user, p = passwd)
 
   row = query.first()
   if (query.returns_rows and row != None):
@@ -32,8 +33,8 @@ def passwd_reset(user, newpasswd, db, salt=True, email=None):
     randSalt = ''.join(choice(uppercase + digits) for i in range(SALT_SIZE))
     newpasswd = randSalt + newpasswd
 
-  query = db.execute("UPDATE users SET salt='" + randSalt + "', passwd" \
-          + "=MD5('" + newpasswd + "') WHERE username='" + user + "'")
+  query = db.execute(text("UPDATE users SET salt=:s, passwd=MD5(:p) WHERE " + \
+                          "username=:u"), s = randSalt, p = newpasswd, u = user)
 
   if (query.rowcount == 1):
     if email:
