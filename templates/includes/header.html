@@ -4,7 +4,9 @@
     {% if not session['username'] %}
       <a href="{{url_for("login")}}">Login</a>
     {% else %}
-      {{session['username']}} | <a href="{{url_for("logout")}}">Logout</a>
+    <a href="{{url_for('show_user_profile',
+      username=session['username'])}}">{{session['username']}}</a> | 
+    <a href="{{url_for("logout")}}">Logout</a>
     {% endif %}
   </div>
   <div class="crest" style="height: 72px;" >
