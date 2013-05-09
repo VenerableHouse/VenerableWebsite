@@ -89,9 +89,9 @@ def reset_passwd():
     if new_password != new_password2:
       flash('Passwords do not match. Please try again!')
       return render_template('reset_password.html')
-    elif auth.passwd_reset(session['username'], new_password, connection, \
+    elif auth.passwd_reset(session['r_username'], new_password, connection, \
                            email=email):
-      session.pop('username')
+      session.pop('r_username')
       flash('Password successfully changed.')
       return redirect(url_for('home'))
     else:
@@ -111,7 +111,7 @@ def reset_passwd():
       q_dict = dict(zip(result_cols, row))
       if int(reset_key) == auth.reset_key(q_dict['passwd'], q_dict['salt'],
                                           q_dict['username']):
-        session['username'] = q_dict['username']
+        session['r_username'] = q_dict['username']
         return render_template('reset_password.html')
       flash("Incorrect reset_key. Try generating the link again?")
     return redirect(url_for('forgot_passwd'))
