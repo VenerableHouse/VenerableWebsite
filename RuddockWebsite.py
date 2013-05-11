@@ -157,6 +157,10 @@ def logout():
 @app.route('/users')
 def show_users():
   """ Procedure to show a list of all users, with all membership details. """
+  if 'username' not in session:
+    flash('You must be logged in for this.')
+    return redirect(url_for('login'))
+
   # store which columns we want, and their displaynames
   cols = ["user_id", "lname", "fname", "email", "matriculate_year", \
           "grad_year", "major"]
@@ -198,6 +202,10 @@ def show_users():
 @app.route('/users/view/<username>')
 def show_user_profile(username):
   """ Procedure to show a user's profile and membership details. """
+  if 'username' not in session:
+    flash('You must be logged in for this.')
+    return redirect(url_for('login'))
+
   cols = [["username"], ["fname", "lname"], ["nickname"], ["bday"], \
           ["email"], ["email2"], ["status"], ["matriculate_year"], \
           ["grad_year"], ["msc"], ["phone"], ["building", "room_num"], \

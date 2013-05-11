@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-  <h2>Edit Your Settings</h2>
+  <h2>Update This Information</h2>
   <form action="" method="post">
 
     <p>Nickname: <input type=text name=nickname {% if params["nickname"] %} value="{{ params["nickname"] }}" {% endif %}></p>
@@ -17,5 +17,10 @@
 
     <p><input style="font-size:3px" type=submit value="Save Changes"></p>
   </form>
+
+  {% if params["username"] == session["username"] %}
+  <h2>Edit Your Settings</h2>
+  <a href="{{ url_for('change_passwd') }}">Click here</a> to change your password!
+  {% endif %}
 
 {% endblock body %}
