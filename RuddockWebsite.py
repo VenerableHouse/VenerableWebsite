@@ -263,14 +263,14 @@ def change_user_settings(username):
 
     for (i, tag) in enumerate(tags):
       params[tag] = request.form[tag]
+      if tag in ['usenickname', 'msc', 'room_num', 'isabroad']:
+        params[tag] = int(params[tag])
 
 
     for (i, tag) in enumerate(tags):
       if str(params[tag]) != str(stored_params[tag]):
 
         new_val = str(params[tag])
-        if tag in ['usenickname', 'msc', 'room_num', 'isabroad']:
-          new_val = int(new_val)
 
         query = text("UPDATE members SET %s = :val WHERE user_id = :u" % tag)
         results = connection.execute(query, u=session['user_id'], val=new_val)
