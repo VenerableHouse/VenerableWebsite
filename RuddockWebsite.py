@@ -1,6 +1,6 @@
 from flask import Flask, request, session, g, redirect, url_for, abort, \
         render_template, flash
-from ordereddict import OrderedDict
+from collections import OrderedDict
 from sqlalchemy import create_engine, MetaData, text
 import config, auth
 import datetime
