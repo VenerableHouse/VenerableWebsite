@@ -4,6 +4,7 @@ from collections import OrderedDict
 from sqlalchemy import create_engine, MetaData, text
 import config, auth
 import datetime
+from room_map_dict_def import room_dict
 from time import strftime
 from email_utils import sendEmail
 
@@ -301,7 +302,11 @@ def show_calendar():
 
 @app.route('/map')
 def show_map():
-  return render_template('map.html')
+  return render_template('map.html', room_dict=room_dict, hl=0)
+
+@app.route('/map/<room>')
+def show_map_room(room):
+  return render_template('map.html', room_dict=room_dict, hl=room)
 
 if __name__ == "__main__":
   app.debug = True
