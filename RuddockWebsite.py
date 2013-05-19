@@ -76,7 +76,7 @@ def forgot_passwd():
 @app.route('/reset-password', methods=['GET', 'POST'])
 def reset_passwd():
   if request.method == 'POST':
-    if 'username' not in session:
+    if 'r_username' not in session:
       flash('You did something naughty')
       return redirect(url_for('forgot_passwd'))
     new_password = request.form['password']
@@ -89,6 +89,9 @@ def reset_passwd():
 
     if new_password != new_password2:
       flash('Passwords do not match. Please try again!')
+      return render_template('reset_password.html')
+    elif new_password == '':
+      flash('Passwords cannot be empty. Please try again!')
       return render_template('reset_password.html')
     elif auth.passwd_reset(session['r_username'], new_password, connection, \
                            email=email):
@@ -140,6 +143,9 @@ def change_passwd():
       return render_template('password_change.html')
     if new_password != new_password2:
       flash('New passwords do not match. Please try again!')
+      return render_template('password_change.html')
+    elif new_password == '':
+      flash('Passwords cannot be empty. Please try again!')
       return render_template('password_change.html')
     elif auth.passwd_reset(username, new_password, connection, email=email):
       flash('Password successfully changed.')
