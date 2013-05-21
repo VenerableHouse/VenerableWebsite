@@ -1,3 +1,4 @@
+from functools import update_wrapper
 from flask import Flask, request, session, g, redirect, url_for, abort, \
         render_template, flash
 from collections import OrderedDict
@@ -16,6 +17,20 @@ app.secret_key = config.SECRET_KEY
 engine = create_engine(config.DB_URI, convert_unicode=True)
 connection = engine.connect()
 
+def login_required(msg='You must be logged in for that!'):
+  """ Login required decorator. Flashes msg at the login prompt."""
+  def decorator(fn):
+    def wrapped_function(*args, **kwargs):
+      if 'username' not in session:
+        flash(msg)
+        # store url to return to in session
+        # this way, it isn't shown in the URL
+        session['next'] = request.url
+        return redirect(url_for('login'))
+      return fn(*args, **kwargs)
+    return update_wrapper(wrapped_function, fn)
+  return decorator
+
 @app.route('/')
 def home():
   return render_template('index.html')
@@ -31,7 +46,13 @@ def login():
     if user_id:
       session['username'] = request.form['username']
       session['user_id'] = user_id
-      return redirect(url_for('home'))
+
+      # return to previous page if in session
+      if 'next' in session:
+        redirect_to = session.pop('next')
+        return redirect(redirect_to)
+      else:
+        return redirect(url_for('home'))
     else:
       flash('Incorrect username or password. Please try again!')
       return render_template('login.html')
@@ -121,12 +142,9 @@ def reset_passwd():
     return redirect(url_for('forgot_passwd'))
 
 @app.route('/change-password', methods=['GET', 'POST'])
+@login_required()
 def change_passwd():
   """ Procedure to process the password reset page. """
-  if 'username' not in session:
-    flash('You must be logged in for that.')
-    return redirect(url_for('login'))
-
   if request.method == 'POST':
     username = session['username']
     old_password = request.form['old_password']
@@ -162,12 +180,9 @@ def logout():
   return redirect(url_for('home'))
 
 @app.route('/users')
+@login_required()
 def show_users():
   """ Procedure to show a list of all users, with all membership details. """
-  if 'username' not in session:
-    flash('You must be logged in for this.')
-    return redirect(url_for('login'))
-
   # store which columns we want, and their displaynames
   cols = ["user_id", "lname", "fname", "email", "matriculate_year", \
           "grad_year", "major"]
@@ -207,12 +222,9 @@ def show_users():
       displays = display, idMap=idMap, fieldMap=fieldMap)
 
 @app.route('/users/view/<username>')
+@login_required()
 def show_user_profile(username):
   """ Procedure to show a user's profile and membership details. """
-  if 'username' not in session:
-    flash('You must be logged in for this.')
-    return redirect(url_for('login'))
-
   cols = [["username"], ["fname", "lname"], ["nickname"], ["bday"], \
           ["email"], ["email2"], ["status"], ["matriculate_year"], \
           ["grad_year"], ["msc"], ["phone"], ["building", "room_num"], \
@@ -238,13 +250,10 @@ def show_user_profile(username):
     return redirect(url_for('home'))
 
 @app.route('/users/edit/<username>', methods=['GET', 'POST'])
+@login_required()
 def change_user_settings(username):
   """ Procedure to process the login page. Also handles authentication. """
-
-  if 'username' not in session:
-    flash('You must be logged in for that.')
-    return redirect(url_for('login'))
-
+  # TODO: incorporate this in login_required(access_level=blah)
   if session['username'] != username:
     flash('You cannot edit this user\'s information.')
     return redirect(url_for('show_user_profile', username=username))
