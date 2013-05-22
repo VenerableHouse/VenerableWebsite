@@ -17,16 +17,26 @@ app.secret_key = config.SECRET_KEY
 engine = create_engine(config.DB_URI, convert_unicode=True)
 connection = engine.connect()
 
-def login_required(msg='You must be logged in for that!'):
+def login_required(msg='You must be logged in for that!', access_level = 1):
   """ Login required decorator. Flashes msg at the login prompt."""
   def decorator(fn):
     def wrapped_function(*args, **kwargs):
+      # make sure the user is logged in
       if 'username' not in session:
         flash(msg)
-        # store url to return to in session
-        # this way, it isn't shown in the URL
-        session['next'] = request.url
+        session['next'] = request.url # store url in session so not put in url
         return redirect(url_for('login'))
+
+      # check if the page is designated for this user
+      if 'username' in kwargs and kwargs['username'] == session['username']:
+        return fn(*args, **kwargs)
+
+      # otherwise, make sure the user has appropriate permissions
+      if 'access_level' not in session or session['access_level'] < access_level:
+        flash('You do not have appropriate permissions for this action.')
+        session['next'] = request.url # store url in session so not put in url
+        return redirect(url_for('login'))
+
       return fn(*args, **kwargs)
     return update_wrapper(wrapped_function, fn)
   return decorator
@@ -46,6 +56,7 @@ def login():
     if user_id:
       session['username'] = request.form['username']
       session['user_id'] = user_id
+      session['access_level'] = auth.get_user_access_level(username, connection)
 
       # return to previous page if in session
       if 'next' in session:
@@ -279,15 +290,9 @@ def show_user_profile(username):
     return redirect(url_for('home'))
 
 @app.route('/users/edit/<username>', methods=['GET', 'POST'])
-@login_required()
+@login_required(access_level = 3)
 def change_user_settings(username):
   """ Procedure to process the login page. Also handles authentication. """
-  # TODO: incorporate this in login_required(access_level=blah)
-  if session['username'] != username:
-    flash('You cannot edit this user\'s information.')
-    return redirect(url_for('show_user_profile', username=username))
-
-
   params = {}
   tags = ['nickname', 'usenickname', 'bday', 'email', 'email2', 'msc', 'phone', \
       'building', 'room_num', 'major', 'isabroad']
