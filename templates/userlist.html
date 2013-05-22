@@ -5,11 +5,13 @@
   {# First display header, with links to sort #}
     <tr>
       {% for field in fields %}
+      {% if fieldMap[field] %} {# Only display not-null fields #}
       <th>{{ fieldMap[field] }} {# Maps sql field to display value #}
         <a href="{{ url_for('show_users', field=field) }}">&#9650;</a>
         <a href="{{ url_for('show_users', field=field,
                                           dir='DESC')}}">&#9660;</a>
       </th>
+      {% endif %}
       {% endfor %}
     </tr>
   {# Now, display each row #}
@@ -17,7 +19,9 @@
   <tr onclick="location.href='{{ url_for('show_user_profile', 
     username=idMap[result['user_id']]) }}'">
     {% for field in fields %}
+    {% if fieldMap[field] %} {# Only display not-null fields #}
     <td>{{ result[field] }}</td>
+    {% endif %}
     {% endfor %}
   </tr>
   {% endfor %}
