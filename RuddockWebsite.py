@@ -225,26 +225,55 @@ def show_users():
 @login_required()
 def show_user_profile(username):
   """ Procedure to show a user's profile and membership details. """
-  cols = [["username"], ["fname", "lname"], ["nickname"], ["bday"], \
-          ["email"], ["email2"], ["status"], ["matriculate_year"], \
-          ["grad_year"], ["msc"], ["phone"], ["building", "room_num"], \
-          ["membership"], ["major"], ["uid"], ["isabroad"]]
-  display = ["Username", "Name", "Nickname", "Birthday", "Primary Email", \
-             "Secondary Email", "Status", "Matriculation Year", \
-             "Graduation Year", "MSC", "Phone Number", "Residence", \
-             "Membership", "Major", "UID", "Is Abroad"]
-  d_dict = OrderedDict(zip(display, cols))
-  #d_dict defines the order and mapping of displayed attributes to sql columns
-  query = text("SELECT * FROM users NATURAL JOIN members WHERE username=:u")
-  result = connection.execute(query, u=str(username))
-  if result.returns_rows and result.rowcount != 0:
-    result_cols = result.keys()
-    r = result.first()
-    q_dict = dict(zip(result_cols, r)) #q_dict maps sql columns to values
-    if not q_dict['usenickname']:
-      d_dict.pop('Nickname')
-    return render_template('view_user.html', display = d_dict, info = q_dict, \
-      strftime = strftime)
+  def get_user_info(username):
+    """ Procedure to get a user's info from the database. """
+    cols = [["username"], ["fname", "lname"], ["nickname"], ["bday"], \
+            ["email"], ["email2"], ["status"], ["matriculate_year"], \
+            ["grad_year"], ["msc"], ["phone"], ["building", "room_num"], \
+            ["membership"], ["major"], ["uid"], ["isabroad"]]
+    display = ["Username", "Name", "Nickname", "Birthday", "Primary Email", \
+               "Secondary Email", "Status", "Matriculation Year", \
+               "Graduation Year", "MSC", "Phone Number", "Residence", \
+               "Membership", "Major", "UID", "Is Abroad"]
+    d_dict = OrderedDict(zip(display, cols))
+    #d_dict defines the order and mapping of displayed attributes to sql columns
+    query = text("SELECT * FROM users NATURAL JOIN members WHERE username=:u")
+    result = connection.execute(query, u=str(username))
+    if result.returns_rows and result.rowcount != 0:
+      result_cols = result.keys()
+      r = result.first()
+      q_dict = dict(zip(result_cols, r)) #q_dict maps sql columns to values
+      if not q_dict['usenickname']:
+        d_dict.pop('Nickname')
+      return (d_dict, q_dict)
+    else:
+      return (None, None)
+
+  def get_office_info(username):
+    """ Procedure to get a user's officer info. """
+    cols = ["office_name", "elected", "expired"]
+    query = text("SELECT * FROM office_members NATURAL JOIN users NATURAL " + \
+        "JOIN offices WHERE username = :u ORDER BY elected, expired, " + \
+        "office_name")
+    results = connection.execute(query, u=str(username))
+
+    # put results in a dictionary
+    res = []
+    result_cols = results.keys()
+    for result in results:
+      temp_dict = {}
+      for i,key in enumerate(result_cols):
+        if key in cols:
+          temp_dict[key] = result[i]
+      res.append(temp_dict)
+    return res
+
+  d_dict_user, q_dict_user = get_user_info(username)
+  offices = get_office_info(username)
+
+  if d_dict_user != None and q_dict_user != None:
+    return render_template('view_user.html', display = d_dict_user, \
+        info = q_dict_user, offices = offices, strftime = strftime)
   else:
     flash("User does not exist!")
     return redirect(url_for('home'))
