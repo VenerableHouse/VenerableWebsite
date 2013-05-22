@@ -186,7 +186,7 @@ def show_users():
   # store which columns we want, and their displaynames
   cols = ["user_id", "lname", "fname", "email", "matriculate_year", \
           "grad_year", "major"]
-  display = ["ID", "Last", "First", "Email", "Matr.", "Grad.", "Major"]
+  display = [None, "Last", "First", "Email", "Matr.", "Grad.", "Major"]
   fieldMap = dict(zip(cols, display))
 
   # get order by information from request arguments
