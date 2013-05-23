@@ -323,7 +323,8 @@ def change_user_settings(username):
         new_val = str(params[tag])
 
         query = text("UPDATE members SET %s = :val WHERE user_id = :u" % tag)
-        results = connection.execute(query, u=session['user_id'], val=new_val)
+        results = connection.execute(query, \
+            u=auth.get_user_id(username, connection), val=new_val)
 
         flash("%s was updated!" % tag_names[i])
 

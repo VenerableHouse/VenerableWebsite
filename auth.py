@@ -18,6 +18,15 @@ def get_user_access_level(username, db):
   # TODO: IMPLEMENT ON-CAMPUS IP CHECK
   return 0
 
+def get_user_id(username, db):
+  """ Takes a username and returns the user's ID. """
+  query = text("SELECT user_id FROM users WHERE username = :u")
+  result = db.execute(query, u = username).first()
+
+  if (result != None):
+    return int(result[0])
+  return None
+
 def authenticate(user, passwd, db):
   """ Takes a username, password, and connection object as input, and checks
   if this corresponds to an actual user. Salts the password as necessary. """
