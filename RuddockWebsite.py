@@ -279,7 +279,7 @@ def change_user_settings(username):
 
     for (i, tag) in enumerate(tags):
       params[tag] = request.form[tag]
-      if tag in ['usenickname', 'msc', 'room_num', 'isabroad']:
+      if params[tag] and tag in ['usenickname', 'msc', 'room_num', 'isabroad']:
         params[tag] = int(params[tag])
 
 
