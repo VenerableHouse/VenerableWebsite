@@ -98,7 +98,7 @@
 
     </table>
 
-    {% if info["username"] == session["username"] %}
+    {% if perm %}
     <div id="view_user_contact">
       <a href="{{ url_for('change_user_settings',
         username = info["username"])}}">Click here</a> to edit this information!
