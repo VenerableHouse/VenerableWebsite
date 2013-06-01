@@ -8,6 +8,7 @@ import datetime
 from room_map_dict_def import room_dict
 from time import strftime
 from email_utils import sendEmail
+from constants import *
 
 app = Flask(__name__)
 app.debug = True
@@ -27,12 +28,9 @@ def login_required(msg='You must be logged in for that!', access_level = 1):
         session['next'] = request.url # store url in session so not put in url
         return redirect(url_for('login'))
 
-      # check if the page is designated for this user
-      if 'username' in kwargs and kwargs['username'] == session['username']:
+      if has_permissions(args = kwargs, access_level = access_level):
         return fn(*args, **kwargs)
-
-      # otherwise, make sure the user has appropriate permissions
-      if 'access_level' not in session or session['access_level'] < access_level:
+      else:
         flash('You do not have appropriate permissions for this action.')
         session['next'] = request.url # store url in session so not put in url
         return redirect(url_for('login'))
@@ -40,6 +38,17 @@ def login_required(msg='You must be logged in for that!', access_level = 1):
       return fn(*args, **kwargs)
     return update_wrapper(wrapped_function, fn)
   return decorator
+
+def has_permissions(args = {}, access_level = 1):
+  """ Return true if the session's user has appropriate permissions """
+  # check if the page is designated for this user
+  if 'username' in args and args['username'] == session['username']:
+    return True
+  # otherwise, make sure user has appropriate permissions
+  if 'access_level' in session and session['access_level'] >= access_level:
+    return True
+  else:
+    return False
 
 @app.route('/')
 def home():
@@ -284,13 +293,14 @@ def show_user_profile(username):
 
   if d_dict_user != None and q_dict_user != None:
     return render_template('view_user.html', display = d_dict_user, \
-        info = q_dict_user, offices = offices, strftime = strftime)
+        info = q_dict_user, offices = offices, strftime = strftime,
+        perm = has_permissions({'username':username}, AL_EDIT_PAGE))
   else:
     flash("User does not exist!")
     return redirect(url_for('home'))
 
 @app.route('/users/edit/<username>', methods=['GET', 'POST'])
-@login_required(access_level = 3)
+@login_required(access_level = AL_EDIT_PAGE)
 def change_user_settings(username):
   """ Procedure to process the login page. Also handles authentication. """
   params = {}
@@ -326,7 +336,8 @@ def change_user_settings(username):
         new_val = str(params[tag])
 
         query = text("UPDATE members SET %s = :val WHERE user_id = :u" % tag)
-        results = connection.execute(query, u=session['user_id'], val=new_val)
+        results = connection.execute(query, \
+            u=auth.get_user_id(username, connection), val=new_val)
 
         flash("%s was updated!" % tag_names[i])
 
