@@ -297,3 +297,25 @@ table th {
   padding:5px;
 }
 
+#map_frame {
+  width:650px;
+  margin:40px auto;
+  margin-bottom:40px;
+}
+
+#room_detail {
+  float:left;
+  width:200px;
+  text-align:left;
+}
+
+#room_detail a {
+  text-decoration:none;
+  color:black;
+}
+
+#map_image {
+  float:right;
+  width:450px;
+}
+
