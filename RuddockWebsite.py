@@ -369,7 +369,24 @@ def show_map():
 
 @app.route('/map/<room>')
 def show_map_room(room):
-  return render_template('map.html', room_dict=room_dict, hl=room)
+  '''Shows the map with a specific room highlighted'''
+
+  # Figure out who lives there
+  query = text("SELECT fname, lname, nickname, usenickname, username  \
+     FROM members NATURAL JOIN users WHERE room_num=:id \
+    AND building IN ('Ruddock', 'ruddock', 'Ruddock House')")
+  results = connection.execute(query, id=room)
+  
+  # Make these tuples of ('name', 'username')
+  people = []
+  for person in results:
+    if person[3]:
+      people.append(('%s %s' % (person[2], person[1]), person[4]))
+    else:
+      people.append(('%s %s' % (person[0], person[1]), person[4]))
+
+  return render_template('map.html', room_dict=room_dict, hl=room, \
+    people=people)
 
 if __name__ == "__main__":
   app.debug = True

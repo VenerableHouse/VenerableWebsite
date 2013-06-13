@@ -1,22 +1,45 @@
 {% extends "layout.html" %}
 {% block head %}
-<title>Ruddock House - Map</title>
+    <title>Ruddock House - Map</title>
+
+    <script type="text/javascript">
+    </script>
 {% endblock head %}
 
 {% block body %}
-  <h2>Ruddock House Map</h2>
-  
-  <center>
+      <h2>Ruddock House Map</h2>
+      <center>
 
-  <img src="/static/images/map.gif" alt="Ruddock House" usemap="#roommap">
-  <map name="roommap">
-  {% for room_num in room_dict.keys() %}
-  <area shape="rect" coords="{{ room_dict[room_num] }}"
-  href="/map/{{ room_num }}" alt="Room {{ room_num }}" 
-  title="Room {{ room_num }}">
+  {% if hl %}
+      <div id="map_frame">
+        <div id="room_detail">
+          <h3>Room {{ hl }}:</h3>
+  {% if people %}
+  {% for person in people %}
+          <li><a href="{{ url_for('show_user_profile', username=person[1]) }}">
+            {{ person[0] }}
+          </a></li>
   {% endfor %}
-  </map>
+  {% else %}
+          <br>...looks like no one lives here!
+  {% endif %}
+        </div>
+        <div id="map_image">
+  {% endif %}
+          <img src="/static/images/map.gif" alt="Ruddock House" usemap="#roommap">
+  {% if hl %}
+        </div>
+      </div>
+  {% endif %}
 
-  </center>
+      <map name="roommap">
+  {% for room_num in room_dict.keys() %}
+        <area shape="rect" coords="{{ room_dict[room_num] }}"
+          href="/map/{{ room_num }}" alt="Room {{ room_num }}" 
+          title="Room {{ room_num }}" 
+          onmouseover="">
+  {% endfor %}
+      </map>
 
+      </center>
 {% endblock body %}
