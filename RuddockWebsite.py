@@ -374,7 +374,7 @@ def show_map_room(room):
   # Figure out who lives there
   query = text("SELECT fname, lname, nickname, usenickname, username  \
      FROM members NATURAL JOIN users WHERE room_num=:id \
-    AND building IN ('Ruddock', 'ruddock', 'Ruddock House')")
+    AND building LIKE '%ruddock%'")
   results = connection.execute(query, id=room)
   
   # Make these tuples of ('name', 'username')
