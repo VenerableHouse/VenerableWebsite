@@ -314,8 +314,11 @@ def change_user_settings(username):
     for (i, tag) in enumerate(tags):
       params[tag] = request.form[tag]
       if params[tag] and tag in ['usenickname', 'msc', 'room_num', 'isabroad']:
-        params[tag] = int(params[tag])
-
+        try:
+          params[tag] = int(params[tag])
+        except:
+          flash("Invalid input for field %s - your change was not saved!" % tag_names[i])
+          params[tag] = stored_params[tag]
 
     for (i, tag) in enumerate(tags):
       if str(params[tag]) != str(stored_params[tag]):
