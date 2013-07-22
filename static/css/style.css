@@ -274,7 +274,7 @@ table th {
 #view_user_contact {
   font-size:11pt;
   text-align: center;
-  margin-top:20px;
+  margin-top:30px;
   margin-bottom:20px;
   border-style:solid;
   border-width: 2px 0px 2px 0px;
@@ -284,7 +284,6 @@ table th {
 #view_user_other {
   text-align: left;
   font-size: 11pt;
-  margin-bottom: 10px;
 
 }
 
@@ -296,5 +295,27 @@ table th {
   text-align: left;
   font-size: 11pt;
   padding:5px;
+}
+
+#map_frame {
+  width:650px;
+  margin:40px auto;
+  margin-bottom:40px;
+}
+
+#room_detail {
+  float:left;
+  width:200px;
+  text-align:left;
+}
+
+#room_detail a {
+  text-decoration:none;
+  color:black;
+}
+
+#map_image {
+  float:right;
+  width:450px;
 }
 

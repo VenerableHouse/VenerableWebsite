@@ -15,6 +15,19 @@
     <div id="view_user_isabroad">Currently studying abroad</div>
     {% endif %}
 
+    {# Display offices for this user, if any #}
+    {% for office in offices %}
+    <div id="view_user_isabroad">
+    {{ office['office_name'] }}: {{ office['elected'].strftime('%b \'%y') }} to
+      {% if office['expired'] %}
+        {{ office['expired'].strftime('%b \'%y') }}
+      {% else %}
+        Present
+      {% endif %}
+    </div>
+    {% endfor %}
+
+
     <div id="view_user_contact">
     {% if info["email"] %}
     <a href="&#109;&#097;&#105;&#108;&#116;&#111;:{{ info["email"] }}" style="text-decoration:none;color:black;">
@@ -85,7 +98,7 @@
 
     </table>
 
-    {% if info["username"] == session["username"] %}
+    {% if perm %}
     <div id="view_user_contact">
       <a href="{{ url_for('change_user_settings',
         username = info["username"])}}">Click here</a> to edit this information!
