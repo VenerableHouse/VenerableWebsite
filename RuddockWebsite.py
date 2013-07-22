@@ -8,6 +8,7 @@ import datetime
 from room_map_dict_def import room_dict
 from time import strftime
 from email_utils import sendEmail
+from constants import *
 
 app = Flask(__name__)
 app.debug = True
@@ -17,19 +18,37 @@ app.secret_key = config.SECRET_KEY
 engine = create_engine(config.DB_URI, convert_unicode=True)
 connection = engine.connect()
 
-def login_required(msg='You must be logged in for that!'):
+def login_required(msg='You must be logged in for that!', access_level = 1):
   """ Login required decorator. Flashes msg at the login prompt."""
   def decorator(fn):
     def wrapped_function(*args, **kwargs):
+      # make sure the user is logged in
       if 'username' not in session:
         flash(msg)
-        # store url to return to in session
-        # this way, it isn't shown in the URL
-        session['next'] = request.url
+        session['next'] = request.url # store url in session so not put in url
         return redirect(url_for('login'))
+
+      if has_permissions(args = kwargs, access_level = access_level):
+        return fn(*args, **kwargs)
+      else:
+        flash('You do not have appropriate permissions for this action.')
+        session['next'] = request.url # store url in session so not put in url
+        return redirect(url_for('login'))
+
       return fn(*args, **kwargs)
     return update_wrapper(wrapped_function, fn)
   return decorator
+
+def has_permissions(args = {}, access_level = 1):
+  """ Return true if the session's user has appropriate permissions """
+  # check if the page is designated for this user
+  if 'username' in args and args['username'] == session['username']:
+    return True
+  # otherwise, make sure user has appropriate permissions
+  if 'access_level' in session and session['access_level'] >= access_level:
+    return True
+  else:
+    return False
 
 @app.route('/')
 def home():
@@ -46,6 +65,7 @@ def login():
     if user_id:
       session['username'] = request.form['username']
       session['user_id'] = user_id
+      session['access_level'] = auth.get_user_access_level(username, connection)
 
       # return to previous page if in session
       if 'next' in session:
@@ -186,7 +206,7 @@ def show_users():
   # store which columns we want, and their displaynames
   cols = ["user_id", "lname", "fname", "email", "matriculate_year", \
           "grad_year", "major"]
-  display = ["ID", "Last", "First", "Email", "Matr.", "Grad.", "Major"]
+  display = [None, "Last", "First", "Email", "Matr.", "Grad.", "Major"]
   fieldMap = dict(zip(cols, display))
 
   # get order by information from request arguments
@@ -225,40 +245,64 @@ def show_users():
 @login_required()
 def show_user_profile(username):
   """ Procedure to show a user's profile and membership details. """
-  cols = [["username"], ["fname", "lname"], ["nickname"], ["bday"], \
-          ["email"], ["email2"], ["status"], ["matriculate_year"], \
-          ["grad_year"], ["msc"], ["phone"], ["building", "room_num"], \
-          ["membership"], ["major"], ["uid"], ["isabroad"]]
-  display = ["Username", "Name", "Nickname", "Birthday", "Primary Email", \
-             "Secondary Email", "Status", "Matriculation Year", \
-             "Graduation Year", "MSC", "Phone Number", "Residence", \
-             "Membership", "Major", "UID", "Is Abroad"]
-  d_dict = OrderedDict(zip(display, cols))
-  #d_dict defines the order and mapping of displayed attributes to sql columns
-  query = text("SELECT * FROM users NATURAL JOIN members WHERE username=:u")
-  result = connection.execute(query, u=str(username))
-  if result.returns_rows and result.rowcount != 0:
-    result_cols = result.keys()
-    r = result.first()
-    q_dict = dict(zip(result_cols, r)) #q_dict maps sql columns to values
-    if not q_dict['usenickname']:
-      d_dict.pop('Nickname')
-    return render_template('view_user.html', display = d_dict, info = q_dict, \
-      strftime = strftime)
+  def get_user_info(username):
+    """ Procedure to get a user's info from the database. """
+    cols = [["username"], ["fname", "lname"], ["nickname"], ["bday"], \
+            ["email"], ["email2"], ["status"], ["matriculate_year"], \
+            ["grad_year"], ["msc"], ["phone"], ["building", "room_num"], \
+            ["membership"], ["major"], ["uid"], ["isabroad"]]
+    display = ["Username", "Name", "Nickname", "Birthday", "Primary Email", \
+               "Secondary Email", "Status", "Matriculation Year", \
+               "Graduation Year", "MSC", "Phone Number", "Residence", \
+               "Membership", "Major", "UID", "Is Abroad"]
+    d_dict = OrderedDict(zip(display, cols))
+    #d_dict defines the order and mapping of displayed attributes to sql columns
+    query = text("SELECT * FROM users NATURAL JOIN members WHERE username=:u")
+    result = connection.execute(query, u=str(username))
+    if result.returns_rows and result.rowcount != 0:
+      result_cols = result.keys()
+      r = result.first()
+      q_dict = dict(zip(result_cols, r)) #q_dict maps sql columns to values
+      if not q_dict['usenickname']:
+        d_dict.pop('Nickname')
+      return (d_dict, q_dict)
+    else:
+      return (None, None)
+
+  def get_office_info(username):
+    """ Procedure to get a user's officer info. """
+    cols = ["office_name", "elected", "expired"]
+    query = text("SELECT * FROM office_members NATURAL JOIN users NATURAL " + \
+        "JOIN offices WHERE username = :u ORDER BY elected, expired, " + \
+        "office_name")
+    results = connection.execute(query, u=str(username))
+
+    # put results in a dictionary
+    res = []
+    result_cols = results.keys()
+    for result in results:
+      temp_dict = {}
+      for i,key in enumerate(result_cols):
+        if key in cols:
+          temp_dict[key] = result[i]
+      res.append(temp_dict)
+    return res
+
+  d_dict_user, q_dict_user = get_user_info(username)
+  offices = get_office_info(username)
+
+  if d_dict_user != None and q_dict_user != None:
+    return render_template('view_user.html', display = d_dict_user, \
+        info = q_dict_user, offices = offices, strftime = strftime,
+        perm = has_permissions({'username':username}, AL_EDIT_PAGE))
   else:
     flash("User does not exist!")
     return redirect(url_for('home'))
 
 @app.route('/users/edit/<username>', methods=['GET', 'POST'])
-@login_required()
+@login_required(access_level = AL_EDIT_PAGE)
 def change_user_settings(username):
   """ Procedure to process the login page. Also handles authentication. """
-  # TODO: incorporate this in login_required(access_level=blah)
-  if session['username'] != username:
-    flash('You cannot edit this user\'s information.')
-    return redirect(url_for('show_user_profile', username=username))
-
-
   params = {}
   tags = ['nickname', 'usenickname', 'bday', 'email', 'email2', 'msc', 'phone', \
       'building', 'room_num', 'major', 'isabroad']
@@ -280,8 +324,11 @@ def change_user_settings(username):
     for (i, tag) in enumerate(tags):
       params[tag] = request.form[tag]
       if params[tag] and tag in ['usenickname', 'msc', 'room_num', 'isabroad']:
-        params[tag] = int(params[tag])
-
+        try:
+          params[tag] = int(params[tag])
+        except:
+          flash("Invalid input for field %s - your change was not saved!" % tag_names[i])
+          params[tag] = stored_params[tag]
 
     for (i, tag) in enumerate(tags):
       if str(params[tag]) != str(stored_params[tag]):
@@ -289,7 +336,8 @@ def change_user_settings(username):
         new_val = str(params[tag])
 
         query = text("UPDATE members SET %s = :val WHERE user_id = :u" % tag)
-        results = connection.execute(query, u=session['user_id'], val=new_val)
+        results = connection.execute(query, \
+            u=auth.get_user_id(username, connection), val=new_val)
 
         flash("%s was updated!" % tag_names[i])
 
@@ -321,7 +369,24 @@ def show_map():
 
 @app.route('/map/<room>')
 def show_map_room(room):
-  return render_template('map.html', room_dict=room_dict, hl=room)
+  '''Shows the map with a specific room highlighted'''
+
+  # Figure out who lives there
+  query = text("SELECT fname, lname, nickname, usenickname, username  \
+     FROM members NATURAL JOIN users WHERE room_num=:id \
+    AND building LIKE '%ruddock%'")
+  results = connection.execute(query, id=room)
+  
+  # Make these tuples of ('name', 'username')
+  people = []
+  for person in results:
+    if person[3]:
+      people.append(('%s %s' % (person[2], person[1]), person[4]))
+    else:
+      people.append(('%s %s' % (person[0], person[1]), person[4]))
+
+  return render_template('map.html', room_dict=room_dict, hl=room, \
+    people=people)
 
 if __name__ == "__main__":
   app.debug = True

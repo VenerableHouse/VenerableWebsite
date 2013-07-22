@@ -2,6 +2,31 @@ from email_utils import sendEmail
 from sqlalchemy import text
 SALT_SIZE = 8
 
+def get_user_access_level(username, db):
+  """ Takes a username, and returns the user's access level. """
+  # ACCESS LEVELS:
+  #  0    - not logged in or on campus
+  #  1    - on campus
+  #  2    - logged in
+  #  3..9 - various offices
+  query = text("SELECT IFNULL(MAX(access_level), 2) FROM users NATURAL JOIN" + \
+      " office_members NATURAL JOIN offices WHERE username = :u")
+  result = db.execute(query, u = username).first()
+
+  if (result != None):
+    return result[0]
+  # TODO: IMPLEMENT ON-CAMPUS IP CHECK
+  return 0
+
+def get_user_id(username, db):
+  """ Takes a username and returns the user's ID. """
+  query = text("SELECT user_id FROM users WHERE username = :u")
+  result = db.execute(query, u = username).first()
+
+  if (result != None):
+    return int(result[0])
+  return None
+
 def authenticate(user, passwd, db):
   """ Takes a username, password, and connection object as input, and checks
   if this corresponds to an actual user. Salts the password as necessary. """
