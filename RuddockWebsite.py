@@ -371,6 +371,7 @@ def show_map():
   return render_template('map.html', room_dict=room_dict, hl=0)
 
 @app.route('/map/<room>')
+@login_required()
 def show_map_room(room):
   '''Shows the map with a specific room highlighted'''
 
