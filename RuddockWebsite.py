@@ -9,6 +9,7 @@ from room_map_dict_def import room_dict
 from time import strftime
 from email_utils import sendEmail
 from constants import *
+import re
 
 app = Flask(__name__)
 app.debug = True
@@ -349,8 +350,25 @@ def change_user_settings(username):
 
 @app.route('/government')
 def show_gov():
-  # TODO: Implement this.
-  return render_template('government.html')
+  # Get current officers
+  # Note: A "current" officer has already started, and hasn't expired yet.
+  query = "SELECT lname, fname, \
+                  office_name, office_email, office_id, is_excomm \
+           FROM office_members NATURAL JOIN offices NATURAL JOIN members \
+           WHERE elected < NOW() and IFNULL(expired > NOW(), true)"
+  results = connection.execute(query)
+
+  # filter by type (excomm and ucc are special)
+  excomm = []
+  ucc = []
+  other = []
+  for result in results:
+    if result['is_excomm']: excomm.append(result)
+    elif re.match('UCC', result['office_name']): ucc.append(result)
+    else: other.append(result)
+
+  return render_template('government.html', \
+      excomm = excomm, ucc = ucc, other = other)
 
 @app.route('/about_us')
 def show_about_us():
