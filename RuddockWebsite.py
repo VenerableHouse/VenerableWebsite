@@ -12,7 +12,7 @@ from constants import *
 import re
 
 app = Flask(__name__)
-app.debug = True
+app.debug = False 
 app.secret_key = config.SECRET_KEY
 
 # Maximum file upload size, in bytes.
@@ -1021,5 +1021,4 @@ def add_members():
       path=PATH_TO_TEMPLATE, filename=TEMPLATE_FILENAME)
 
 if __name__ == "__main__":
-  app.debug = True
   app.run()
