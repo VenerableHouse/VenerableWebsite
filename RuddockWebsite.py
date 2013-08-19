@@ -352,22 +352,37 @@ def change_user_settings(username):
 def show_gov():
   # Get current officers
   # Note: A "current" officer has already started, and hasn't expired yet.
-  query = "SELECT lname, fname, \
+  query = "SELECT lname, fname, username, \
                   office_name, office_email, office_id, is_excomm \
            FROM office_members NATURAL JOIN offices NATURAL JOIN members \
+                NATURAL JOIN users \
            WHERE elected < NOW() and IFNULL(expired > NOW(), true)"
   results = connection.execute(query)
+  result_cols = results.keys()
 
-  # filter by type (excomm and ucc are special)
+  # desired fields
+  cols = ["office_name", "lname", "fname", "office_email"]
+  display = ["Office", "Last", "First", "Email"]
+  fieldMap = dict(zip(cols, display))
+
+  # organize by type (excomm and ucc are special)
   excomm = []
   ucc = []
   other = []
   for result in results:
-    if result['is_excomm']: excomm.append(result)
-    elif re.match('UCC', result['office_name']): ucc.append(result)
-    else: other.append(result)
+    # filter fields
+    temp_dict = {}
+    for i,key in enumerate(result_cols):
+      if key in cols:
+        temp_dict[fieldMap[key]] = result[i]
+      temp_dict['username'] = result['username'] # force username in dict
 
-  return render_template('government.html', \
+    # organize by type
+    if result['is_excomm']: excomm.append(temp_dict)
+    elif re.match('UCC', result['office_name']): ucc.append(temp_dict)
+    else: other.append(temp_dict)
+
+  return render_template('government.html', fields = display, \
       excomm = excomm, ucc = ucc, other = other)
 
 @app.route('/about_us')

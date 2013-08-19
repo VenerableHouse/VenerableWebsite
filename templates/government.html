@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{# TODO: Style this better. Remove duplicate code (if possible). #}
+
+{% block body %}
+  Executive Commiteemen
+  <table class="userlist">
+  {# First display header #}
+    <tr>
+      {% for field in fields %}
+      <th>{{ field }}</th>
+      {% endfor %}
+    </tr>
+  {# Now, display each row #}
+  {% for position in excomm %}
+  <tr onclick="location.href='{{ url_for('show_user_profile',
+    username=position['username']) }}'">
+    {% for field in fields %}
+    <td>{{ position[field] }}</td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>
+
+  Upperclassmen Counselors (UCCs)
+  <table class="userlist">
+  {# First display header #}
+    <tr>
+      {% for field in fields %}
+      <th>{{ field }}</th>
+      {% endfor %}
+    </tr>
+  {# Now, display each row #}
+  {% for position in ucc %}
+  <tr onclick="location.href='{{ url_for('show_user_profile',
+    username=position['username']) }}'">
+    {% for field in fields %}
+    <td>{{ position[field] }}</td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>
+
+  House Offices
+  <table class="userlist">
+  {# First display header #}
+    <tr>
+      {% for field in fields %}
+      <th>{{ field }}</th>
+      {% endfor %}
+    </tr>
+  {# Now, display each row #}
+  {% for position in other %}
+  <tr onclick="location.href='{{ url_for('show_user_profile',
+    username=position['username']) }}'">
+    {% for field in fields %}
+    <td>{{ position[field] }}</td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+  </table>
+
+{% endblock body %}
