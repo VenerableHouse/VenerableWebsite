@@ -349,6 +349,7 @@ def change_user_settings(username):
 
 @app.route('/government')
 def show_gov():
+  # TODO: Implement this.
   return render_template('government.html')
 
 @app.route('/about_us')
@@ -357,10 +358,12 @@ def show_about_us():
 
 @app.route('/news')
 def show_news():
+  # TODO: Implement this.
   return render_template('news.html')
 
 @app.route('/calendar')
 def show_calendar():
+  # TODO: Implement this.
   return render_template('calendar.html')
 
 @app.route('/map')
@@ -368,6 +371,7 @@ def show_map():
   return render_template('map.html', room_dict=room_dict, hl=0)
 
 @app.route('/map/<room>')
+@login_required()
 def show_map_room(room):
   '''Shows the map with a specific room highlighted'''
 
@@ -376,7 +380,11 @@ def show_map_room(room):
      FROM members NATURAL JOIN users WHERE room_num=:id \
     AND building LIKE '%ruddock%'")
   results = connection.execute(query, id=room)
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 9bdc84b0a8f399fc6a424dd2ea5ad9ee333e93e7
   # Make these tuples of ('name', 'username')
   people = []
   for person in results:
