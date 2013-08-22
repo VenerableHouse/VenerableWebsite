@@ -9,6 +9,7 @@ from room_map_dict_def import room_dict
 from time import strftime
 from email_utils import sendEmail
 from constants import *
+import re
 
 app = Flask(__name__)
 app.debug = True
@@ -349,8 +350,40 @@ def change_user_settings(username):
 
 @app.route('/government')
 def show_gov():
-  # TODO: Implement this.
-  return render_template('government.html')
+  # Get current officers
+  # Note: A "current" officer has already started, and hasn't expired yet.
+  query = "SELECT lname, fname, username, \
+                  office_name, office_email, office_id, is_excomm \
+           FROM office_members NATURAL JOIN offices NATURAL JOIN members \
+                NATURAL JOIN users \
+           WHERE elected < NOW() and IFNULL(expired > NOW(), true)"
+  results = connection.execute(query)
+  result_cols = results.keys()
+
+  # desired fields
+  cols = ["office_name", "lname", "fname", "office_email"]
+  display = ["Office", "Last", "First", "Email"]
+  fieldMap = dict(zip(cols, display))
+
+  # organize by type (excomm and ucc are special)
+  excomm = []
+  ucc = []
+  other = []
+  for result in results:
+    # filter fields
+    temp_dict = {}
+    for i,key in enumerate(result_cols):
+      if key in cols:
+        temp_dict[fieldMap[key]] = result[i]
+      temp_dict['username'] = result['username'] # force username in dict
+
+    # organize by type
+    if result['is_excomm']: excomm.append(temp_dict)
+    elif re.match('UCC', result['office_name']): ucc.append(temp_dict)
+    else: other.append(temp_dict)
+
+  return render_template('government.html', fields = display, \
+      excomm = excomm, ucc = ucc, other = other)
 
 @app.route('/about_us')
 def show_about_us():
