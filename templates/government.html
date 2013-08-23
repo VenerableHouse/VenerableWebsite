@@ -1,14 +1,10 @@
 {% extends "layout.html" %}
 
-{# TODO: Style this better. Remove duplicate code (if possible). #}
+{# TODO: Style this better. #}
 
 {% block body %}
-  {% set titles = ['Executive Commitee','Upperclass Counselors', 
-    'Other'] %}
-  {% set rosters = [excomm, ucc, other] %}
-
-  {% for i in range(3) %}
-    <h2>{{ titles[i] }}</h2>
+  {% for name, positions in all_types.iteritems() %}
+    <h2>{{ name }}</h2>
     <table class="userlist">
     {# First display header #}
       <tr>
@@ -22,7 +18,7 @@
       <td width='20%'></td><td width='35%'></td>
     </tr>
     {# Now, display each row #}
-    {% for position in rosters[i] %}
+    {% for position in positions %}
     <tr onclick="location.href='{{ url_for('show_user_profile',
       username=position['username']) }}'">
       {% for field in fields %}

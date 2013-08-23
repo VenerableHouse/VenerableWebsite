@@ -382,8 +382,15 @@ def show_gov():
     elif re.match('UCC', result['office_name']): ucc.append(temp_dict)
     else: other.append(temp_dict)
 
+  # map the types to their names, so that template can parse efficiently
+  all_types = OrderedDict({
+    'Executive Commitee' : excomm,
+    'Upperclass Counselors' : ucc,
+    'Other' : other
+  })
+
   return render_template('government.html', fields = display, \
-      excomm = excomm, ucc = ucc, other = other)
+      all_types = all_types)
 
 @app.route('/about_us')
 def show_about_us():
