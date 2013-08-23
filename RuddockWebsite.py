@@ -413,11 +413,7 @@ def show_map_room(room):
      FROM members NATURAL JOIN users WHERE room_num=:id \
     AND building LIKE '%ruddock%'")
   results = connection.execute(query, id=room)
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> 9bdc84b0a8f399fc6a424dd2ea5ad9ee333e93e7
   # Make these tuples of ('name', 'username')
   people = []
   for person in results:
