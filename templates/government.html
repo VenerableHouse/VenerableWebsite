@@ -9,14 +9,10 @@
     {# First display header #}
       <tr>
         {% for field in fields %}
-        <th>{{ field }}</th>
+        <th width='25%'>{{ field }}</th>
         {% endfor %}
       </tr>
     {# Force proportional columns #}
-    <tr>
-      <td width='25%'></td><td width='20%'></td>
-      <td width='20%'></td><td width='35%'></td>
-    </tr>
     {# Now, display each row #}
     {% for position in positions %}
     <tr onclick="location.href='{{ url_for('show_user_profile',

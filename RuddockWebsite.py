@@ -352,7 +352,7 @@ def change_user_settings(username):
 def show_gov():
   # Get current officers
   # Note: A "current" officer has already started, and hasn't expired yet.
-  query = "SELECT lname, fname, username, \
+  query = "SELECT CONCAT(fname, ' ', lname) AS name, username, \
                   office_name, office_email, office_id, is_excomm \
            FROM office_members NATURAL JOIN offices NATURAL JOIN members \
                 NATURAL JOIN users \
@@ -361,8 +361,8 @@ def show_gov():
   result_cols = results.keys()
 
   # desired fields
-  cols = ["office_name", "lname", "fname", "office_email"]
-  display = ["Office", "Last", "First", "Email"]
+  cols = ["office_name", "name", "office_email"]
+  display = ["Office", "Name", "Email"]
   fieldMap = dict(zip(cols, display))
 
   # organize by type (excomm and ucc are special)
@@ -383,11 +383,11 @@ def show_gov():
     else: other.append(temp_dict)
 
   # map the types to their names, so that template can parse efficiently
-  all_types = OrderedDict({
-    'Executive Commitee' : excomm,
-    'Upperclass Counselors' : ucc,
-    'Other' : other
-  })
+  all_types = OrderedDict([
+    ('Executive Commitee', excomm),
+    ('Upperclass Counselors', ucc),
+    ('Other Offices', other)
+  ])
 
   return render_template('government.html', fields = display, \
       all_types = all_types)
