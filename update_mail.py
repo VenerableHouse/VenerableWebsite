@@ -45,7 +45,7 @@ lists = connection.execute(lists_query).fetchall()
 # for each list, update!
 for (office_id, lst) in lists:
   query = text("SELECT email \
-                FROM office_members NATURAL JOIN offices NATURAL JOIN members \
-                WHERE office_id = :oid AND elected < NOW() AND IFNULL(expired > NOW(), true)")
+                FROM office_members_current NATURAL JOIN offices NATURAL JOIN members_current \
+                WHERE office_id = :oid")
   results = connection.execute(query, oid=office_id).fetchall()
   updateFromList(results, lst)
