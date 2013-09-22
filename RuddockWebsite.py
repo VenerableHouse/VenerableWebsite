@@ -354,9 +354,8 @@ def show_gov():
   # Note: A "current" officer has already started, and hasn't expired yet.
   query = "SELECT CONCAT(fname, ' ', lname) AS name, username, \
                   office_name, office_email, office_id, is_excomm \
-           FROM office_members NATURAL JOIN offices NATURAL JOIN members \
-                NATURAL JOIN users \
-           WHERE elected < NOW() and IFNULL(expired > NOW(), true)"
+           FROM office_members_current NATURAL JOIN offices NATURAL JOIN members_current \
+                NATURAL JOIN users"
   results = connection.execute(query)
   result_cols = results.keys()
 
