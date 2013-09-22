@@ -36,7 +36,7 @@ lists = connection.execute(lists_query).fetchall()
 # for each list, update!
 for (lst, query) in lists:
   # perform query to get emails
-  results = connection.execute(query).fetchall()
+  results = connection.execute(text(query)).fetchall()
   updateFromList(results, lst)
 
 ### Now, update email lists which correspond to an office ###
