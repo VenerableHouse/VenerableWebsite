@@ -219,8 +219,19 @@ def show_users():
   else:
     ordDirect = 'ASC'
 
+  # check which table to read from
+  if 'filterType' in request.args and request.args['filterType'] == 'current':
+    tableName = 'members_current'
+    filterType = 'current'
+  elif 'filterType' in request.args and request.args['filterType'] == 'alumni':
+    tableName = 'members_alumni'
+    filterType = 'alumni'
+  else:
+    tableName = 'members'
+    filterType = 'all'
+
   # perform query
-  query = text("SELECT * FROM members ORDER BY " + ordField + " " + ordDirect)
+  query = text("SELECT * FROM " + tableName + " ORDER BY " + ordField + " " + ordDirect)
   results = connection.execute(query)
 
   # put results in a dictionary
@@ -239,7 +250,7 @@ def show_users():
   idMap = dict(list(results)) # key is id, value is username
 
   return render_template('userlist.html', data = res, fields = cols, \
-      displays = display, idMap=idMap, fieldMap=fieldMap)
+      displays=display, idMap=idMap, fieldMap=fieldMap, filterType=filterType)
 
 @app.route('/users/view/<username>')
 @login_required()
