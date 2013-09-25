@@ -5,6 +5,8 @@ import config
 from subprocess import check_call
 from email_utils import sendEmail
 
+TEMP_LOCATION='/home/epelz/RuddockWebsite/temp_emails.txt'
+
 def updateFromList(results, lst):
   print "Updating list: " + lst
 
@@ -14,14 +16,14 @@ def updateFromList(results, lst):
         query + '\n\nFor list: ' + lst, '[RuddWeb] THE EMAIL SCRIPT IS BROKEN')
   else:
     try:
-      f = open('temp_emails.txt', 'w')
+      f = open(TEMP_LOCATION, 'w')
       for result in results:
         f.write(result[0] + '\n')
       f.close()
 
       # update mailman list
       check_call("/usr/lib/mailman/bin/sync_members -w=no -g=no -a=yes -f " + \
-          "'/home/epelz/RuddockWebsite/temp_emails.txt' " + lst, shell=True)
+          "'" + TEMP_LOCATION + "' " + lst, shell=True)
     except Exception as e:
       sendEmail('imss@ruddock.caltech.edu', 'Exception: ' + str(e) + \
           '\n\nFor list: ' + lst, '[RuddWeb] THE EMAIL SCRIPT IS BROKEN')
