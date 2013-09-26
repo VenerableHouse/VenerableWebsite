@@ -19,6 +19,8 @@ def updateFromList(results, lst):
       f = open(TEMP_LOCATION, 'w')
       for result in results:
         f.write(result[0] + '\n')
+      for addition in getAdditionalEmails(lst):
+        f.write(addition[0] + '\n')
       f.close()
 
       # update mailman list
@@ -27,6 +29,12 @@ def updateFromList(results, lst):
     except Exception as e:
       sendEmail('imss@ruddock.caltech.edu', 'Exception: ' + str(e) + \
           '\n\nFor list: ' + lst, '[RuddWeb] THE EMAIL SCRIPT IS BROKEN')
+
+def getAdditionalEmails(lst):
+  #print "Getting additional emails for list: " + lst
+  query = text("SELECT email FROM updating_email_lists_additions WHERE listname=:lst")
+  emails = connection.execute(query, lst=lst).fetchall()
+  return emails
 
 # Connect to the mySQL database.
 engine = create_engine(config.DB_URI, convert_unicode=True)
