@@ -124,8 +124,8 @@ def reset_passwd():
     new_password2 = request.form['password2']
 
     # Get the user's email
-    query = text("SELECT email FROM members WHERE user_id=:id")
-    result = connection.execute(query, id=str(session['user_id']))
+    query = text("SELECT email FROM members NATURAL JOIN users WHERE username=:username")
+    result = connection.execute(query, username=str(session['r_username']))
     email = result.first()[0]
 
     if new_password != new_password2:

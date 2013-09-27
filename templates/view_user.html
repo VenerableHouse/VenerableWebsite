@@ -61,13 +61,14 @@
 
     
     <table>
+      {% if info["bday"] %}
       <tr>
         <td>Birthday:</td>
         <td>{{ strftime("%B %d, %Y", info["bday"].timetuple()) }}</td>
       </tr>
+      {% endif %}
       <tr>
         <td>Residence:</td>
-        
         {% if info["building"] == "Ruddock" %}
         <td><a href="{{ url_for('show_map_room', room=info["room_num"]) }}" style="text-decoration:none;color:black;">
         {{info["building"]}} {{ info["room_num"] }}</a></td>
@@ -87,14 +88,13 @@
         <td>Other</td>
         {% endif %}
       </tr>
+      {% if info["email2"] %}
       <tr>
-        {% if info["email2"] %}
-        <tr>  
           <td>Alt. Email:</td>
           <td><a href="&#109;&#097;&#105;&#108;&#116;&#111;:{{ info["email2"] }}" style="text-decoration:none;color:black;">
             {{ info["email2"] }}</a></td>
-        </tr>
-        {% endif %}
+      </tr>
+      {% endif %}
 
     </table>
 
