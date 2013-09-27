@@ -361,8 +361,6 @@ def show_gov():
 
   # desired fields
   cols = ["office_name", "name", "office_email"]
-  display = ["Office", "Name", "Email"]
-  fieldMap = dict(zip(cols, display))
 
   # organize by type (excomm and ucc are special)
   excomm = []
@@ -373,13 +371,16 @@ def show_gov():
     temp_dict = {}
     for i,key in enumerate(result_cols):
       if key in cols:
-        temp_dict[fieldMap[key]] = result[i]
+        temp_dict[key] = result[i]
       temp_dict['username'] = result['username'] # force username in dict
 
     # organize by type
     if result['is_excomm']: excomm.append(temp_dict)
     elif re.match('UCC', result['office_name']): ucc.append(temp_dict)
     else: other.append(temp_dict)
+
+  ucc.sort(key=lambda d: d['office_name'])
+  other.sort(key=lambda d: d['office_name'])
 
   # map the types to their names, so that template can parse efficiently
   all_types = OrderedDict([
@@ -388,8 +389,7 @@ def show_gov():
     ('Other Offices', other)
   ])
 
-  return render_template('government.html', fields = display, \
-      all_types = all_types)
+  return render_template('government.html', all_types = all_types)
 
 @app.route('/about_us')
 def show_about_us():

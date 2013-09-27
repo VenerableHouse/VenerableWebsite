@@ -8,18 +8,17 @@
     <table class="userlist">
     {# First display header #}
       <tr>
-        {% for field in fields %}
-        <th width='25%'>{{ field }}</th>
-        {% endfor %}
+        <th width='25%'>Office</th>
+        <th width='25%'>Name</th>
+        <th width='25%'>Office Email (at ruddock.caltech.edu)</th>
       </tr>
-    {# Force proportional columns #}
     {# Now, display each row #}
     {% for position in positions %}
     <tr onclick="location.href='{{ url_for('show_user_profile',
       username=position['username']) }}'">
-      {% for field in fields %}
-      <td>{{ position[field] }}</td>
-      {% endfor %}
+      <td>{{ position['office_name'] }}</td>
+      <td>{{ position['name'] }}</td>
+      <td>{{ position['office_email'] if position['office_email'] else '[Click Here]' }}</td>
     </tr>
     {% endfor %}
   </table>
