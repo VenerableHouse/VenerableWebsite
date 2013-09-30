@@ -9,6 +9,7 @@ from room_map_dict_def import room_dict
 from time import strftime
 from email_utils import sendEmail
 from constants import *
+import re
 
 app = Flask(__name__)
 app.debug = True
@@ -228,7 +229,7 @@ def show_users():
   res = []
   for result in results:
     temp_dict = {}
-    for i,key in enumerate(result_cols):
+    for i, key in enumerate(result_cols):
       if key in cols:
         temp_dict[key] = result[i]
     res.append(temp_dict)
@@ -349,8 +350,46 @@ def change_user_settings(username):
 
 @app.route('/government')
 def show_gov():
-  # TODO: Implement this.
-  return render_template('government.html')
+  # Get current officers
+  # Note: A "current" officer has already started, and hasn't expired yet.
+  query = "SELECT CONCAT(fname, ' ', lname) AS name, username, \
+                  office_name, office_email, office_id, is_excomm \
+           FROM office_members_current NATURAL JOIN offices NATURAL JOIN members_current \
+                NATURAL JOIN users"
+  results = connection.execute(query)
+  result_cols = results.keys()
+
+  # desired fields
+  cols = ["office_name", "name", "office_email"]
+
+  # organize by type (excomm and ucc are special)
+  excomm = []
+  ucc = []
+  other = []
+  for result in results:
+    # filter fields
+    temp_dict = {}
+    for i,key in enumerate(result_cols):
+      if key in cols:
+        temp_dict[key] = result[i]
+      temp_dict['username'] = result['username'] # force username in dict
+
+    # organize by type
+    if result['is_excomm']: excomm.append(temp_dict)
+    elif re.match('UCC', result['office_name']): ucc.append(temp_dict)
+    else: other.append(temp_dict)
+
+  ucc.sort(key=lambda d: d['office_name'])
+  other.sort(key=lambda d: d['office_name'])
+
+  # map the types to their names, so that template can parse efficiently
+  all_types = OrderedDict([
+    ('Executive Committee', excomm),
+    ('Upperclass Counselors', ucc),
+    ('Other Offices', other)
+  ])
+
+  return render_template('government.html', all_types = all_types)
 
 @app.route('/about_us')
 def show_about_us():
