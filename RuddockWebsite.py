@@ -229,7 +229,7 @@ def show_users():
   res = []
   for result in results:
     temp_dict = {}
-    for i,key in enumerate(result_cols):
+    for i, key in enumerate(result_cols):
       if key in cols:
         temp_dict[key] = result[i]
     res.append(temp_dict)
@@ -384,7 +384,7 @@ def show_gov():
 
   # map the types to their names, so that template can parse efficiently
   all_types = OrderedDict([
-    ('Executive Commitee', excomm),
+    ('Executive Committee', excomm),
     ('Upperclass Counselors', ucc),
     ('Other Offices', other)
   ])
