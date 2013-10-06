@@ -431,6 +431,165 @@ def show_map_room(room):
   return render_template('map.html', room_dict=room_dict, hl=room, \
     people=people)
 
+@app.route('/create_account', methods=['GET', 'POST'])
+def create_account():
+  # TODO
+  return render_template('index.html')
+
+@app.route('/secretary/add_members', methods=['GET', 'POST'])
+@login_required(access_level = AL_ADD_MEMBERS)
+def add_members():
+  ''' Allows the secretary to add new members to the website. New members \
+      are then emailed with a unique link to create an account. '''
+
+  def validate_data(data, field_list):
+    ''' Validates the data submitted. Expects the data to be a list of \
+        dicts mapping field names to values. '''
+
+    for entry in data:
+      for field in field_list:
+        if not field['regex'].match(entry[field['field']]):
+          flash('Invalid ' + field['name'] + '(s) submitted.')
+          return False
+    return True
+
+  def process_data(new_members_data, field_list):
+    ''' This function processes the data provided (a string that has the \
+        contents of the csv file) and returns the data as a list of dicts, \
+        where each dict contains the information for a single member. '''
+
+    data = []
+
+    # HTML forms use carriage returns, apparently.
+    for line in new_members_data.split('\r\n'):
+      values = line.split(',')
+
+      if len(values) != len(field_list):
+        flash("Invalid data submitted")
+        return False
+
+      # Skip title line if present
+      if values[0] == field_list[0]['name']:
+        continue
+
+      entry = {}
+      for i in range(len(field_list)):
+        field = field_list[i]
+        entry[field['field']] = values[i]
+      data.append(entry)
+
+    if validate_data(data, field_list):
+      return data
+    else:
+      return False
+
+  def add_new_members(data):
+    ''' This adds the members to the database and them emails them with \
+        account creation information. Assumes data has already been \
+        validated. '''
+
+    insert_query = text("INSERT INTO members (fname, lname, uid, \
+        matriculate_year, email) VALUES (:fname, :lname, :uid, \
+        :matriculate_year, :email)")
+
+    check_query = text("SELECT COUNT(*) FROM members WHERE uid=:uid")
+
+    last_insert_id_query = text("SELECT LAST_INSERT_ID()")
+
+    members_added_count = 0
+    members_skipped_count = 0
+    members_errors_count = 0
+
+    for entry in data:
+      # Check if user is in database already
+      result = connection.execute(check_query, uid=entry['uid'])
+      result_dict = dict(zip(result.keys(), result.first()))
+      count = result_dict['COUNT(*)']
+
+      if count != 0:
+        members_skipped_count += 1
+        continue
+
+      # Add the user and then email them
+      result = connection.execute(insert_query, fname=entry['fname'], \
+          lname=entry['lname'], uid=entry['uid'], \
+          matriculate_year=entry['matriculate_year'], email=entry['email'])
+
+      # Get the id of the inserted row (used to create unique hash).
+      result = connection.execute(last_insert_id_query)
+      result_dict = dict(zip(result.keys(), result.first()))
+      user_id = result_dict["LAST_INSERT_ID()"]
+      user_hash = hash(str(user_id) + entry['fname'] + entry['lname'])
+      name = entry['fname'] + ' ' + entry['lname']
+
+      # Email the user
+      subject = "[RuddWeb] Welcome to the Ruddock House Website!"
+      msg = "Hey " + name + ",\n\n" + \
+          "You have been added to the Ruddock House Website. To complete \
+          registration, please create an account here:\n\n" + \
+          url_for('create_account', r=user_hash, u=user_id) + "\n\n" + \
+          "Thanks,\n" + \
+          "The Ruddock IMSS Team"
+      to = entry['email']
+
+      try:
+        sendEmail(to, msg, subject)
+        members_added_count += 1
+
+      except Exception as e:
+        sendEmail("imss@ruddock.caltech.edu",
+            "Something went wrong when trying to email " + name + "." + \
+            "You should look into this.\n\n" + \
+            "Exception: " + str(e), 
+            "[RuddWeb] Add members email error")
+
+        members_errors_count += 1
+
+    flash(str(members_added_count) + " members were successfully added, " +
+        str(members_skipped_count) + " members were skipped, and " +
+        str(members_errors_count) + " members encountered errors.")
+
+  ### End helper function definitions ###
+
+  PATH_TO_TEMPLATE = "/static/new_members_template.csv"
+  TEMPLATE_FILENAME = PATH_TO_TEMPLATE.split('/')[-1]
+
+  field_list = [
+    { 'field':'fname', 
+      'regex':re.compile(r"^[a-zA-Z][a-zA-Z'-]{0,14}[a-zA-Z]$"),
+      'name':'First Name'},
+    { 'field':'lname',
+      'regex':re.compile(r"^[a-zA-Z][a-zA-Z'-]{0,14}[a-zA-Z]$"),
+      'name':'Last Name'},
+    { 'field':'uid',
+      'regex':re.compile(r'^[0-9]{7}$'),
+      'name':'UID'},
+    { 'field':'matriculate_year',
+      # Year must be betwen 1901 and 2155 (MySQL standard)
+      'regex':re.compile(r'^(19[0-9]{2}|2(0[0-9]{2}|1[0-5][0-9]))$'),
+      'name':'Matriculation Year'},
+    { 'field':'email',
+      'regex':re.compile(r'^[a-zA-Z0-9\.\_\%\+\-]+@[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,4}$'),
+      'name':'Email'}]
+
+  state = 'provide_data'
+  if request.method == 'POST' and request.form['state']:
+    state = request.form['state']
+
+  if state == 'preview' or state == 'confirmed':
+    new_members_data = request.form['new_members_data']
+    data = process_data(new_members_data, field_list)
+
+    if data:
+      if state == 'preview':
+        return render_template('new_members.html', state='preview', data=data, \
+            field_list=field_list, raw_data=new_members_data)
+      else:
+        add_new_members(data)
+
+  return render_template('new_members.html', state='provide_data', \
+      path=PATH_TO_TEMPLATE, filename=TEMPLATE_FILENAME)
+
 if __name__ == "__main__":
   app.debug = True
-  app.run()
+  app.run(port=9000)
