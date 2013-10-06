@@ -527,7 +527,8 @@ def add_members():
       msg = "Hey " + name + ",\n\n" + \
           "You have been added to the Ruddock House Website. To complete \
           registration, please create an account here:\n\n" + \
-          url_for('create_account', r=user_hash, u=user_id) + "\n\n" + \
+          url_for('create_account', r=user_hash, u=user_id, _external=True) + \
+          "\n\n" + \
           "Thanks,\n" + \
           "The Ruddock IMSS Team"
       to = entry['email']
