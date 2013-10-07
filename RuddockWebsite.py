@@ -676,7 +676,7 @@ def add_members():
           registration, please create an account here:\n\n" + \
           url_for('create_account', k=user_hash, u=user_id, _external=True) + \
           "\n\n" + \
-          "Thanks,\n" + \
+          "Thanks!\n" + \
           "The Ruddock IMSS Team"
       to = entry['email']
 
@@ -686,7 +686,7 @@ def add_members():
 
       except Exception as e:
         sendEmail("imss@ruddock.caltech.edu",
-            "Something went wrong when trying to email " + name + "." + \
+            "Something went wrong when trying to email " + name + ". " + \
             "You should look into this.\n\n" + \
             "Exception: " + str(e), 
             "[RuddWeb] Add members email error")
@@ -740,4 +740,4 @@ def add_members():
 
 if __name__ == "__main__":
   app.debug = True
-  app.run(port=9000)
+  app.run()
