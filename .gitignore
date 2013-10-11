@@ -1,3 +1,6 @@
+# tmp swap files
+*.swp
+
 # private files
 config.py
 
