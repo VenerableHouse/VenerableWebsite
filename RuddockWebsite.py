@@ -19,6 +19,32 @@ app.secret_key = config.SECRET_KEY
 engine = create_engine(config.DB_URI, convert_unicode=True)
 connection = engine.connect()
 
+def fetch_all_results(query_result):
+  '''
+  Takes the result from a database query and organizes results. The output 
+  format is a list of dictionaries, where the dict keys are the columns
+  returned.
+  '''
+  result = []
+  result_keys = query_result.keys()
+
+  for row in query_result:
+    row_dict = dict(zip(result_keys, row))
+    result.append(row_dict)
+
+  return result
+
+def display_error_msg(msg=False, redirect_location=False):
+  if not msg:
+    msg = "Invalid request. If you think you have received this message in \
+        error, please find an IMSS rep immediately."
+
+  if not redirect_location:
+    redirect_location = "home"
+
+  flash(msg)
+  return redirect(url_for(redirect_location))
+
 def login_required(msg='You must be logged in for that!', access_level = 1):
   """ Login required decorator. Flashes msg at the login prompt."""
   def decorator(fn):
@@ -431,99 +457,116 @@ def show_map_room(room):
   return render_template('map.html', room_dict=room_dict, hl=room, \
     people=people)
 
+def create_account_hash(user_id, uid, fname, lname):
+  '''
+  Creates a unique hash for users trying to create an account.
+  '''
+  return hash(str(user_id) + str(uid) + str(fname) + str(lname))
+
 @app.route('/create_account', methods=['GET', 'POST'])
 def create_account():
-  ''' Allows the user to create an account. The user should have receieved \
-      an email when the secretary imported him/her into the database with \
-      a unique link to create the account with. '''
+  ''' 
+  Allows the user to create an account. The user should have receieved 
+  an email when the secretary imported him/her into the database with
+  a unique link to create the account with. 
+  '''
 
   def validate_data(data):
-    ''' Validates data. '''
-
-    username_regex = re.compile(r'^[a-zA-Z0-9\-\_]{1,32}')
-    birthday_regex = re.compile(r'^[1-9][0-9]{3}-((01|03|05|07|08|10|12)-(0[1-9]|1[0-9]|2[0-9]|3[01])|(04|06|09|11)-(0[1-9]|1[0-9]|2[0-9]|30)|02-(0[1-9]|1[0-9]|2[0-9]))$')
+    ''' 
+    Checks that the provided username, password, and birthday are valid.
+    '''
 
     # Check username
+    username_regex = re.compile(r'^[a-zA-Z0-9\-\_]{1,32}')
     if not username_regex.match(data['username']):
       flash("Invalid username.")
       return False
 
     query = text("SELECT COUNT(*) FROM users WHERE username=:username")
-    result = connection.execute(query, username=data['username'])
-    result_dict = dict(zip(result.keys(), result.first()))
-    count = result_dict['COUNT(*)']
+    r = connection.execute(query, username=data['username'])
+    result = fetch_all_results(r)
+    count = result[0]['COUNT(*)']
 
     if count != 0:
       flash("Username already in use.")
       return False
 
     # Check password
-    pwd_length = len(data['password'])
-    if pwd_length > 32 or pwd_length < 1:
-      flash("Invalid password.")
-      return False
-
     if data['password'] != data['password2']:
       flash("Passwords do not match.")
       return False
 
+    pwd_length = len(data['password'])
+    if pwd_length < 8:
+      flash("Password is too short.")
+      return False
+
+    if not re.compile(r'.*[a-zA-Z]').match(data['password']) or not \
+        re.compile(r'.*[0-9]').match(data['password']):
+          flash("Password should contain both numbers and letters.")
+          return False
+
     # Check birthday
-    if not birthday_regex.match(data['birthday']):
+    try:
+      datetime.datetime.strptime(data['birthday'], '%Y-%m-%d')
+    except ValueError:
       flash("Invalid birthday.")
       return False
-    return True
 
-  def display_error(msg="Invalid request. If you think you have received this \
-      message in error, please find an IMSS rep."):
-    flash(msg)
-    return redirect(url_for('home'))
+    return True
 
   def get_user_data(user_id):
     query = text("SELECT fname, lname, uid, matriculate_year, grad_year, \
         email FROM members WHERE user_id=:user_id")
-    result = connection.execute(query, user_id=user_id)
-    result_dict = dict(zip(result.keys(), result.first()))
+    r = connection.execute(query, user_id=user_id)
+    result = fetch_all_results(r)
 
-    return result_dict
+    return result[0]
 
   def check_key_id_pair(key, user_id):
-    # Check the key/user id pair
+    # Check that the user_id is valid.
     query = text("SELECT COUNT(*) FROM members WHERE user_id=:user_id")
-    result = connection.execute(query, user_id=user_id)
-    result_dict = dict(zip(result.keys(), result.first()))
-    count = result_dict['COUNT(*)']
+    r = connection.execute(query, user_id=user_id)
+    result = fetch_all_results(r)
+    count = result[0]['COUNT(*)']
 
     if count != 1:
       return False
 
-    # Make sure an account does not already exist.
+    # Make sure an account does not already exist for that user_id.
     query = text("SELECT COUNT(*) FROM users WHERE user_id=:user_id")
-    result = connection.execute(query, user_id=user_id)
-    result_dict = dict(zip(result.keys(), result.first()))
-    count = result_dict['COUNT(*)']
+    r = connection.execute(query, user_id=user_id)
+    result = fetch_all_results(r)
+    count = result[0]['COUNT(*)']
 
     if count != 0:
       return False
 
     # Check the key.
     user_data = get_user_data(user_id)
-    true_hash = hash(str(user_id) + user_data['uid'] + user_data['fname'] + \
-        user_data['lname'])
+    true_hash = create_account_hash(user_id, user_data['uid'], \
+        user_data['fname'], user_data['lname'])
 
-    if str(true_hash) != key:
+    if str(true_hash) != str(key):
       return False
+
     return True
 
   def create_new_user(user_id, username, password, email):
+    '''
+    Creates a new account with the given parameters. Assumes that all 
+    parameters have already been validated.
+    '''
+
     query = text("INSERT INTO users (user_id, username, passwd) VALUES \
         (:user_id, :username, :password)")
 
-    # We want to use salt when setting the password, so we use the 
-    # passwd_reset() function to actually set the password.
+    # Creates the account with an empty password.
     connection.execute(query, user_id=user_id, username=username, \
-        password=password)
+        password='')
 
-    # Set the password, this time with salt.
+    # Use the password reset function to set the password, to ensure
+    # consistent salting.
     auth.passwd_reset(username, password, connection, salt=True, \
         email=False)
 
@@ -535,7 +578,6 @@ def create_account():
         "Thanks!\n" + \
         "The Ruddock IMSS Team"
     to = email
-
     sendEmail(to, msg, subject)
 
   def update_birthday(user_id, birthday):
@@ -547,16 +589,12 @@ def create_account():
   if request.method == 'POST':
     key = request.form['k']
     user_id = request.form['u']
-  else:
-    key = request.args.get('k', default=None)
-    user_id = request.args.get('u', default=None)
 
-  if not key or not user_id or not check_key_id_pair(key, user_id):
-    return display_error()
+    if not key or not user_id or not check_key_id_pair(key, user_id):
+      return display_error_msg()
 
-  user_data = get_user_data(user_id)
+    user_data = get_user_data(user_id)
 
-  if request.method == 'POST':
     data = {}
     data['username'] = request.form['username']
     data['password'] = request.form['password']
@@ -564,37 +602,64 @@ def create_account():
     data['birthday'] = request.form['birthday']
 
     if validate_data(data):
+
       create_new_user(user_id, data['username'], data['password'], \
           user_data['email'])
       update_birthday(user_id, data['birthday'])
 
       flash('Account successfully created.')
       return redirect(url_for('home'))
+    
+  key = request.args.get('k', default=None)
+  user_id = request.args.get('u', default=None)
 
+  if not key or not user_id or not check_key_id_pair(key, user_id):
+    return display_error_msg()
+
+  user_data = get_user_data(user_id)
+  
   return render_template('create_account.html', user_data=user_data, \
       key=key, user_id=user_id)
 
 @app.route('/secretary/add_members', methods=['GET', 'POST'])
 @login_required(access_level = AL_ADD_MEMBERS)
 def add_members():
-  ''' Allows the secretary to add new members to the website. New members \
-      are then emailed with a unique link to create an account. '''
+  ''' 
+  Provides a form to add new members to the website, and then emails the
+  new members a unique link to create an account.
+  '''
 
   def validate_data(data, field_list):
-    ''' Validates the data submitted. Expects the data to be a list of \
-        dicts mapping field names to values. '''
+    ''' 
+    Expects the data to be a list of dicts mapping field names to values.
+    Expects the field list to be a list of dicts containing field name and
+    a regex used to validate that field.
+    '''
 
+    # Finds all errors, and then alerts the user.
+    errors = set()
     for entry in data:
       for field in field_list:
         if not field['regex'].match(entry[field['field']]):
-          flash('Invalid ' + field['name'] + '(s) submitted.')
-          return False
+          errors.add(field['name'])
+    
+    if len(errors) > 0:
+      # So the errors appear in the same order every time.
+      errors = list(errors)
+      errors.sort()
+      for field_name in errors:
+        flash("Invalid " + field_name + "(s) submitted.")
+      return False
+
     return True
 
   def process_data(new_members_data, field_list):
-    ''' This function processes the data provided (a string that has the \
-        contents of the csv file) and returns the data as a list of dicts, \
-        where each dict contains the information for a single member. '''
+    ''' 
+    Expects data to be a single string (with the contents of a csv file) and
+    field_list to be a list of dicts describing each field. Validates the
+    data before returning it as a list of dicts mapping each field to its
+    value.
+    '''
 
     data = []
 
@@ -624,16 +689,15 @@ def add_members():
       return False
 
   def add_new_members(data):
-    ''' This adds the members to the database and them emails them with \
-        account creation information. Assumes data has already been \
-        validated. '''
+    ''' 
+    This adds the members to the database and them emails them with 
+    account creation information. Assumes data has already been validated. 
+    '''
 
     insert_query = text("INSERT INTO members (fname, lname, uid, \
         matriculate_year, grad_year, email) VALUES (:fname, :lname, :uid, \
         :matriculate_year, :grad_year, :email)")
-
     check_query = text("SELECT COUNT(*) FROM members WHERE uid=:uid")
-
     last_insert_id_query = text("SELECT LAST_INSERT_ID()")
 
     members_added_count = 0
@@ -642,9 +706,9 @@ def add_members():
 
     for entry in data:
       # Check if user is in database already
-      result = connection.execute(check_query, uid=entry['uid'])
-      result_dict = dict(zip(result.keys(), result.first()))
-      count = result_dict['COUNT(*)']
+      r = connection.execute(check_query, uid=entry['uid'])
+      result = fetch_all_results(r)
+      count = result[0]['COUNT(*)']
 
       if count != 0:
         members_skipped_count += 1
@@ -654,18 +718,18 @@ def add_members():
       matriculate_year = int(entry['matriculate_year'])
       grad_year = matriculate_year + 4
 
-      # Add the user and then email them
+      # Add the user to the database.
       result = connection.execute(insert_query, fname=entry['fname'], \
           lname=entry['lname'], uid=entry['uid'], \
           matriculate_year=matriculate_year, grad_year=grad_year, \
           email=entry['email'])
 
       # Get the id of the inserted row (used to create unique hash).
-      result = connection.execute(last_insert_id_query)
-      result_dict = dict(zip(result.keys(), result.first()))
-      user_id = result_dict["LAST_INSERT_ID()"]
+      r = connection.execute(last_insert_id_query)
+      result = fetch_all_results(r)
+      user_id = result[0]["LAST_INSERT_ID()"]
 
-      user_hash = hash(str(user_id) + entry['uid'] + entry['fname'] + \
+      user_hash = create_account_hash(user_id, entry['uid'], entry['fname'], \
           entry['lname'])
       name = entry['fname'] + ' ' + entry['lname']
 
@@ -734,6 +798,9 @@ def add_members():
             field_list=field_list, raw_data=new_members_data)
       else:
         add_new_members(data)
+
+  query = text("SELECT * FROM members WHERE fname=:fn AND lname=:ln")
+  result = connection.execute(query, fn='daniel', ln='kongasldkfjalskdfj')
 
   return render_template('new_members.html', state='provide_data', \
       path=PATH_TO_TEMPLATE, filename=TEMPLATE_FILENAME)
