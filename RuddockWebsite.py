@@ -477,7 +477,7 @@ def create_account():
     '''
 
     # Check username
-    username_regex = re.compile(r'^[a-zA-Z0-9\-\_]{1,32}')
+    username_regex = re.compile(r'^[a-zA-Z0-9\-\_]{1,32}$')
     if not username_regex.match(data['username']):
       flash("Invalid username.")
       return False
@@ -572,9 +572,9 @@ def create_account():
 
     # Email the user to let them know an account has been created.
     subject = "[RuddWeb] Thanks for creating an account!"
-    msg = "You have just created an account on the Ruddock website with \
-        the username " + username + ". If this was not you, please email \
-        imss@ruddock.caltech.edu immediately.\n\n" + \
+    msg = "You have just created an account on the Ruddock website with " + \
+        "the username \"" + username + "\".\n" + \
+        "If this was not you, please email imss@ruddock.caltech.edu immediately.\n\n" + \
         "Thanks!\n" + \
         "The Ruddock IMSS Team"
     to = email
@@ -602,7 +602,6 @@ def create_account():
     data['birthday'] = request.form['birthday']
 
     if validate_data(data):
-
       create_new_user(user_id, data['username'], data['password'], \
           user_data['email'])
       update_birthday(user_id, data['birthday'])
@@ -736,12 +735,14 @@ def add_members():
       # Email the user
       subject = "[RuddWeb] Welcome to the Ruddock House Website!"
       msg = "Hey " + name + ",\n\n" + \
-          "You have been added to the Ruddock House Website. To complete \
-          registration, please create an account here:\n\n" + \
+          "You have been added to the Ruddock House Website. In order to " + \
+          "access private areas of our site, please complete " + \
+          "registration by creating an account here:\n" + \
           url_for('create_account', k=user_hash, u=user_id, _external=True) + \
           "\n\n" + \
           "Thanks!\n" + \
-          "The Ruddock IMSS Team"
+          "The Ruddock IMSS Team\n\n" + \
+          "PS: If you have any questions or concerns, please contact us at imss@ruddock.caltech.edu"
       to = entry['email']
 
       try:
