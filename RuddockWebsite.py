@@ -256,7 +256,7 @@ def show_users():
   for result in results:
     temp_dict = {}
     for i, key in enumerate(result_cols):
-      if key in cols:
+      if key in cols and result[i]:
         temp_dict[key] = result[i]
     res.append(temp_dict)
 
