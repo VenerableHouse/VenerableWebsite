@@ -16,8 +16,12 @@
     </tr>
   {# Now, display each row #}
   {% for result in data %}
+  {% if idMap[result['user_id']] %}
   <tr onclick="location.href='{{ url_for('show_user_profile', 
     username=idMap[result['user_id']]) }}'">
+  {% else %}
+  <tr>
+  {% endif %}
     {% for field in fields %}
     {% if fieldMap[field] %} {# Only display not-null fields #}
     <td>{{ result[field] }}</td>
