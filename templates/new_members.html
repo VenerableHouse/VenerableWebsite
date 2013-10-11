@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h2>Add new members</h2>
+
+  {% if state == 'provide_data' %}
+  <p>Please download the template .csv file and fill it out, then copy/paste the contents here. All fields are required.</p>
+
+  <p><a href="{{ path }}">{{ filename }}</a></p>
+
+  <p>Please copy/paste the contents of the csv file here (you will need to open the file up in notepad or similar text editor to view the raw data).</p>
+  <form action="" method="post">
+    <textarea name="new_members_data" rows="10" cols="60"></textarea>
+    <br />
+    <button type="submit" name="state" value="preview">Submit</button>
+  </form>
+
+  {% elif state == 'preview' %}
+  <p>Are you sure you want to add the following members?</p>
+  <form action="" method="post">
+    <input type="hidden" name="new_members_data" value="{{ raw_data }}" />
+    <table>
+      <tr>
+        {% for field in field_list %}
+        <th>{{ field['name'] }}</th>
+        {% endfor %}
+      </tr>
+      {% for entry in data %}
+      <tr>
+        {% for field in field_list %}
+        <td>{{ entry[field['field']] }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
+    {# Confirm buttons #}
+    <button type="submit" name="state" value="upload">No</button>
+    <button type="submit" name="state" value="confirmed">Yes</button>
+  </form>
+  {% endif %}
+{% endblock body %}

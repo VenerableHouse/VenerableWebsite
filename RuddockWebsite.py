@@ -19,6 +19,32 @@ app.secret_key = config.SECRET_KEY
 engine = create_engine(config.DB_URI, convert_unicode=True)
 connection = engine.connect()
 
+def fetch_all_results(query_result):
+  '''
+  Takes the result from a database query and organizes results. The output 
+  format is a list of dictionaries, where the dict keys are the columns
+  returned.
+  '''
+  result = []
+  result_keys = query_result.keys()
+
+  for row in query_result:
+    row_dict = dict(zip(result_keys, row))
+    result.append(row_dict)
+
+  return result
+
+def display_error_msg(msg=False, redirect_location=False):
+  if not msg:
+    msg = "Invalid request. If you think you have received this message in \
+        error, please find an IMSS rep immediately."
+
+  if not redirect_location:
+    redirect_location = "home"
+
+  flash(msg)
+  return redirect(url_for(redirect_location))
+
 def login_required(msg='You must be logged in for that!', access_level = 1):
   """ Login required decorator. Flashes msg at the login prompt."""
   def decorator(fn):
@@ -230,7 +256,7 @@ def show_users():
   for result in results:
     temp_dict = {}
     for i, key in enumerate(result_cols):
-      if key in cols:
+      if key in cols and result[i]:
         temp_dict[key] = result[i]
     res.append(temp_dict)
 
@@ -430,6 +456,355 @@ def show_map_room(room):
 
   return render_template('map.html', room_dict=room_dict, hl=room, \
     people=people)
+
+def create_account_hash(user_id, uid, fname, lname):
+  '''
+  Creates a unique hash for users trying to create an account.
+  '''
+  return hash(str(user_id) + str(uid) + str(fname) + str(lname))
+
+@app.route('/create_account', methods=['GET', 'POST'])
+def create_account():
+  ''' 
+  Allows the user to create an account. The user should have receieved 
+  an email when the secretary imported him/her into the database with
+  a unique link to create the account with. 
+  '''
+
+  def validate_data(data):
+    ''' 
+    Checks that the provided username, password, and birthday are valid.
+    '''
+
+    # Check username
+    username_regex = re.compile(r'^[a-zA-Z0-9\-\_]{1,32}$')
+    if not username_regex.match(data['username']):
+      flash("Invalid username.")
+      return False
+
+    query = text("SELECT COUNT(*) FROM users WHERE username=:username")
+    r = connection.execute(query, username=data['username'])
+    result = fetch_all_results(r)
+    count = result[0]['COUNT(*)']
+
+    if count != 0:
+      flash("Username already in use.")
+      return False
+
+    # Check password
+    if data['password'] != data['password2']:
+      flash("Passwords do not match.")
+      return False
+
+    pwd_length = len(data['password'])
+    if pwd_length < 8:
+      flash("Password is too short.")
+      return False
+
+    if not re.compile(r'.*[a-zA-Z]').match(data['password']) or not \
+        re.compile(r'.*[0-9]').match(data['password']):
+          flash("Password should contain both numbers and letters.")
+          return False
+
+    # Check birthday
+    try:
+      datetime.datetime.strptime(data['birthday'], '%Y-%m-%d')
+    except ValueError:
+      flash("Invalid birthday.")
+      return False
+
+    return True
+
+  def get_user_data(user_id):
+    query = text("SELECT fname, lname, uid, matriculate_year, grad_year, \
+        email FROM members WHERE user_id=:user_id")
+    r = connection.execute(query, user_id=user_id)
+    result = fetch_all_results(r)
+
+    return result[0]
+
+  def check_key_id_pair(key, user_id):
+    # Check that the user_id is valid.
+    query = text("SELECT COUNT(*) FROM members WHERE user_id=:user_id")
+    r = connection.execute(query, user_id=user_id)
+    result = fetch_all_results(r)
+    count = result[0]['COUNT(*)']
+
+    if count != 1:
+      return False
+
+    # Make sure an account does not already exist for that user_id.
+    query = text("SELECT COUNT(*) FROM users WHERE user_id=:user_id")
+    r = connection.execute(query, user_id=user_id)
+    result = fetch_all_results(r)
+    count = result[0]['COUNT(*)']
+
+    if count != 0:
+      return False
+
+    # Check the key.
+    user_data = get_user_data(user_id)
+    true_hash = create_account_hash(user_id, user_data['uid'], \
+        user_data['fname'], user_data['lname'])
+
+    if str(true_hash) != str(key):
+      return False
+
+    return True
+
+  def create_new_user(user_id, username, password, email):
+    '''
+    Creates a new account with the given parameters. Assumes that all 
+    parameters have already been validated.
+    '''
+
+    query = text("INSERT INTO users (user_id, username, passwd) VALUES \
+        (:user_id, :username, :password)")
+
+    # Creates the account with an empty password.
+    connection.execute(query, user_id=user_id, username=username, \
+        password='')
+
+    # Use the password reset function to set the password, to ensure
+    # consistent salting.
+    auth.passwd_reset(username, password, connection, salt=True, \
+        email=False)
+
+    # Email the user to let them know an account has been created.
+    subject = "[RuddWeb] Thanks for creating an account!"
+    msg = "You have just created an account on the Ruddock website with " + \
+        "the username \"" + username + "\".\n" + \
+        "If this was not you, please email imss@ruddock.caltech.edu immediately.\n\n" + \
+        "Thanks!\n" + \
+        "The Ruddock IMSS Team"
+    to = email
+    sendEmail(to, msg, subject)
+
+  def update_birthday(user_id, birthday):
+    query = text("UPDATE members SET bday=:bday WHERE user_id=:user_id")
+    connection.execute(query, bday=birthday, user_id=user_id)
+
+  ### End helper functions ###
+  
+  if request.method == 'POST':
+    key = request.form['k']
+    user_id = request.form['u']
+
+    if not key or not user_id or not check_key_id_pair(key, user_id):
+      return display_error_msg()
+
+    user_data = get_user_data(user_id)
+
+    data = {}
+    data['username'] = request.form['username']
+    data['password'] = request.form['password']
+    data['password2'] = request.form['password2']
+    data['birthday'] = request.form['birthday']
+
+    if validate_data(data):
+      create_new_user(user_id, data['username'], data['password'], \
+          user_data['email'])
+      update_birthday(user_id, data['birthday'])
+
+      flash('Account successfully created.')
+      return redirect(url_for('home'))
+    
+  key = request.args.get('k', default=None)
+  user_id = request.args.get('u', default=None)
+
+  if not key or not user_id or not check_key_id_pair(key, user_id):
+    return display_error_msg()
+
+  user_data = get_user_data(user_id)
+  
+  return render_template('create_account.html', user_data=user_data, \
+      key=key, user_id=user_id)
+
+@app.route('/secretary/add_members', methods=['GET', 'POST'])
+@login_required(access_level = AL_ADD_MEMBERS)
+def add_members():
+  ''' 
+  Provides a form to add new members to the website, and then emails the
+  new members a unique link to create an account.
+  '''
+
+  def validate_data(data, field_list):
+    ''' 
+    Expects the data to be a list of dicts mapping field names to values.
+    Expects the field list to be a list of dicts containing field name and
+    a regex used to validate that field.
+    '''
+
+    # Finds all errors, and then alerts the user.
+    errors = set()
+    for entry in data:
+      for field in field_list:
+        if not field['regex'].match(entry[field['field']]):
+          errors.add(field['name'])
+    
+    if len(errors) > 0:
+      # So the errors appear in the same order every time.
+      errors = list(errors)
+      errors.sort()
+      for field_name in errors:
+        flash("Invalid " + field_name + "(s) submitted.")
+      return False
+
+    return True
+
+  def process_data(new_members_data, field_list):
+    ''' 
+    Expects data to be a single string (with the contents of a csv file) and
+    field_list to be a list of dicts describing each field. Validates the
+    data before returning it as a list of dicts mapping each field to its
+    value.
+    '''
+
+    data = []
+
+    # HTML forms use carriage returns, apparently.
+    for line in new_members_data.split('\r\n'):
+      if line == "":
+        continue
+
+      values = line.split(',')
+      if len(values) != len(field_list):
+        flash("Invalid data submitted")
+        return False
+
+      # Skip title line if present
+      if values[0] == field_list[0]['name']:
+        continue
+
+      entry = {}
+      for i in range(len(field_list)):
+        field = field_list[i]
+        entry[field['field']] = values[i]
+      data.append(entry)
+
+    if validate_data(data, field_list):
+      return data
+    else:
+      return False
+
+  def add_new_members(data):
+    ''' 
+    This adds the members to the database and them emails them with 
+    account creation information. Assumes data has already been validated. 
+    '''
+
+    insert_query = text("INSERT INTO members (fname, lname, uid, \
+        matriculate_year, grad_year, email) VALUES (:fname, :lname, :uid, \
+        :matriculate_year, :grad_year, :email)")
+    check_query = text("SELECT COUNT(*) FROM members WHERE uid=:uid")
+    last_insert_id_query = text("SELECT LAST_INSERT_ID()")
+
+    members_added_count = 0
+    members_skipped_count = 0
+    members_errors_count = 0
+
+    for entry in data:
+      # Check if user is in database already
+      r = connection.execute(check_query, uid=entry['uid'])
+      result = fetch_all_results(r)
+      count = result[0]['COUNT(*)']
+
+      if count != 0:
+        members_skipped_count += 1
+        continue
+
+      # Get the graduation year
+      matriculate_year = int(entry['matriculate_year'])
+      grad_year = matriculate_year + 4
+
+      # Add the user to the database.
+      result = connection.execute(insert_query, fname=entry['fname'], \
+          lname=entry['lname'], uid=entry['uid'], \
+          matriculate_year=matriculate_year, grad_year=grad_year, \
+          email=entry['email'])
+
+      # Get the id of the inserted row (used to create unique hash).
+      r = connection.execute(last_insert_id_query)
+      result = fetch_all_results(r)
+      user_id = result[0]["LAST_INSERT_ID()"]
+
+      user_hash = create_account_hash(user_id, entry['uid'], entry['fname'], \
+          entry['lname'])
+      name = entry['fname'] + ' ' + entry['lname']
+
+      # Email the user
+      subject = "[RuddWeb] Welcome to the Ruddock House Website!"
+      msg = "Hey " + name + ",\n\n" + \
+          "You have been added to the Ruddock House Website. In order to " + \
+          "access private areas of our site, please complete " + \
+          "registration by creating an account here:\n" + \
+          url_for('create_account', k=user_hash, u=user_id, _external=True) + \
+          "\n\n" + \
+          "Thanks!\n" + \
+          "The Ruddock IMSS Team\n\n" + \
+          "PS: If you have any questions or concerns, please contact us at imss@ruddock.caltech.edu"
+      to = entry['email']
+
+      try:
+        sendEmail(to, msg, subject)
+        members_added_count += 1
+
+      except Exception as e:
+        sendEmail("imss@ruddock.caltech.edu",
+            "Something went wrong when trying to email " + name + ". " + \
+            "You should look into this.\n\n" + \
+            "Exception: " + str(e), 
+            "[RuddWeb] Add members email error")
+
+        members_errors_count += 1
+
+    flash(str(members_added_count) + " members were successfully added, " +
+        str(members_skipped_count) + " members were skipped, and " +
+        str(members_errors_count) + " members encountered errors.")
+
+  ### End helper function definitions ###
+
+  PATH_TO_TEMPLATE = "/static/new_members_template.csv"
+  TEMPLATE_FILENAME = PATH_TO_TEMPLATE.split('/')[-1]
+
+  field_list = [
+    { 'field':'fname', 
+      'regex':re.compile(r"^[a-zA-Z][a-zA-Z'-]{0,14}[a-zA-Z]$"),
+      'name':'First Name'},
+    { 'field':'lname',
+      'regex':re.compile(r"^[a-zA-Z][a-zA-Z'-]{0,14}[a-zA-Z]$"),
+      'name':'Last Name'},
+    { 'field':'uid',
+      'regex':re.compile(r'^[0-9]{7}$'),
+      'name':'UID'},
+    { 'field':'matriculate_year',
+      # Year must be betwen 1901 and 2155 (MySQL year standard)
+      'regex':re.compile(r'^(19[0-9]{2}|2(0[0-9]{2}|1[0-5][0-9]))$'),
+      'name':'Matriculation Year'},
+    { 'field':'email',
+      'regex':re.compile(r'^[a-zA-Z0-9\.\_\%\+\-]+@[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,4}$'),
+      'name':'Email'}]
+
+  state = 'provide_data'
+  if request.method == 'POST' and request.form['state']:
+    state = request.form['state']
+
+  if state == 'preview' or state == 'confirmed':
+    new_members_data = request.form['new_members_data']
+    data = process_data(new_members_data, field_list)
+
+    if data:
+      if state == 'preview':
+        return render_template('new_members.html', state='preview', data=data, \
+            field_list=field_list, raw_data=new_members_data)
+      else:
+        add_new_members(data)
+
+  query = text("SELECT * FROM members WHERE fname=:fn AND lname=:ln")
+  result = connection.execute(query, fn='daniel', ln='kongasldkfjalskdfj')
+
+  return render_template('new_members.html', state='provide_data', \
+      path=PATH_TO_TEMPLATE, filename=TEMPLATE_FILENAME)
 
 if __name__ == "__main__":
   app.debug = True

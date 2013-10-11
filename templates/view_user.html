@@ -68,12 +68,14 @@
       </tr>
       {% endif %}
       <tr>
+        {% if info["building"] %}
         <td>Residence:</td>
         {% if info["building"] == "Ruddock" %}
         <td><a href="{{ url_for('show_map_room', room=info["room_num"]) }}" style="text-decoration:none;color:black;">
         {{info["building"]}} {{ info["room_num"] }}</a></td>
         {% else %}
         <td>{{info["building"]}} {{ info["room_num"] }}</td>
+        {% endif %}
         {% endif %}
       </tr>
       <tr>

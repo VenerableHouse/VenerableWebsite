@@ -15,7 +15,7 @@
     <p>Major: <input type=text name=major style="width:200px" {% if params["major"] %} value="{{ params["major"] }}" {% endif %}></p>
     <p>Abroad: <input type="radio" name=isabroad {% if params['isabroad']==1 %} checked {% endif %} value=1>Yes <input type="radio" name=isabroad {% if params['isabroad']==0 %} checked {% endif %}  value=0>No</p>
 
-    <p><input style="font-size:3px" type=submit value="Save Changes"></p>
+    <p><input type=submit value="Save Changes"></p>
   </form>
 
   {% if params["username"] == session["username"] %}
