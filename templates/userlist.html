@@ -1,15 +1,31 @@
 {% extends "layout.html" %}
 
 {% block body %}
+  {# Show link to change current/alumni filtering #}
+  {% if filterType == 'current' %}
+    Currently showing only current students. View
+    <a href="{{ url_for('show_users', filterType='all') }}">all Rudds</a> or
+    <a href="{{ url_for('show_users', filterType='alumni') }}">only alumni</a>.
+  {% elif filterType == 'alumni' %}
+    Currently showing only alumni. View
+    <a href="{{ url_for('show_users', filterType='all') }}">all Rudds</a> or
+    <a href="{{ url_for('show_users', filterType='current') }}">only current students</a>.
+  {% else %}
+    Currently showing all Rudds. View only
+    <a href="{{ url_for('show_users', filterType='current') }}">current students</a> or
+    <a href="{{ url_for('show_users', filterType='alumni') }}">alumni</a>.
+  {% endif %}
+
   <table class="userlist">
   {# First display header, with links to sort #}
     <tr>
       {% for field in fields %}
       {% if fieldMap[field] %} {# Only display not-null fields #}
       <th>{{ fieldMap[field] }} {# Maps sql field to display value #}
-        <a href="{{ url_for('show_users', field=field) }}">&#9650;</a>
         <a href="{{ url_for('show_users', field=field,
-                                          dir='DESC')}}">&#9660;</a>
+                            filterType=filterType) }}">&#9650;</a>
+        <a href="{{ url_for('show_users', field=field,
+                            filterType=filterType, dir='DESC')}}">&#9660;</a>
       </th>
       {% endif %}
       {% endfor %}
