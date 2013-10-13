@@ -811,9 +811,6 @@ def add_members():
       else:
         add_new_members(data)
 
-  query = text("SELECT * FROM members WHERE fname=:fn AND lname=:ln")
-  result = connection.execute(query, fn='daniel', ln='kongasldkfjalskdfj')
-
   return render_template('new_members.html', state='provide_data', \
       path=PATH_TO_TEMPLATE, filename=TEMPLATE_FILENAME)
 
