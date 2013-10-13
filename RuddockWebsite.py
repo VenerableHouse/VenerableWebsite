@@ -780,10 +780,10 @@ def add_members():
 
   field_list = [
     { 'field':'fname', 
-      'regex':re.compile(r"^[a-zA-Z][a-zA-Z'-]{0,14}[a-zA-Z]$"),
+      'regex':re.compile(r"^[a-zA-Z][a-zA-Z '-]{0,14}[a-zA-Z]$"),
       'name':'First Name'},
     { 'field':'lname',
-      'regex':re.compile(r"^[a-zA-Z][a-zA-Z'-]{0,14}[a-zA-Z]$"),
+      'regex':re.compile(r"^[a-zA-Z][a-zA-Z '-]{0,14}[a-zA-Z]$"),
       'name':'Last Name'},
     { 'field':'uid',
       'regex':re.compile(r'^[0-9]{7}$'),
