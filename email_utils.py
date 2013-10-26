@@ -2,9 +2,14 @@
 import smtplib
 from email.mime.text import MIMEText
 
-def sendEmail(to, msg, subject='[RuddWeb] A message from the Ruddock Website'):
+def sendEmail(to, msg, subject='A message from the Ruddock Website', \
+    usePrefix=True):
   """ Sends an email to a user. """
   msg = MIMEText(msg)
+
+  if usePrefix and '[RuddWeb]' not in subject:
+    subject = '[RuddWeb] ' + subject
+
   msg['Subject'] = subject
   msg['From'] = 'auto@ruddock.caltech.edu'
   msg['To'] = to
