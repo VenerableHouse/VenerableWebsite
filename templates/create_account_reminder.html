@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h2>Send account creation reminder emails</h2>
+
+<p>Do you want to send a reminder email to these people?</p>
+
+<form action="" method="post">
+  <table>
+    <tr>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Email</th>
+    </tr>
+    {% for member in data %}
+    <tr>
+      <td>{{ member['fname'] }}</td>
+      <td>{{ member['lname'] }}</td>
+      <td>{{ member['email'] }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <button type="submit" name="state" value="no">No</button>
+  <button type="submit" name="state" value="yes">Yes</button>
+
+</form>
+{% endblock body %}

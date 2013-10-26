@@ -5,6 +5,11 @@ from email.mime.text import MIMEText
 def sendEmail(to, msg, subject='[RuddWeb] A message from the Ruddock Website'):
   """ Sends an email to a user. """
   msg = MIMEText(msg)
+
+  # Prefix for all email messages.
+  if '[RuddWeb]' not in subject:
+    subject = '[RuddWeb] ' + subject
+
   msg['Subject'] = subject
   msg['From'] = 'auto@ruddock.caltech.edu'
   msg['To'] = to

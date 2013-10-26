@@ -130,7 +130,7 @@ def forgot_passwd():
               url_for('reset_passwd', u=q_dict['user_id'], r=reset_key,
                   _external=True) + \
               "\n\nThanks,\nThe Ruddock Website"
-        sendEmail(str(email), msg, "[RuddWeb] Forgotten Password")
+        sendEmail(str(email), msg, "Forgotten Password")
         flash("An email has been sent.")
         redirect(url_for('home'))
       else:
@@ -468,6 +468,24 @@ def show_map_room(room):
   return render_template('map.html', room_dict=room_dict, hl=room, \
     people=people)
 
+######### ADMIN TOOLS ##########
+
+@app.route('/admin', methods=['GET', 'POST'])
+@login_required(access_level = AL_USER_ADMIN)
+def admin_home():
+  '''
+  Loads a home page for admins, providing links to various tools.
+  '''
+  
+  admin_tools = [
+      {'name':'Add new members',
+        'link':url_for('add_members', _external=True)},
+      {'name':'Send account creation reminder',
+        'link':url_for('send_reminder_emails', _external=True)}
+      ]
+  
+  return render_template('admin.html', tools=admin_tools)
+
 def create_account_hash(user_id, uid, fname, lname):
   '''
   Creates a unique hash for users trying to create an account.
@@ -582,7 +600,7 @@ def create_account():
         email=False)
 
     # Email the user to let them know an account has been created.
-    subject = "[RuddWeb] Thanks for creating an account!"
+    subject = "Thanks for creating an account!"
     msg = "You have just created an account on the Ruddock website with " + \
         "the username \"" + username + "\".\n" + \
         "If this was not you, please email imss@ruddock.caltech.edu immediately.\n\n" + \
@@ -631,8 +649,69 @@ def create_account():
   return render_template('create_account.html', user_data=user_data, \
       key=key, user_id=user_id)
 
-@app.route('/secretary/add_members', methods=['GET', 'POST'])
-@login_required(access_level = AL_ADD_MEMBERS)
+
+@app.route('/admin/reminder_email', methods=['GET', 'POST'])
+@login_required(access_level = AL_USER_ADMIN)
+def send_reminder_emails():
+  ''' 
+  Sends a reminder email to all members who have not yet created
+  an account.
+  '''
+
+  def get_members_without_accounts():
+    '''
+    Returns a list of dicts with the first name, last name, email, and
+    user ID for everyone who hasn't made an account yet.
+    '''
+
+    query = text("SELECT fname, lname, email, uid, user_id FROM members \
+        NATURAL LEFT JOIN users WHERE username IS NULL")
+    r = connection.execute(query)
+    return fetch_all_results(r)
+
+  def send_reminder_email(fname, lname, email, user_id, uid):
+
+    user_hash = create_account_hash(user_id, uid, fname, lname)
+    name = fname + ' ' + lname
+   
+    to = email
+    subject = "Please create an account"
+    msg = "Hey " + name + ",\n\n" + \
+        "This is a reminder to create an account on the " + \
+        "Ruddock House Website. You can do this by following this link:\n" + \
+        url_for('create_account', k=user_hash, u=user_id, _external=True) + \
+        "\n\n" + \
+        "If you think this is an error or if you have any other " + \
+        "questions, please contact us at imss@ruddock.caltech.edu" + \
+        "\n\n" + \
+        "Thanks!\n" + \
+        "The Ruddock IMSS Team"
+    
+    sendEmail(to, msg, subject)
+
+  ### END HELPER FUNCTIONS ###
+  data = get_members_without_accounts()
+  
+  state = 'none'
+  if request.method == 'POST' and request.form['state']:
+    state = request.form['state']
+
+  if state == 'yes':
+    for member in data:
+      send_reminder_email(member['fname'], member['lname'], member['email'], \
+          member['user_id'], member['uid'])
+
+    flash('Sent reminder emails to ' + str(len(data)) + ' member(s).')
+    return redirect(url_for('admin_home'))
+  elif state == 'no':
+    return redirect(url_for('admin_home'))
+  else:
+    return render_template('create_account_reminder.html', data=data)
+
+
+
+@app.route('/admin/add_members', methods=['GET', 'POST'])
+@login_required(access_level = AL_USER_ADMIN)
 def add_members():
   ''' 
   Provides a form to add new members to the website, and then emails the
@@ -744,7 +823,7 @@ def add_members():
       name = entry['fname'] + ' ' + entry['lname']
 
       # Email the user
-      subject = "[RuddWeb] Welcome to the Ruddock House Website!"
+      subject = "Welcome to the Ruddock House Website!"
       msg = "Hey " + name + ",\n\n" + \
           "You have been added to the Ruddock House Website. In order to " + \
           "access private areas of our site, please complete " + \
@@ -765,7 +844,7 @@ def add_members():
             "Something went wrong when trying to email " + name + ". " + \
             "You should look into this.\n\n" + \
             "Exception: " + str(e), 
-            "[RuddWeb] Add members email error")
+            "Add members email error")
 
         members_errors_count += 1
 
