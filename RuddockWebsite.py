@@ -468,8 +468,6 @@ def show_map_room(room):
   return render_template('map.html', room_dict=room_dict, hl=room, \
     people=people)
 
-######### ADMIN TOOLS ##########
-
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required(access_level = AL_USER_ADMIN)
 def admin_home():
@@ -479,9 +477,9 @@ def admin_home():
   
   admin_tools = [
       {'name':'Add new members',
-        'link':url_for('add_members', _external=True)},
+       'link':url_for('add_members', _external=True)},
       {'name':'Send account creation reminder',
-        'link':url_for('send_reminder_emails', _external=True)}
+       'link':url_for('send_reminder_emails', _external=True)}
       ]
   
   return render_template('admin.html', tools=admin_tools)
@@ -670,7 +668,6 @@ def send_reminder_emails():
     return fetch_all_results(r)
 
   def send_reminder_email(fname, lname, email, user_id, uid):
-
     user_hash = create_account_hash(user_id, uid, fname, lname)
     name = fname + ' ' + lname
    
@@ -692,7 +689,7 @@ def send_reminder_emails():
   ### END HELPER FUNCTIONS ###
   data = get_members_without_accounts()
   
-  state = 'none'
+  state = None
   if request.method == 'POST' and request.form['state']:
     state = request.form['state']
 
@@ -707,8 +704,6 @@ def send_reminder_emails():
     return redirect(url_for('admin_home'))
   else:
     return render_template('create_account_reminder.html', data=data)
-
-
 
 @app.route('/admin/add_members', methods=['GET', 'POST'])
 @login_required(access_level = AL_USER_ADMIN)
