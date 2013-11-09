@@ -80,15 +80,7 @@
       </tr>
       <tr>
         <td>Membership:</td>
-        {% if info["membership"] == 1 %}
-        <td>Full</td>
-        {% elif info["membership"] == 2 %}
-        <td>Social</td>
-        {% elif info["membership"] == 3 %}
-        <td>Associate</td>
-        {% else %}
-        <td>Other</td>
-        {% endif %}
+        <td>{{ info["membership_desc"] }}</td>
       </tr>
       {% if info["email2"] %}
       <tr>
