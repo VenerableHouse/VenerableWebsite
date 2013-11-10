@@ -772,6 +772,24 @@ def add_members():
     else:
       return False
 
+  def convert_membership_type(membership_desc):
+    '''
+    This takes a membership description (full member, social member, etc)
+    and converts it to the corresponding type. Expects input to be valid
+    and one of (full, social, associate). 
+    '''
+
+    full_regex = re.compile(r'^full(| member)$', re.I)
+    social_regex = re.compile(r'^social(| member)$', re.I)
+    assoc_regex = re.compile(r'^associate(| member)$', re.I)
+
+    if full_regex.match(membership_desc):
+      return 1
+    elif social_regex.match(membership_desc):
+      return 2
+    else:
+      return 3
+
   def add_new_members(data):
     ''' 
     This adds the members to the database and them emails them with 
@@ -779,8 +797,9 @@ def add_members():
     '''
 
     insert_query = text("INSERT INTO members (fname, lname, uid, \
-        matriculate_year, grad_year, email) VALUES (:fname, :lname, :uid, \
-        :matriculate_year, :grad_year, :email)")
+        matriculate_year, grad_year, email, membership_type) \
+        VALUES (:fname, :lname, :uid, :matriculate_year, :grad_year, \
+        :email, :membership_type)")
     check_query = text("SELECT COUNT(*) FROM members WHERE uid=:uid")
     last_insert_id_query = text("SELECT LAST_INSERT_ID()")
 
@@ -797,16 +816,15 @@ def add_members():
       if count != 0:
         members_skipped_count += 1
         continue
-
-      # Get the graduation year
-      matriculate_year = int(entry['matriculate_year'])
-      grad_year = matriculate_year + 4
+      
+      membership_type = convert_membership_type(entry['membership_type'])
 
       # Add the user to the database.
       result = connection.execute(insert_query, fname=entry['fname'], \
           lname=entry['lname'], uid=entry['uid'], \
-          matriculate_year=matriculate_year, grad_year=grad_year, \
-          email=entry['email'])
+          matriculate_year=entry['matriculate_year'], \
+          grad_year=entry['grad_year'], email=entry['email'], \
+          membership_type=membership_type)
 
       # Get the id of the inserted row (used to create unique hash).
       r = connection.execute(last_insert_id_query)
@@ -827,7 +845,8 @@ def add_members():
           "\n\n" + \
           "Thanks!\n" + \
           "The Ruddock IMSS Team\n\n" + \
-          "PS: If you have any questions or concerns, please contact us at imss@ruddock.caltech.edu"
+          "PS: If you have any questions or concerns, please contact us " + \
+          "at imss@ruddock.caltech.edu"
       to = entry['email']
 
       try:
@@ -853,11 +872,12 @@ def add_members():
   TEMPLATE_FILENAME = PATH_TO_TEMPLATE.split('/')[-1]
 
   field_list = [
+    # Compile with re.I for case-insensitive regex
     { 'field':'fname', 
-      'regex':re.compile(r"^[a-zA-Z][a-zA-Z '-]{0,14}[a-zA-Z]$"),
+      'regex':re.compile(r"^[a-z][a-z '-]{0,14}[a-z]$", re.I),
       'name':'First Name'},
     { 'field':'lname',
-      'regex':re.compile(r"^[a-zA-Z][a-zA-Z '-]{0,14}[a-zA-Z]$"),
+      'regex':re.compile(r"^[a-z][a-z '-]{0,14}[a-z]$", re.I),
       'name':'Last Name'},
     { 'field':'uid',
       'regex':re.compile(r'^[0-9]{7}$'),
@@ -866,9 +886,17 @@ def add_members():
       # Year must be betwen 1901 and 2155 (MySQL year standard)
       'regex':re.compile(r'^(19[0-9]{2}|2(0[0-9]{2}|1[0-5][0-9]))$'),
       'name':'Matriculation Year'},
+    { 'field':'grad_year',
+      'regex':re.compile(r'^(19[0-9]{2}|2(0[0-9]{2}|1[0-5][0-9]))$'),
+      'name':'Graduation Year'},
     { 'field':'email',
-      'regex':re.compile(r'^[a-zA-Z0-9\.\_\%\+\-]+@[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,4}$'),
-      'name':'Email'}]
+      'regex':re.compile(r'^[a-z0-9\.\_\%\+\-]+@[a-z0-9\.\-]+\.[a-z]{2,4}$', re.I),
+      'name':'Email'},
+    { 'field':'membership_type',
+      # Accepts "full member", "full", etc
+      'regex':re.compile(r'^(full|social|associate)(| member)$', re.I),
+      'name':'Membership Type'}
+  ]
 
   state = 'provide_data'
   if request.method == 'POST' and request.form['state']:
