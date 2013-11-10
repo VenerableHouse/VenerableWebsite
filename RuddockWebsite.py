@@ -288,14 +288,14 @@ def show_user_profile(username):
     cols = [["username"], ["fname", "lname"], ["nickname"], ["bday"], \
             ["email"], ["email2"], ["status"], ["matriculate_year"], \
             ["grad_year"], ["msc"], ["phone"], ["building", "room_num"], \
-            ["membership"], ["major"], ["uid"], ["isabroad"]]
+            ["membership_desc"], ["major"], ["uid"], ["isabroad"]]
     display = ["Username", "Name", "Nickname", "Birthday", "Primary Email", \
                "Secondary Email", "Status", "Matriculation Year", \
                "Graduation Year", "MSC", "Phone Number", "Residence", \
                "Membership", "Major", "UID", "Is Abroad"]
     d_dict = OrderedDict(zip(display, cols))
     #d_dict defines the order and mapping of displayed attributes to sql columns
-    query = text("SELECT * FROM users NATURAL JOIN members WHERE username=:u")
+    query = text("SELECT * FROM users NATURAL JOIN members NATURAL JOIN membership_types WHERE username=:u")
     result = connection.execute(query, u=str(username))
     if result.returns_rows and result.rowcount != 0:
       result_cols = result.keys()
