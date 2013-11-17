@@ -15,6 +15,9 @@ app = Flask(__name__)
 app.debug = True
 app.secret_key = config.SECRET_KEY
 
+# Maximum file upload size, in bytes.
+app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024 * 1024
+
 """ Connect to the mySQL database. """
 engine = create_engine(config.DB_URI, convert_unicode=True)
 connection = engine.connect()
@@ -745,10 +748,19 @@ def add_members():
     value.
     '''
 
+    # Microsoft Excel has a habit of saving csv files using just \r as
+    # the newline character, not even \r\n. 
+    if '\r' in new_members_data and '\n' in new_members_data:
+      delim = '\r\n'
+    elif '\r' in new_members_data:
+      delim = '\r'
+    else:
+      delim = '\n'
+
     data = []
 
     # HTML forms use carriage returns, apparently.
-    for line in new_members_data.split('\r\n'):
+    for line in new_members_data.split(delim):
       if line == "":
         continue
 
@@ -903,7 +915,9 @@ def add_members():
     state = request.form['state']
 
   if state == 'preview' or state == 'confirmed':
-    new_members_data = request.form['new_members_data']
+    new_members_file = request.files['new_members_file']
+    new_members_data = new_members_file.read()
+
     data = process_data(new_members_data, field_list)
 
     if data:
@@ -918,4 +932,4 @@ def add_members():
 
 if __name__ == "__main__":
   app.debug = True
-  app.run()
+  app.run(port=9000)

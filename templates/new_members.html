@@ -9,9 +9,9 @@
   <p><a href="{{ path }}">{{ filename }}</a></p>
 
   <p>Please copy/paste the contents of the csv file here (you will need to open the file up in notepad or similar text editor to view the raw data).</p>
-  <form action="" method="post">
-    <textarea name="new_members_data" rows="10" cols="60"></textarea>
-    <br />
+  <form action="" method="post" enctype="multipart/form-data">
+    <input type="file" name="new_members_file" />
+    <br /><br />
     <button type="submit" name="state" value="preview">Submit</button>
   </form>
 
