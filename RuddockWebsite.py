@@ -716,24 +716,71 @@ def add_members():
   new members a unique link to create an account.
   '''
 
-  def validate_data(data, field_list):
-    ''' 
-    Expects the data to be a list of dicts mapping field names to values.
-    Expects the field list to be a list of dicts containing field name and
-    a regex used to validate that field.
+  def convert_membership_type(membership_desc):
+    '''
+    This takes a membership description (full member, social member, etc)
+    and converts it to the corresponding type. Expects input to be valid
+    and one of (full, social, associate). 
     '''
 
-    # Finds all errors, and then alerts the user.
+    full_regex = re.compile(r'^full(| member)$', re.I)
+    social_regex = re.compile(r'^social(| member)$', re.I)
+    assoc_regex = re.compile(r'^associate(| member)$', re.I)
+
+    if full_regex.match(membership_desc):
+      return 1
+    elif social_regex.match(membership_desc):
+      return 2
+    elif assoc_regex.match(membership_desc):
+      return 3
+    else:
+      return False
+
+  def validate_data(data):
+    ''' 
+    Expects data to be a dict mapping fields to values.
+    '''
+
+    # Keeps track of what errors have been found.
     errors = set()
-    for entry in data:
-      for field in field_list:
-        if not field['regex'].match(entry[field['field']]):
-          errors.add(field['name'])
-    
+
+    name_regex = re.compile(r"^[a-z][a-z '-]{0,14}[a-z]$", re.I)
+    uid_regex = re.compile(r'^[0-9]{7}$')
+    year_regex = re.compile(r'^(19[0-9]{2}|2(0[0-9]{2}|1[0-5][0-9]))$')
+    email_regex = re.compile(r'^[a-z0-9\.\_\%\+\-]+@[a-z0-9\.\-]+\.[a-z]{2,4}$', re.I)
+
+    try:
+      # Check that all fields are valid.
+      if not name_regex.match(data['fname']):
+        errors.add('First Name')
+
+      if not name_regex.match(data['lname']):
+        errors.add('Last Name')
+
+      if not uid_regex.match(data['uid']):
+        errors.add('UID')
+
+      if not year_regex.match(data['matriculate_year']):
+        errors.add('Matriculation Year')
+
+      if not year_regex.match(data['grad_year']):
+        errors.add('Graduation Year')
+
+      if not email_regex.match(data['email']):
+        errors.add('Email')
+
+      if not convert_membership_type(data['membership_type']):
+        errors.add('Membership Type')
+
+    except KeyError:
+      flash("Invalid data submitted.")
+      return False
+
     if len(errors) > 0:
       # So the errors appear in the same order every time.
       errors = list(errors)
       errors.sort()
+
       for field_name in errors:
         flash("Invalid " + field_name + "(s) submitted.")
       return False
@@ -766,7 +813,7 @@ def add_members():
 
       values = line.split(',')
       if len(values) != len(field_list):
-        flash("Invalid data submitted")
+        flash("Invalid data submitted.")
         return False
 
       # Skip title line if present
@@ -779,28 +826,11 @@ def add_members():
         entry[field['field']] = values[i]
       data.append(entry)
 
-    if validate_data(data, field_list):
-      return data
-    else:
-      return False
+    for entry in data:
+      if not validate_data(entry):
+        return False
 
-  def convert_membership_type(membership_desc):
-    '''
-    This takes a membership description (full member, social member, etc)
-    and converts it to the corresponding type. Expects input to be valid
-    and one of (full, social, associate). 
-    '''
-
-    full_regex = re.compile(r'^full(| member)$', re.I)
-    social_regex = re.compile(r'^social(| member)$', re.I)
-    assoc_regex = re.compile(r'^associate(| member)$', re.I)
-
-    if full_regex.match(membership_desc):
-      return 1
-    elif social_regex.match(membership_desc):
-      return 2
-    else:
-      return 3
+    return data
 
   def add_new_members(data):
     ''' 
@@ -883,30 +913,21 @@ def add_members():
   PATH_TO_TEMPLATE = "/static/new_members_template.csv"
   TEMPLATE_FILENAME = PATH_TO_TEMPLATE.split('/')[-1]
 
+  # Order in which fields appear in template.
   field_list = [
-    # Compile with re.I for case-insensitive regex
     { 'field':'fname', 
-      'regex':re.compile(r"^[a-z][a-z '-]{0,14}[a-z]$", re.I),
       'name':'First Name'},
     { 'field':'lname',
-      'regex':re.compile(r"^[a-z][a-z '-]{0,14}[a-z]$", re.I),
       'name':'Last Name'},
     { 'field':'uid',
-      'regex':re.compile(r'^[0-9]{7}$'),
       'name':'UID'},
     { 'field':'matriculate_year',
-      # Year must be betwen 1901 and 2155 (MySQL year standard)
-      'regex':re.compile(r'^(19[0-9]{2}|2(0[0-9]{2}|1[0-5][0-9]))$'),
       'name':'Matriculation Year'},
     { 'field':'grad_year',
-      'regex':re.compile(r'^(19[0-9]{2}|2(0[0-9]{2}|1[0-5][0-9]))$'),
       'name':'Graduation Year'},
     { 'field':'email',
-      'regex':re.compile(r'^[a-z0-9\.\_\%\+\-]+@[a-z0-9\.\-]+\.[a-z]{2,4}$', re.I),
       'name':'Email'},
     { 'field':'membership_type',
-      # Accepts "full member", "full", etc
-      'regex':re.compile(r'^(full|social|associate)(| member)$', re.I),
       'name':'Membership Type'}
   ]
 
@@ -914,18 +935,23 @@ def add_members():
   if request.method == 'POST' and request.form['state']:
     state = request.form['state']
 
-  if state == 'preview' or state == 'confirmed':
+  if state == 'preview':
     new_members_file = request.files['new_members_file']
     new_members_data = new_members_file.read()
 
     data = process_data(new_members_data, field_list)
 
     if data:
-      if state == 'preview':
-        return render_template('new_members.html', state='preview', data=data, \
-            field_list=field_list, raw_data=new_members_data)
-      else:
-        add_new_members(data)
+      return render_template('new_members.html', state='preview', data=data, \
+          field_list=field_list, raw_data=new_members_data)
+
+  elif state == 'confirmed':
+    new_members_data = request.form['new_members_data']
+    
+    data = process_data(new_members_data, field_list)
+
+    if data:
+      add_new_members(data)
 
   return render_template('new_members.html', state='provide_data', \
       path=PATH_TO_TEMPLATE, filename=TEMPLATE_FILENAME)
