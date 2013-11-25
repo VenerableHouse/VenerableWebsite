@@ -24,7 +24,7 @@ connection = engine.connect()
 
 def fetch_all_results(query_result):
   '''
-  Takes the result from a database query and organizes results. The output 
+  Takes the result from a database query and organizes results. The output
   format is a list of dictionaries, where the dict keys are the columns
   returned.
   '''
@@ -477,14 +477,14 @@ def admin_home():
   '''
   Loads a home page for admins, providing links to various tools.
   '''
-  
+
   admin_tools = [
       {'name':'Add new members',
        'link':url_for('add_members', _external=True)},
       {'name':'Send account creation reminder',
        'link':url_for('send_reminder_emails', _external=True)}
       ]
-  
+
   return render_template('admin.html', tools=admin_tools)
 
 def create_account_hash(user_id, uid, fname, lname):
@@ -495,14 +495,14 @@ def create_account_hash(user_id, uid, fname, lname):
 
 @app.route('/create_account', methods=['GET', 'POST'])
 def create_account():
-  ''' 
-  Allows the user to create an account. The user should have receieved 
+  '''
+  Allows the user to create an account. The user should have receieved
   an email when the secretary imported him/her into the database with
-  a unique link to create the account with. 
+  a unique link to create the account with.
   '''
 
   def validate_data(data):
-    ''' 
+    '''
     Checks that the provided username, password, and birthday are valid.
     '''
 
@@ -584,7 +584,7 @@ def create_account():
 
   def create_new_user(user_id, username, password, email):
     '''
-    Creates a new account with the given parameters. Assumes that all 
+    Creates a new account with the given parameters. Assumes that all
     parameters have already been validated.
     '''
 
@@ -615,7 +615,7 @@ def create_account():
     connection.execute(query, bday=birthday, user_id=user_id)
 
   ### End helper functions ###
-  
+
   if request.method == 'POST':
     key = request.form['k']
     user_id = request.form['u']
@@ -638,7 +638,7 @@ def create_account():
 
       flash('Account successfully created.')
       return redirect(url_for('home'))
-    
+
   key = request.args.get('k', default=None)
   user_id = request.args.get('u', default=None)
 
@@ -646,7 +646,7 @@ def create_account():
     return display_error_msg()
 
   user_data = get_user_data(user_id)
-  
+
   return render_template('create_account.html', user_data=user_data, \
       key=key, user_id=user_id)
 
@@ -654,7 +654,7 @@ def create_account():
 @app.route('/admin/reminder_email', methods=['GET', 'POST'])
 @login_required(access_level = AL_USER_ADMIN)
 def send_reminder_emails():
-  ''' 
+  '''
   Sends a reminder email to all members who have not yet created
   an account.
   '''
@@ -673,7 +673,7 @@ def send_reminder_emails():
   def send_reminder_email(fname, lname, email, user_id, uid):
     user_hash = create_account_hash(user_id, uid, fname, lname)
     name = fname + ' ' + lname
-   
+
     to = email
     subject = "Please create an account"
     msg = "Hey " + name + ",\n\n" + \
@@ -686,12 +686,12 @@ def send_reminder_emails():
         "\n\n" + \
         "Thanks!\n" + \
         "The Ruddock IMSS Team"
-    
+
     sendEmail(to, msg, subject)
 
   ### END HELPER FUNCTIONS ###
   data = get_members_without_accounts()
-  
+
   state = None
   if request.method == 'POST' and request.form['state']:
     state = request.form['state']
@@ -711,7 +711,7 @@ def send_reminder_emails():
 @app.route('/admin/add_members', methods=['GET', 'POST'])
 @login_required(access_level = AL_USER_ADMIN)
 def add_members():
-  ''' 
+  '''
   Provides a form to add new members to the website, and then emails the
   new members a unique link to create an account.
   '''
@@ -720,7 +720,7 @@ def add_members():
     '''
     This takes a membership description (full member, social member, etc)
     and converts it to the corresponding type. Expects input to be valid
-    and one of (full, social, associate). 
+    and one of (full, social, associate).
     '''
 
     full_regex = re.compile(r'^full(| member)$', re.I)
@@ -737,7 +737,7 @@ def add_members():
       return False
 
   def validate_data(data):
-    ''' 
+    '''
     Expects data to be a dict mapping fields to values.
     '''
 
@@ -788,7 +788,7 @@ def add_members():
     return True
 
   def process_data(new_members_data, field_list):
-    ''' 
+    '''
     Expects data to be a single string (with the contents of a csv file) and
     field_list to be a list of dicts describing each field. Validates the
     data before returning it as a list of dicts mapping each field to its
@@ -796,7 +796,7 @@ def add_members():
     '''
 
     # Microsoft Excel has a habit of saving csv files using just \r as
-    # the newline character, not even \r\n. 
+    # the newline character, not even \r\n.
     if '\r' in new_members_data and '\n' in new_members_data:
       delim = '\r\n'
     elif '\r' in new_members_data:
@@ -805,8 +805,6 @@ def add_members():
       delim = '\n'
 
     data = []
-
-    # HTML forms use carriage returns, apparently.
     for line in new_members_data.split(delim):
       if line == "":
         continue
@@ -833,9 +831,9 @@ def add_members():
     return data
 
   def add_new_members(data):
-    ''' 
-    This adds the members to the database and them emails them with 
-    account creation information. Assumes data has already been validated. 
+    '''
+    This adds the members to the database and them emails them with
+    account creation information. Assumes data has already been validated.
     '''
 
     insert_query = text("INSERT INTO members (fname, lname, uid, \
@@ -858,7 +856,7 @@ def add_members():
       if count != 0:
         members_skipped_count += 1
         continue
-      
+
       membership_type = convert_membership_type(entry['membership_type'])
 
       # Add the user to the database.
@@ -899,7 +897,7 @@ def add_members():
         sendEmail("imss@ruddock.caltech.edu",
             "Something went wrong when trying to email " + name + ". " + \
             "You should look into this.\n\n" + \
-            "Exception: " + str(e), 
+            "Exception: " + str(e),
             "Add members email error")
 
         members_errors_count += 1
@@ -910,10 +908,10 @@ def add_members():
 
   def get_raw_data(field_list):
     '''
-    For processing data in add single member mode, this converts 
+    For processing data in add single member mode, this converts
     request data to a csv string. Returns false if unsuccessful.
     '''
-    
+
     values = []
     for field in field_list:
       if request.form.has_key(field['field']):
@@ -935,7 +933,7 @@ def add_members():
 
   # Order in which fields appear in template.
   field_list = [
-    { 'field':'fname', 
+    { 'field':'fname',
       'name':'First Name'},
     { 'field':'lname',
       'name':'Last Name'},
@@ -985,7 +983,7 @@ def add_members():
   elif state == 'confirmed':
     if request.form.has_key('raw_data'):
       raw_data = request.form['raw_data']
-      
+
       data = process_data(raw_data, field_list)
 
       if data:
