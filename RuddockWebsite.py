@@ -792,7 +792,7 @@ def add_members():
     Expects data to be a single string (with the contents of a csv file) and
     field_list to be a list of dicts describing each field. Validates the
     data before returning it as a list of dicts mapping each field to its
-    value.
+    value. Returns false if unsuccessful.
     '''
 
     # Microsoft Excel has a habit of saving csv files using just \r as
@@ -908,9 +908,29 @@ def add_members():
         str(members_skipped_count) + " members were skipped, and " +
         str(members_errors_count) + " members encountered errors.")
 
+  def get_raw_data(field_list):
+    '''
+    For processing data in add single member mode, this converts 
+    request data to a csv string. Returns false if unsuccessful.
+    '''
+    
+    values = []
+    for field in field_list:
+      if request.form.has_key(field['field']):
+        value = request.form[field['field']]
+        if value == '':
+          flash("All fields are required.")
+          return False
+        values.append(value)
+      else:
+        flash('Invalid request.')
+        return False
+
+    return ','.join(values)
+
   ### End helper function definitions ###
 
-  PATH_TO_TEMPLATE = "/static/new_members_template.csv"
+  PATH_TO_TEMPLATE = '/static/new_members_template.csv'
   TEMPLATE_FILENAME = PATH_TO_TEMPLATE.split('/')[-1]
 
   # Order in which fields appear in template.
@@ -931,29 +951,50 @@ def add_members():
       'name':'Membership Type'}
   ]
 
-  state = 'provide_data'
-  if request.method == 'POST' and request.form['state']:
+  state = 'default'
+  if request.method == 'POST' and request.form.has_key('state'):
     state = request.form['state']
 
   if state == 'preview':
-    new_members_file = request.files['new_members_file']
-    new_members_data = new_members_file.read()
+    # The mode must be provided and valid.
+    if request.form.has_key('mode') and \
+        request.form['mode'] in ['single', 'multi']:
+      mode = request.form['mode']
+    else:
+      flash('Invalid request.')
+      state = 'default'
 
-    data = process_data(new_members_data, field_list)
+  if state == 'preview':
+    if mode == 'single':
+      raw_data = get_raw_data(field_list)
 
-    if data:
-      return render_template('new_members.html', state='preview', data=data, \
-          field_list=field_list, raw_data=new_members_data)
+    else:
+      if request.files.has_key('new_members_file'):
+        new_members_file = request.files['new_members_file']
+        raw_data = new_members_file.read()
+      else:
+        raw_data = False
+
+    if raw_data:
+      data = process_data(raw_data, field_list)
+
+      if data:
+        return render_template('new_members.html', state='preview', \
+            data=data, field_list=field_list, raw_data=raw_data)
 
   elif state == 'confirmed':
-    new_members_data = request.form['new_members_data']
-    
-    data = process_data(new_members_data, field_list)
+    if request.form.has_key('raw_data'):
+      raw_data = request.form['raw_data']
+      
+      data = process_data(raw_data, field_list)
 
-    if data:
-      add_new_members(data)
+      if data:
+        add_new_members(data)
 
-  return render_template('new_members.html', state='provide_data', \
+    else:
+      flash('Invalid request.')
+
+  return render_template('new_members.html', state='default', \
       path=PATH_TO_TEMPLATE, filename=TEMPLATE_FILENAME)
 
 if __name__ == "__main__":
