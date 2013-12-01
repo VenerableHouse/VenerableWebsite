@@ -15,13 +15,16 @@ app = Flask(__name__)
 app.debug = True
 app.secret_key = config.SECRET_KEY
 
+# Maximum file upload size, in bytes.
+app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024 * 1024
+
 """ Connect to the mySQL database. """
 engine = create_engine(config.DB_URI, convert_unicode=True)
 connection = engine.connect()
 
 def fetch_all_results(query_result):
   '''
-  Takes the result from a database query and organizes results. The output 
+  Takes the result from a database query and organizes results. The output
   format is a list of dictionaries, where the dict keys are the columns
   returned.
   '''
@@ -474,14 +477,14 @@ def admin_home():
   '''
   Loads a home page for admins, providing links to various tools.
   '''
-  
+
   admin_tools = [
       {'name':'Add new members',
        'link':url_for('add_members', _external=True)},
       {'name':'Send account creation reminder',
        'link':url_for('send_reminder_emails', _external=True)}
       ]
-  
+
   return render_template('admin.html', tools=admin_tools)
 
 def create_account_hash(user_id, uid, fname, lname):
@@ -492,14 +495,14 @@ def create_account_hash(user_id, uid, fname, lname):
 
 @app.route('/create_account', methods=['GET', 'POST'])
 def create_account():
-  ''' 
-  Allows the user to create an account. The user should have receieved 
+  '''
+  Allows the user to create an account. The user should have receieved
   an email when the secretary imported him/her into the database with
-  a unique link to create the account with. 
+  a unique link to create the account with.
   '''
 
   def validate_data(data):
-    ''' 
+    '''
     Checks that the provided username, password, and birthday are valid.
     '''
 
@@ -581,7 +584,7 @@ def create_account():
 
   def create_new_user(user_id, username, password, email):
     '''
-    Creates a new account with the given parameters. Assumes that all 
+    Creates a new account with the given parameters. Assumes that all
     parameters have already been validated.
     '''
 
@@ -612,7 +615,7 @@ def create_account():
     connection.execute(query, bday=birthday, user_id=user_id)
 
   ### End helper functions ###
-  
+
   if request.method == 'POST':
     key = request.form['k']
     user_id = request.form['u']
@@ -635,7 +638,7 @@ def create_account():
 
       flash('Account successfully created.')
       return redirect(url_for('home'))
-    
+
   key = request.args.get('k', default=None)
   user_id = request.args.get('u', default=None)
 
@@ -643,7 +646,7 @@ def create_account():
     return display_error_msg()
 
   user_data = get_user_data(user_id)
-  
+
   return render_template('create_account.html', user_data=user_data, \
       key=key, user_id=user_id)
 
@@ -651,7 +654,7 @@ def create_account():
 @app.route('/admin/reminder_email', methods=['GET', 'POST'])
 @login_required(access_level = AL_USER_ADMIN)
 def send_reminder_emails():
-  ''' 
+  '''
   Sends a reminder email to all members who have not yet created
   an account.
   '''
@@ -670,7 +673,7 @@ def send_reminder_emails():
   def send_reminder_email(fname, lname, email, user_id, uid):
     user_hash = create_account_hash(user_id, uid, fname, lname)
     name = fname + ' ' + lname
-   
+
     to = email
     subject = "Please create an account"
     msg = "Hey " + name + ",\n\n" + \
@@ -683,12 +686,12 @@ def send_reminder_emails():
         "\n\n" + \
         "Thanks!\n" + \
         "The Ruddock IMSS Team"
-    
+
     sendEmail(to, msg, subject)
 
   ### END HELPER FUNCTIONS ###
   data = get_members_without_accounts()
-  
+
   state = None
   if request.method == 'POST' and request.form['state']:
     state = request.form['state']
@@ -708,29 +711,76 @@ def send_reminder_emails():
 @app.route('/admin/add_members', methods=['GET', 'POST'])
 @login_required(access_level = AL_USER_ADMIN)
 def add_members():
-  ''' 
+  '''
   Provides a form to add new members to the website, and then emails the
   new members a unique link to create an account.
   '''
 
-  def validate_data(data, field_list):
-    ''' 
-    Expects the data to be a list of dicts mapping field names to values.
-    Expects the field list to be a list of dicts containing field name and
-    a regex used to validate that field.
+  def convert_membership_type(membership_desc):
+    '''
+    This takes a membership description (full member, social member, etc)
+    and converts it to the corresponding type. Expects input to be valid
+    and one of (full, social, associate).
     '''
 
-    # Finds all errors, and then alerts the user.
+    full_regex = re.compile(r'^full(| member)$', re.I)
+    social_regex = re.compile(r'^social(| member)$', re.I)
+    assoc_regex = re.compile(r'^associate(| member)$', re.I)
+
+    if full_regex.match(membership_desc):
+      return 1
+    elif social_regex.match(membership_desc):
+      return 2
+    elif assoc_regex.match(membership_desc):
+      return 3
+    else:
+      return False
+
+  def validate_data(data):
+    '''
+    Expects data to be a dict mapping fields to values.
+    '''
+
+    # Keeps track of what errors have been found.
     errors = set()
-    for entry in data:
-      for field in field_list:
-        if not field['regex'].match(entry[field['field']]):
-          errors.add(field['name'])
-    
+
+    name_regex = re.compile(r"^[a-z][a-z '-]{0,14}[a-z]$", re.I)
+    uid_regex = re.compile(r'^[0-9]{7}$')
+    year_regex = re.compile(r'^(19[0-9]{2}|2(0[0-9]{2}|1[0-5][0-9]))$')
+    email_regex = re.compile(r'^[a-z0-9\.\_\%\+\-]+@[a-z0-9\.\-]+\.[a-z]{2,4}$', re.I)
+
+    try:
+      # Check that all fields are valid.
+      if not name_regex.match(data['fname']):
+        errors.add('First Name')
+
+      if not name_regex.match(data['lname']):
+        errors.add('Last Name')
+
+      if not uid_regex.match(data['uid']):
+        errors.add('UID')
+
+      if not year_regex.match(data['matriculate_year']):
+        errors.add('Matriculation Year')
+
+      if not year_regex.match(data['grad_year']):
+        errors.add('Graduation Year')
+
+      if not email_regex.match(data['email']):
+        errors.add('Email')
+
+      if not convert_membership_type(data['membership_type']):
+        errors.add('Membership Type')
+
+    except KeyError:
+      flash("Invalid data submitted.")
+      return False
+
     if len(errors) > 0:
       # So the errors appear in the same order every time.
       errors = list(errors)
       errors.sort()
+
       for field_name in errors:
         flash("Invalid " + field_name + "(s) submitted.")
       return False
@@ -738,23 +788,30 @@ def add_members():
     return True
 
   def process_data(new_members_data, field_list):
-    ''' 
+    '''
     Expects data to be a single string (with the contents of a csv file) and
     field_list to be a list of dicts describing each field. Validates the
     data before returning it as a list of dicts mapping each field to its
-    value.
+    value. Returns false if unsuccessful.
     '''
 
-    data = []
+    # Microsoft Excel has a habit of saving csv files using just \r as
+    # the newline character, not even \r\n.
+    if '\r' in new_members_data and '\n' in new_members_data:
+      delim = '\r\n'
+    elif '\r' in new_members_data:
+      delim = '\r'
+    else:
+      delim = '\n'
 
-    # HTML forms use carriage returns, apparently.
-    for line in new_members_data.split('\r\n'):
+    data = []
+    for line in new_members_data.split(delim):
       if line == "":
         continue
 
       values = line.split(',')
       if len(values) != len(field_list):
-        flash("Invalid data submitted")
+        flash("Invalid data submitted.")
         return False
 
       # Skip title line if present
@@ -767,33 +824,16 @@ def add_members():
         entry[field['field']] = values[i]
       data.append(entry)
 
-    if validate_data(data, field_list):
-      return data
-    else:
-      return False
+    for entry in data:
+      if not validate_data(entry):
+        return False
 
-  def convert_membership_type(membership_desc):
-    '''
-    This takes a membership description (full member, social member, etc)
-    and converts it to the corresponding type. Expects input to be valid
-    and one of (full, social, associate). 
-    '''
-
-    full_regex = re.compile(r'^full(| member)$', re.I)
-    social_regex = re.compile(r'^social(| member)$', re.I)
-    assoc_regex = re.compile(r'^associate(| member)$', re.I)
-
-    if full_regex.match(membership_desc):
-      return 1
-    elif social_regex.match(membership_desc):
-      return 2
-    else:
-      return 3
+    return data
 
   def add_new_members(data):
-    ''' 
-    This adds the members to the database and them emails them with 
-    account creation information. Assumes data has already been validated. 
+    '''
+    This adds the members to the database and them emails them with
+    account creation information. Assumes data has already been validated.
     '''
 
     insert_query = text("INSERT INTO members (fname, lname, uid, \
@@ -816,7 +856,7 @@ def add_members():
       if count != 0:
         members_skipped_count += 1
         continue
-      
+
       membership_type = convert_membership_type(entry['membership_type'])
 
       # Add the user to the database.
@@ -857,7 +897,7 @@ def add_members():
         sendEmail("imss@ruddock.caltech.edu",
             "Something went wrong when trying to email " + name + ". " + \
             "You should look into this.\n\n" + \
-            "Exception: " + str(e), 
+            "Exception: " + str(e),
             "Add members email error")
 
         members_errors_count += 1
@@ -866,54 +906,93 @@ def add_members():
         str(members_skipped_count) + " members were skipped, and " +
         str(members_errors_count) + " members encountered errors.")
 
+  def get_raw_data(field_list):
+    '''
+    For processing data in add single member mode, this converts
+    request data to a csv string. Returns false if unsuccessful.
+    '''
+
+    values = []
+    for field in field_list:
+      if request.form.has_key(field['field']):
+        value = request.form[field['field']]
+        if value == '':
+          flash("All fields are required.")
+          return False
+        values.append(value)
+      else:
+        flash('Invalid request.')
+        return False
+
+    return ','.join(values)
+
   ### End helper function definitions ###
 
-  PATH_TO_TEMPLATE = "/static/new_members_template.csv"
+  PATH_TO_TEMPLATE = '/static/new_members_template.csv'
   TEMPLATE_FILENAME = PATH_TO_TEMPLATE.split('/')[-1]
 
+  # Order in which fields appear in template.
   field_list = [
-    # Compile with re.I for case-insensitive regex
-    { 'field':'fname', 
-      'regex':re.compile(r"^[a-z][a-z '-]{0,14}[a-z]$", re.I),
+    { 'field':'fname',
       'name':'First Name'},
     { 'field':'lname',
-      'regex':re.compile(r"^[a-z][a-z '-]{0,14}[a-z]$", re.I),
       'name':'Last Name'},
     { 'field':'uid',
-      'regex':re.compile(r'^[0-9]{7}$'),
       'name':'UID'},
     { 'field':'matriculate_year',
-      # Year must be betwen 1901 and 2155 (MySQL year standard)
-      'regex':re.compile(r'^(19[0-9]{2}|2(0[0-9]{2}|1[0-5][0-9]))$'),
       'name':'Matriculation Year'},
     { 'field':'grad_year',
-      'regex':re.compile(r'^(19[0-9]{2}|2(0[0-9]{2}|1[0-5][0-9]))$'),
       'name':'Graduation Year'},
     { 'field':'email',
-      'regex':re.compile(r'^[a-z0-9\.\_\%\+\-]+@[a-z0-9\.\-]+\.[a-z]{2,4}$', re.I),
       'name':'Email'},
     { 'field':'membership_type',
-      # Accepts "full member", "full", etc
-      'regex':re.compile(r'^(full|social|associate)(| member)$', re.I),
       'name':'Membership Type'}
   ]
 
-  state = 'provide_data'
-  if request.method == 'POST' and request.form['state']:
+  state = 'default'
+  if request.method == 'POST' and request.form.has_key('state'):
     state = request.form['state']
 
-  if state == 'preview' or state == 'confirmed':
-    new_members_data = request.form['new_members_data']
-    data = process_data(new_members_data, field_list)
+  if state == 'preview':
+    # The mode must be provided and valid.
+    if request.form.has_key('mode') and \
+        request.form['mode'] in ['single', 'multi']:
+      mode = request.form['mode']
+    else:
+      flash('Invalid request.')
+      state = 'default'
 
-    if data:
-      if state == 'preview':
-        return render_template('new_members.html', state='preview', data=data, \
-            field_list=field_list, raw_data=new_members_data)
+  if state == 'preview':
+    if mode == 'single':
+      raw_data = get_raw_data(field_list)
+
+    else:
+      if request.files.has_key('new_members_file'):
+        new_members_file = request.files['new_members_file']
+        raw_data = new_members_file.read()
       else:
+        raw_data = False
+
+    if raw_data:
+      data = process_data(raw_data, field_list)
+
+      if data:
+        return render_template('new_members.html', state='preview', \
+            data=data, field_list=field_list, raw_data=raw_data)
+
+  elif state == 'confirmed':
+    if request.form.has_key('raw_data'):
+      raw_data = request.form['raw_data']
+
+      data = process_data(raw_data, field_list)
+
+      if data:
         add_new_members(data)
 
-  return render_template('new_members.html', state='provide_data', \
+    else:
+      flash('Invalid request.')
+
+  return render_template('new_members.html', state='default', \
       path=PATH_TO_TEMPLATE, filename=TEMPLATE_FILENAME)
 
 if __name__ == "__main__":

@@ -3,22 +3,58 @@
 {% block body %}
 <h2>Add new members</h2>
 
-  {% if state == 'provide_data' %}
-  <p>Please download the template .csv file and fill it out, then copy/paste the contents here. All fields are required.</p>
+  {% if state == 'default' %}
+  <p>Use this to add a single member to the website. All fields are required.</p>
+
+  <form action="" method="post">
+    <input type="hidden" name="mode" value="single" />
+    <table>
+      <tr>
+        <td>First Name:</td>
+        <td><input type="text" name="fname" /></td>
+        <td>Last Name:</td>
+        <td><input type="text" name="lname" /></td>
+      </tr>
+      <tr>
+        <td>Matriculation Year:</td>
+        <td><input type="text" name="matriculate_year" /></td>
+        <td>Graduation Year:</td>
+        <td><input type="text" name="grad_year" /></td>
+      </tr>
+      <tr>
+        <td>UID:</td>
+        <td><input type="text" name="uid" /></td>
+        <td>Email:</td>
+        <td><input type="text" name="email" /></td>
+      </tr>
+      <tr>
+        <td>Membership Type:</td>
+        <td><select name="membership_type">
+          <option value="full">Full</option>
+          <option value="social">Social</option>
+          <option value="associate">Associate</option>
+        </td>
+      </tr>
+    </table>
+    <button type="submit" name="state" value="preview">Submit</button>
+  </form>
+  <br />
+  <p>Alternatively, if you need to add many users at once, download and fill out the template provided below.</p>
 
   <p><a href="{{ path }}">{{ filename }}</a></p>
 
-  <p>Please copy/paste the contents of the csv file here (you will need to open the file up in notepad or similar text editor to view the raw data).</p>
-  <form action="" method="post">
-    <textarea name="new_members_data" rows="10" cols="60"></textarea>
-    <br />
+  <p>Please upload the completed csv file here.</p>
+  <form action="" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="mode" value="multi" />
+    <input type="file" name="new_members_file" />
+    <br /><br />
     <button type="submit" name="state" value="preview">Submit</button>
   </form>
 
   {% elif state == 'preview' %}
   <p>Are you sure you want to add the following members?</p>
   <form action="" method="post">
-    <input type="hidden" name="new_members_data" value="{{ raw_data }}" />
+    <input type="hidden" name="raw_data" value="{{ raw_data }}" />
     <table>
       <tr>
         {% for field in field_list %}
@@ -34,7 +70,7 @@
       {% endfor %}
     </table>
     {# Confirm buttons #}
-    <button type="submit" name="state" value="upload">No</button>
+    <button type="submit" name="state" value="default">No</button>
     <button type="submit" name="state" value="confirmed">Yes</button>
   </form>
   {% endif %}
