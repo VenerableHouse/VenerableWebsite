@@ -907,6 +907,9 @@ def add_members():
         str(members_skipped_count) + " members were skipped, and " +
         str(members_errors_count) + " members encountered errors.")
 
+    # Remind admin to add users to mailing lists.
+    flash("IMPORTANT: Don't forget to add the new members to email lists!")
+
   def get_raw_data(field_list):
     '''
     For processing data in add single member mode, this converts
