@@ -96,6 +96,7 @@ def login():
       session['username'] = request.form['username']
       session['user_id'] = user_id
       session['access_level'] = auth.get_user_access_level(username, connection)
+      session['show_admin'] = session['access_level'] >= AL_USER_ADMIN
 
       # return to previous page if in session
       if 'next' in session:
