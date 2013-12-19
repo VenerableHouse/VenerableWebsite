@@ -98,6 +98,10 @@ def login():
       session['access_level'] = auth.get_user_access_level(username, connection)
       session['show_admin'] = session['access_level'] >= AL_USER_ADMIN
 
+      # Update last login time.
+      query = text("UPDATE users SET lastlogin=NOW() WHERE user_id=:u")
+      connection.execute(query, u=user_id)
+
       # return to previous page if in session
       if 'next' in session:
         redirect_to = session.pop('next')
