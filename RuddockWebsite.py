@@ -874,11 +874,11 @@ def add_members():
 
       user_hash = create_account_hash(user_id, entry['uid'], entry['fname'], \
           entry['lname'])
-      name = entry['fname'] + ' ' + entry['lname']
+      entry['name'] = entry['fname'] + ' ' + entry['lname']
 
       # Email the user
       subject = "Welcome to the Ruddock House Website!"
-      msg = "Hey " + name + ",\n\n" + \
+      msg = "Hey " + entry['name'] + ",\n\n" + \
           "You have been added to the Ruddock House Website. In order to " + \
           "access private areas of our site, please complete " + \
           "registration by creating an account here:\n" + \
@@ -896,8 +896,8 @@ def add_members():
 
       except Exception as e:
         sendEmail("imss@ruddock.caltech.edu",
-            "Something went wrong when trying to email " + name + ". " + \
-            "You should look into this.\n\n" + \
+            "Something went wrong when trying to email " + entry['name'] + \
+            ". You should look into this.\n\n" + \
             "Exception: " + str(e),
             "Add members email error")
 
@@ -909,6 +909,21 @@ def add_members():
 
     # Remind admin to add users to mailing lists.
     flash("IMPORTANT: Don't forget to add the new members to email lists!")
+
+    # Send an email to IMSS to alert them that users have been added.
+    to = "imss@ruddock.caltech.edu"
+    subject = "Members were added to the Ruddock Website"
+    msg = "Hey,\n\n" + \
+        "The following members have been added to the Ruddock Website:\n\n"
+    for entry in data:
+      msg += entry['name'] + '\n'
+
+    msg += "\nYou should run the email update script to add the new " + \
+        "members.\n\n" + \
+        "Thanks!\n" + \
+        "The Ruddock Website"
+    sendEmail(to, msg, subject, usePrefix=False)
+
 
   def get_raw_data(field_list):
     '''
@@ -1001,4 +1016,4 @@ def add_members():
 
 if __name__ == "__main__":
   app.debug = True
-  app.run()
+  app.run(port=9000)
