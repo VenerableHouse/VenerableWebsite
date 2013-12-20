@@ -427,12 +427,12 @@ def show_gov():
   ucc.sort(key=lambda d: d['office_name'])
   other.sort(key=lambda d: d['office_name'])
 
-  # map the types to their names, so that template can parse efficiently
-  all_types = OrderedDict([
-    ('Executive Committee', excomm),
-    ('Upperclass Counselors', ucc),
-    ('Other Offices', other)
-  ])
+  # tuple with name, email, and users, so that template can parse efficiently
+  all_types = [
+    ('Executive Committee', 'excomm', excomm),
+    ('Upperclass Counselors', 'uccs', ucc),
+    ('Other Offices', None, other)
+  ]
 
   return render_template('government.html', all_types = all_types)
 
