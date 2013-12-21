@@ -908,7 +908,8 @@ def add_members():
         str(members_errors_count) + " members encountered errors.")
 
     # Remind admin to add users to mailing lists.
-    flash("IMPORTANT: Don't forget to add the new members to email lists!")
+    flash("IMPORTANT: Don't forget to add the new members to manual " + \
+        "email lists, like spam@ruddock!")
 
     # Send an email to IMSS to alert them that users have been added.
     to = "imss@ruddock.caltech.edu"
