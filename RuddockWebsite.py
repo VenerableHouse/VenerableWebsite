@@ -421,7 +421,7 @@ def show_gov():
 
     # organize by type
     if result['is_excomm']: excomm.append(temp_dict)
-    elif re.match('UCC', result['office_name']): ucc.append(temp_dict)
+    elif re.match('.*UCC', result['office_name']): ucc.append(temp_dict)
     else: other.append(temp_dict)
 
   ucc.sort(key=lambda d: d['office_name'])
