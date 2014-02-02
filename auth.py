@@ -10,7 +10,7 @@ def get_user_access_level(username, db):
   #  2    - logged in
   #  3..9 - various offices
   query = text("SELECT IFNULL(MAX(access_level), 2) FROM users NATURAL JOIN" + \
-      " office_members NATURAL JOIN offices WHERE username = :u")
+      " office_members_current NATURAL JOIN offices WHERE username = :u")
   result = db.execute(query, u = username).first()
 
   if (result != None):
