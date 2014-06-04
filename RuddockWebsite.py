@@ -240,8 +240,8 @@ def show_users():
   """ Procedure to show a list of all users, with all membership details. """
   # store which columns we want, and their displaynames
   cols = ["user_id", "lname", "fname", "email", "matriculate_year", \
-          "grad_year", "major"]
-  display = [None, "Last", "First", "Email", "Matr.", "Grad.", "Major"]
+          "grad_year", "major", "membership_desc"]
+  display = [None, "Last", "First", "Email", "Matr.", "Grad.", "Major", "Type"]
   fieldMap = dict(zip(cols, display))
 
   # get order by information from request arguments
@@ -266,7 +266,8 @@ def show_users():
     filterType = 'all'
 
   # perform query
-  query = text("SELECT * FROM " + tableName + " ORDER BY " + ordField + " " + ordDirect)
+  query = text("SELECT * FROM " + tableName + " NATURAL JOIN membership_types \
+     ORDER BY " + ordField + " " + ordDirect)
   results = connection.execute(query)
 
   # put results in a dictionary
