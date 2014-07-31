@@ -3,8 +3,12 @@
 {# TODO: Style this better. #}
 
 {% block body %}
-  {% for name, positions in all_types.iteritems() %}
-    <h2>{{ name }}</h2>
+  {% for name, email, positions in all_types %}
+    {# Display name and email of group #}
+    <div style="text-align:center">
+      <h2 style="display:inline-block">{{ name }}</h2>
+      {{ "[" + email + " at ruddock.caltech.edu" + "]" if email }}
+    </div>
     <table class="userlist">
     {# First display header #}
       <tr>
