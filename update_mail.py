@@ -80,8 +80,10 @@ def updateEmailAliases(connection):
         if current_aliases[alias[0]] == new_aliases[alias[0]]:
           current_alias_file.write(line)
         else:
-          current_alias_file.write("{0}: {1}\n".format(alias[0],
-                                                     new_aliases[alias[0]]))
+          # If users remove their email, take them off the alias list
+          if new_aliases[alias[0]] != "":
+            current_alias_file.write("{0}: {1}\n".format(alias[0],
+                                                         new_aliases[alias[0]]))
     else:
       current_alias_file.write(line)
 
