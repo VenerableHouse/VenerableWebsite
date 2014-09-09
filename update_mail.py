@@ -67,7 +67,7 @@ def update_aliases():
 
   # Rewrite the alias file, checking for updates and new aliases
   current_alias_file = open("/etc/aliases_custom", "wb")
-  
+
   # Check all existing lines for updates
   for line in current_alias_file_lines:
     if ": " in line:
@@ -87,8 +87,10 @@ def update_aliases():
         # A user has to have an email to get an alias
         if email != "":
           current_alias_file.write("{0}: {1}\n".format(user, email))
-  
 
+  # Update the postfix alias db and reload the postfix config
+  check_call("newaliases", shell=True)
+  check_call("postfix reload", shell=True)
 
 if __name__ == "__main__":
 
@@ -118,3 +120,4 @@ if __name__ == "__main__":
 
   # Update aliases for all users
   update_aliases()
+
