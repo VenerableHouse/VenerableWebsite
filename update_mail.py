@@ -44,13 +44,10 @@ def getAdditionalEmailsForMailmanList(lst):
   emails = connection.execute(query, lst=lst).fetchall()
   return emails
 
-def updateEmailAliases():
+def updateEmailAliases(connection):
   """Updates postfix aliases for all users"""
 
-  # Connect to the mySQL database.
-  engine = create_engine(config.DB_URI, convert_unicode=True)
-  connection = engine.connect()
-
+  # Make SQL query
   user_emails_query = text("SELECT members.email, users.username FROM members NATURAL JOIN users")
   user_emails = connection.execute(user_emails_query).fetchall()
 
@@ -129,5 +126,5 @@ if __name__ == "__main__":
     updateMailmanEmailList(results, lst)
 
   # Update aliases for all users
-  updateEmailAliases()
+  updateEmailAliases(connection)
 
