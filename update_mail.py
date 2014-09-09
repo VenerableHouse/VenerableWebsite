@@ -44,7 +44,7 @@ def updateEmailAliases():
   engine = create_engine(config.DB_URI, convert_unicode=True)
   connection = engine.connect()
 
-  user_emails_query = text("select members.email, users.username from members join users on members.user_id=users.user_id")
+  user_emails_query = text("SELECT members.email, users.username FROM members NATURAL JOIN users")
   user_emails = connection.execute(user_emails_query).fetchall()
 
   # Get the current aliases in order to only add new users, and write changes
