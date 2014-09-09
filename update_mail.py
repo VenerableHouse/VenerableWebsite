@@ -5,6 +5,9 @@ import config
 from subprocess import check_call
 from email_utils import sendEmail
 import tempfile
+# for checking sudo
+import sys
+import os
 
 ALERT_EMAILS = ['secretary@ruddock.caltech.edu', 'imss@ruddock.caltech.edu']
 
@@ -97,6 +100,10 @@ def updateEmailAliases():
   check_call("postfix reload", shell=True)
 
 if __name__ == "__main__":
+  # Don't do anything if not sudo.
+  if not 'SUDO_UID' in os.environ.keys():
+    print "Updating mail requires sudo. Please try again with super user."
+    sys.exit(-1)
 
   # Connect to the mySQL database.
   engine = create_engine(config.DB_URI, convert_unicode=True)
