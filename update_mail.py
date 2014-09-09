@@ -102,8 +102,7 @@ def updateEmailAliases():
 if __name__ == "__main__":
   # Don't do anything if not sudo.
   if not 'SUDO_UID' in os.environ.keys():
-    print "Updating mail requires sudo. Please try again with super user."
-    sys.exit(-1)
+    sys.exit("Updating mail requires sudo. Please try again with super user.")
 
   # Connect to the mySQL database.
   engine = create_engine(config.DB_URI, convert_unicode=True)
