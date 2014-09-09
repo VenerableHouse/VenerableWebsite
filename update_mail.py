@@ -6,7 +6,7 @@ from subprocess import check_call
 from email_utils import sendEmail
 import tempfile
 
-def updateFromList(results, lst):
+def updateMailmanEmailList(results, lst):
   print "Updating list: " + lst
 
   # write emails to flat file
@@ -18,7 +18,7 @@ def updateFromList(results, lst):
       f = tempfile.NamedTemporaryFile()
       for result in results:
         f.write(result[0] + '\n')
-      for addition in getAdditionalEmails(lst):
+      for addition in getAdditionalEmailsForMailmanList(lst):
         f.write(addition[0] + '\n')
       f.flush() # flush so file can be read by `sync_members`
 
@@ -31,13 +31,13 @@ def updateFromList(results, lst):
       sendEmail('imss@ruddock.caltech.edu', 'Exception: ' + str(e) + \
           '\n\nFor list: ' + lst, '[RuddWeb] THE EMAIL SCRIPT IS BROKEN')
 
-def getAdditionalEmails(lst):
+def getAdditionalEmailsForMailmanList(lst):
   #print "Getting additional emails for list: " + lst
   query = text("SELECT email FROM updating_email_lists_additions WHERE listname=:lst")
   emails = connection.execute(query, lst=lst).fetchall()
   return emails
 
-def update_aliases():
+def updateEmailAliases():
   """Updates postfix aliases for all users"""
 
   # Connect to the mySQL database.
@@ -105,7 +105,7 @@ if __name__ == "__main__":
   for (lst, query) in lists:
     # perform query to get emails
     results = connection.execute(text(query)).fetchall()
-    updateFromList(results, lst)
+    updateMailmanEmailList(results, lst)
 
   ### Now, update email lists which correspond to an office ###
   lists_query = text("SELECT office_id, office_email FROM offices WHERE office_email IS NOT NULL")
@@ -116,8 +116,8 @@ if __name__ == "__main__":
                   FROM office_members_current NATURAL JOIN offices NATURAL JOIN members_current \
                   WHERE office_id = :oid")
     results = connection.execute(query, oid=office_id).fetchall()
-    updateFromList(results, lst)
+    updateMailmanEmailList(results, lst)
 
   # Update aliases for all users
-  update_aliases()
+  updateEmailAliases()
 
