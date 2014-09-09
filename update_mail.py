@@ -6,13 +6,16 @@ from subprocess import check_call
 from email_utils import sendEmail
 import tempfile
 
+ALERT_EMAILS = ['secretary@ruddock.caltech.edu', 'imss@ruddock.caltech.edu']
+
 def updateMailmanEmailList(results, lst):
   print "Updating list: " + lst
 
   # write emails to flat file
   if len(results) <= 0:
-     sendEmail('imss@ruddock.caltech.edu', 'Email list has no subscribers: ' + \
-        query + '\n\nFor list: ' + lst, '[RuddWeb] THE EMAIL SCRIPT IS BROKEN')
+     sendEmail(ALERT_EMAILS,
+         'Email list has no subscribers: ' + str(lst),
+         '[RuddWeb] An email list has no subscribers.')
   else:
     try:
       f = tempfile.NamedTemporaryFile()
@@ -28,8 +31,9 @@ def updateMailmanEmailList(results, lst):
 
       f.close() # this also deletes the tempfile
     except Exception as e:
-      sendEmail('imss@ruddock.caltech.edu', 'Exception: ' + str(e) + \
-          '\n\nFor list: ' + lst, '[RuddWeb] THE EMAIL SCRIPT IS BROKEN')
+      sendEmail(ALERT_EMAILS,
+          'Exception: ' + str(e) + '\n\nFor list: ' + str(lst),
+          '[RuddWeb] THE EMAIL SCRIPT IS BROKEN')
 
 def getAdditionalEmailsForMailmanList(lst):
   #print "Getting additional emails for list: " + lst
