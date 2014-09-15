@@ -12,11 +12,11 @@ from constants import *
 import re
 
 app = Flask(__name__)
-app.debug = False 
+app.debug = False
 app.secret_key = config.SECRET_KEY
 
 # Maximum file upload size, in bytes.
-app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
 """ Connect to the mySQL database. """
 engine = create_engine(config.DB_URI, convert_unicode=True)
