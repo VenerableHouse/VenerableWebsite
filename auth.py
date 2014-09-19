@@ -3,7 +3,7 @@ from sqlalchemy import text
 SALT_SIZE = 8
 
 def get_user_access_level(username, db):
-  """ Takes a username, and returns the user's access level. """
+  ''' Takes a username, and returns the user's access level. '''
   # ACCESS LEVELS:
   #  0    - not logged in or on campus
   #  1    - on campus
@@ -19,7 +19,7 @@ def get_user_access_level(username, db):
   return 0
 
 def get_user_id(username, db):
-  """ Takes a username and returns the user's ID. """
+  ''' Takes a username and returns the user's ID. '''
   query = text("SELECT user_id FROM users WHERE username = :u")
   result = db.execute(query, u = username).first()
 
@@ -28,8 +28,10 @@ def get_user_id(username, db):
   return None
 
 def authenticate(user, passwd, db):
-  """ Takes a username, password, and connection object as input, and checks
-  if this corresponds to an actual user. Salts the password as necessary. """
+  '''
+  Takes a username, password, and connection object as input, and checks
+  if this corresponds to an actual user. Salts the password as necessary.
+  '''
   # get salt and add to password if necessary
   saltQuery = db.execute(text("SELECT salt FROM users WHERE username=:u"),
                          u = user)
@@ -50,8 +52,10 @@ def authenticate(user, passwd, db):
   return 0
 
 def passwd_reset(user, newpasswd, db, salt=True, email=None):
-  """ Resets a user's password with newpasswd. Uses a random salt if salt is
-  set to true. """
+  '''
+  Resets a user's password with newpasswd. Uses a random salt if salt is
+  set to true.
+  '''
   if salt:
     from random import choice
     from string import uppercase, digits
@@ -84,3 +88,22 @@ def reset_key(hashed_pw, salt, username):
     return hash(username + hashed_pw)
   else:
     return hash(salt + hashed_pw)
+
+def get_permissions(username, db):
+  '''
+  Takes a username and database connection as input. Returns a set with
+  all of the permissions available to the user.
+  '''
+  permissions = set()
+
+  query = "
+    SELECT permission
+      FROM users NATURAL JOIN offices NATURAL JOIN office_permissions
+      WHERE username=:u
+    UNION
+    SELECT permission FROM users NATURAL JOIN user_permissions
+      WHERE username=:u"
+  result = db.execute(query, u=username)
+  for row in result:
+    permissions.add(row['permission'])
+  return permissions

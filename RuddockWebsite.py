@@ -93,10 +93,12 @@ def login():
 
     user_id = auth.authenticate(username, password, connection)
     if user_id:
+      permissions = auth.get_permissions(username, connection)
       session['username'] = request.form['username']
       session['user_id'] = user_id
-      session['access_level'] = auth.get_user_access_level(username, connection)
-      session['show_admin'] = session['access_level'] >= AL_USER_ADMIN
+      session['permissions'] = permissions
+      # True if there's any reason to show a link to the admin interface.
+      session['show_admin'] = len(permissions) > 0
 
       # Update last login time.
       query = text("UPDATE users SET lastlogin=NOW() WHERE user_id=:u")
