@@ -396,33 +396,28 @@ def change_user_settings(username):
 @app.route('/government')
 def show_gov():
   # Get current officers
-  # Note: A "current" officer has already started, and hasn't expired yet.
-  query = "SELECT CONCAT(fname, ' ', lname) AS name, username, \
-                  office_name, office_email, office_id, is_excomm \
-           FROM office_members_current NATURAL JOIN offices NATURAL JOIN members_current \
-                NATURAL JOIN users"
+  query = text("""
+    SELECT CONCAT(fname, ' ', lname) AS name, username, office_name,
+      office_email, office_id, is_excomm, is_ucc
+    FROM office_members_current
+      NATURAL JOIN offices
+      NATURAL JOIN members_current
+      NATURAL JOIN users
+      """)
   results = connection.execute(query)
-  result_cols = results.keys()
 
-  # desired fields
-  cols = ["office_name", "name", "office_email"]
-
-  # organize by type (excomm and ucc are special)
+  # Organize by type (excomm and ucc are special)
   excomm = []
   ucc = []
   other = []
   for result in results:
-    # filter fields
-    temp_dict = {}
-    for i,key in enumerate(result_cols):
-      if key in cols:
-        temp_dict[key] = result[i]
-      temp_dict['username'] = result['username'] # force username in dict
-
-    # organize by type
-    if result['is_excomm']: excomm.append(temp_dict)
-    elif re.match('.*UCC', result['office_name']): ucc.append(temp_dict)
-    else: other.append(temp_dict)
+    # Organize by type
+    if result['is_excomm']:
+      excomm.append(result)
+    elif result['is_ucc']:
+      ucc.append(result)
+    else:
+      other.append(result)
 
   ucc.sort(key=lambda d: d['office_name'])
   other.sort(key=lambda d: d['office_name'])
