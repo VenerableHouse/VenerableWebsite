@@ -477,19 +477,19 @@ def show_map_room(room):
     people=people)
 
 @app.route('/admin', methods=['GET', 'POST'])
-@login_required(Permissions.UserAdmin)
+@login_required(Permissions.Admin)
 def admin_home():
   '''
   Loads a home page for admins, providing links to various tools.
   '''
 
-  admin_tools = [
-      {'name':'Add new members',
-       'link':url_for('add_members', _external=True)},
-      {'name':'Send account creation reminder',
-       'link':url_for('send_reminder_emails', _external=True)}
-      ]
+  admin_tools = []
 
+  if Permissions.UserAdmin in session['permissions']:
+    admin_tools.append(('Add new members',
+      url_for('add_members', _external=True)))
+    admin_tools.append(('Send account creation reminder',
+      url_for('send_reminder_emails', _external=True)))
   return render_template('admin.html', tools=admin_tools)
 
 def create_account_hash(user_id, uid, fname, lname):

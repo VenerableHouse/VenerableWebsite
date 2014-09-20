@@ -3,10 +3,9 @@
 {% block body %}
 <h2>Admin tools</h2>
 
+  {# Expects a list of (name, link) tuples. #}
   {% for tool in tools %}
-  <p><a href="{{ tool['link'] }} ">
-    {{ tool['name'] }}
-  </a></p>
+  <p><a href="{{ tool[1] }}">{{ tool[0] }}</a></p>
   {% endfor %}
 
   {# Other hard-coded links #}

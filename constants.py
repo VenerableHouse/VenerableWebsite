@@ -8,6 +8,8 @@ class Permissions:
   Enumerates administrator permissions. These values are independent of
   each other, but must be unique. Permissions should be stored in the session
   '''
+  # Access to the admin page
+  Admin = 0
   # Website admins.
   SiteAdmin = 1
   # Allowed to add and manage users.
