@@ -2,29 +2,13 @@ from email_utils import sendEmail
 from sqlalchemy import text
 SALT_SIZE = 8
 
-def get_user_access_level(username, db):
-  ''' Takes a username, and returns the user's access level. '''
-  # ACCESS LEVELS:
-  #  0    - not logged in or on campus
-  #  1    - on campus
-  #  2    - logged in
-  #  3..9 - various offices
-  query = text("SELECT IFNULL(MAX(access_level), 2) FROM users NATURAL JOIN" + \
-      " office_members_current NATURAL JOIN offices WHERE username = :u")
-  result = db.execute(query, u = username).first()
-
-  if (result != None):
-    return result[0]
-  # TODO: IMPLEMENT ON-CAMPUS IP CHECK
-  return 0
-
 def get_user_id(username, db):
   ''' Takes a username and returns the user's ID. '''
   query = text("SELECT user_id FROM users WHERE username = :u")
   result = db.execute(query, u = username).first()
 
-  if (result != None):
-    return int(result[0])
+  if result != None:
+    return int(result['user_id'])
   return None
 
 def authenticate(user, passwd, db):
@@ -91,19 +75,37 @@ def reset_key(hashed_pw, salt, username):
 
 def get_permissions(username, db):
   '''
-  Takes a username and database connection as input. Returns a set with
+  Takes a username and database connection as input. Returns a list with
   all of the permissions available to the user.
   '''
-  permissions = set()
 
-  query = "
-    SELECT permission
-      FROM users NATURAL JOIN offices NATURAL JOIN office_permissions
-      WHERE username=:u
+  # Return a list instead of a set because sets cannot be stored in cookie
+  # data.
+  permissions = []
+
+  query = text("""
+    (SELECT permission
+      FROM users
+        NATURAL JOIN offices
+        NATURAL JOIN office_members_current
+        NATURAL JOIN office_permissions
+      WHERE username=:u)
     UNION
-    SELECT permission FROM users NATURAL JOIN user_permissions
-      WHERE username=:u"
+    (SELECT permission
+      FROM users
+        NATURAL JOIN user_permissions
+      WHERE username=:u)
+    """)
   result = db.execute(query, u=username)
   for row in result:
-    permissions.add(row['permission'])
+    permissions.append(row['permission'])
   return permissions
+
+def update_last_login(username, db):
+  '''
+  Takes a username and database connection as input. Updates the last
+  login time for the user.
+  '''
+
+  query = text("UPDATE users SET lastlogin=NOW() WHERE username=:u")
+  db.execute(query, u=username)

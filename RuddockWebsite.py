@@ -1,6 +1,6 @@
 from functools import update_wrapper
 from flask import Flask, request, session, g, redirect, url_for, abort, \
-        render_template, flash
+    render_template, flash
 from collections import OrderedDict
 from sqlalchemy import create_engine, MetaData, text
 import config, auth
@@ -18,7 +18,7 @@ app.secret_key = config.SECRET_KEY
 # Maximum file upload size, in bytes.
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
-""" Connect to the mySQL database. """
+# Connect to the MySQL database.
 engine = create_engine(config.DB_URI, convert_unicode=True)
 connection = engine.connect()
 
@@ -37,7 +37,7 @@ def fetch_all_results(query_result):
 
   return result
 
-def display_error_msg(msg=False, redirect_location=False):
+def display_error_msg(msg=False, redirect_location=None):
   if not msg:
     msg = "Invalid request. If you think you have received this message in \
         error, please find an IMSS rep immediately."
@@ -48,37 +48,30 @@ def display_error_msg(msg=False, redirect_location=False):
   flash(msg)
   return redirect(url_for(redirect_location))
 
-def login_required(msg='You must be logged in for that!', access_level = 1):
-  """ Login required decorator. Flashes msg at the login prompt."""
+def login_required(permission=None):
+  '''
+  Login required decorator. Requires user to be logged in. If a permission
+  is provided, then user must also have the appropriate permissions to
+  access the page.
+  '''
   def decorator(fn):
     def wrapped_function(*args, **kwargs):
-      # make sure the user is logged in
+      # User must be logged in.
       if 'username' not in session:
-        flash(msg)
-        session['next'] = request.url # store url in session so not put in url
+        flash("This page requires you to be logged in.")
+        # Store page to be loaded after login in session.
+        session['next'] = request.url
         return redirect(url_for('login'))
 
-      if has_permissions(args = kwargs, access_level = access_level):
-        return fn(*args, **kwargs)
-      else:
-        flash('You do not have appropriate permissions for this action.')
-        session['next'] = request.url # store url in session so not put in url
-        return redirect(url_for('login'))
-
+      # Check permissions.
+      if permission != None:
+        if permission not in session['permissions']:
+          flash("You do have have permission to access this page.")
+          session['next'] = request.url
+          return redirect(url_for('login'))
       return fn(*args, **kwargs)
     return update_wrapper(wrapped_function, fn)
   return decorator
-
-def has_permissions(args = {}, access_level = 1):
-  """ Return true if the session's user has appropriate permissions """
-  # check if the page is designated for this user
-  if 'username' in args and args['username'] == session['username']:
-    return True
-  # otherwise, make sure user has appropriate permissions
-  if 'access_level' in session and session['access_level'] >= access_level:
-    return True
-  else:
-    return False
 
 @app.route('/')
 def home():
@@ -101,8 +94,9 @@ def login():
       session['show_admin'] = len(permissions) > 0
 
       # Update last login time.
-      query = text("UPDATE users SET lastlogin=NOW() WHERE user_id=:u")
-      connection.execute(query, u=user_id)
+      auth.update_last_login(username, connection)
+
+      print session['permissions']
 
       # return to previous page if in session
       if 'next' in session:
@@ -308,15 +302,15 @@ def show_user_profile(username):
     #d_dict defines the order and mapping of displayed attributes to sql columns
     query = text("SELECT * FROM users NATURAL JOIN members NATURAL JOIN membership_types WHERE username=:u")
     result = connection.execute(query, u=str(username))
-    if result.returns_rows and result.rowcount != 0:
-      result_cols = result.keys()
-      r = result.first()
-      q_dict = dict(zip(result_cols, r)) #q_dict maps sql columns to values
-      if not q_dict['usenickname']:
-        d_dict.pop('Nickname')
-      return (d_dict, q_dict)
+
+    values = result.first()
+    if not values:
+      d_dict = None
+      values = None
     else:
-      return (None, None)
+      if not values['usenickname']:
+        d_dict.pop('Nickname')
+    return (d_dict, values)
 
   def get_office_info(username):
     """ Procedure to get a user's officer info. """
@@ -340,16 +334,21 @@ def show_user_profile(username):
   d_dict_user, q_dict_user = get_user_info(username)
   offices = get_office_info(username)
 
+  # True if user has permission to edit page. UserAdmin can edit anyone's
+  # page, otherwise a user can edit their own page.
+  editable = session['username'] == username or \
+    Permissions.UserAdmin in session['permissions']
+
   if d_dict_user != None and q_dict_user != None:
     return render_template('view_user.html', display = d_dict_user, \
         info = q_dict_user, offices = offices, strftime = strftime,
-        perm = has_permissions({'username':username}, AL_EDIT_PAGE))
+        perm = editable)
   else:
     flash("User does not exist!")
     return redirect(url_for('home'))
 
 @app.route('/users/edit/<username>', methods=['GET', 'POST'])
-@login_required(access_level = AL_EDIT_PAGE)
+@login_required(Permissions.UserAdmin)
 def change_user_settings(username):
   """ Procedure to process the login page. Also handles authentication. """
   params = {}
@@ -480,7 +479,7 @@ def show_map_room(room):
     people=people)
 
 @app.route('/admin', methods=['GET', 'POST'])
-@login_required(access_level = AL_USER_ADMIN)
+@login_required(Permissions.UserAdmin)
 def admin_home():
   '''
   Loads a home page for admins, providing links to various tools.
@@ -660,7 +659,7 @@ def create_account():
 
 
 @app.route('/admin/reminder_email', methods=['GET', 'POST'])
-@login_required(access_level = AL_USER_ADMIN)
+@login_required(Permissions.UserAdmin)
 def send_reminder_emails():
   '''
   Sends a reminder email to all members who have not yet created
@@ -717,7 +716,7 @@ def send_reminder_emails():
     return render_template('create_account_reminder.html', data=data)
 
 @app.route('/admin/add_members', methods=['GET', 'POST'])
-@login_required(access_level = AL_USER_ADMIN)
+@login_required(Permissions.UserAdmin)
 def add_members():
   '''
   Provides a form to add new members to the website, and then emails the
