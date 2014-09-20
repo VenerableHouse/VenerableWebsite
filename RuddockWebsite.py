@@ -96,8 +96,6 @@ def login():
       # Update last login time.
       auth.update_last_login(username, connection)
 
-      print session['permissions']
-
       # return to previous page if in session
       if 'next' in session:
         redirect_to = session.pop('next')
