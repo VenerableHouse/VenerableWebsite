@@ -12,7 +12,7 @@ from constants import *
 import re
 
 app = Flask(__name__)
-app.debug = False
+app.debug = True
 app.secret_key = config.SECRET_KEY
 
 # Maximum file upload size, in bytes.
@@ -65,7 +65,7 @@ def login_required(permission=None):
 
       # Check permissions.
       if permission != None:
-        if permission not in session['permissions']:
+        if not auth.check_permission(permission):
           flash("You do have have permission to access this page.")
           session['next'] = request.url
           return redirect(url_for('login'))
@@ -91,7 +91,7 @@ def login():
       session['user_id'] = user_id
       session['permissions'] = permissions
       # True if there's any reason to show a link to the admin interface.
-      session['show_admin'] = Permissions.Admin in session['permissions']
+      session['show_admin'] = auth.check_permission(Permissions.Admin)
 
       # Update last login time.
       auth.update_last_login(username, connection)
@@ -326,7 +326,7 @@ def show_user_profile(username):
     if 'username' not in session:
       return False
     return session['username'] == username or \
-        Permissions.UserAdmin in session['permissions']
+        auth.check_permission(Permissions.UserAdmin)
 
   d_dict_user, q_dict_user = get_user_info(username)
   offices = get_office_info(username)
@@ -475,7 +475,7 @@ def admin_home():
 
   admin_tools = []
 
-  if Permissions.UserAdmin in session['permissions']:
+  if auth.check_permission(Permissions.UserAdmin):
     admin_tools.append({
       'name': 'Add new members',
       'link': url_for('add_members', _external=True)})

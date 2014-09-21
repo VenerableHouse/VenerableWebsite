@@ -1,5 +1,6 @@
 from email_utils import sendEmail
 from sqlalchemy import text
+from flask import session
 SALT_SIZE = 8
 
 def get_user_id(username, db):
@@ -96,6 +97,11 @@ def get_permissions(username, db):
   result = db.execute(query, u=username)
   permissions = [row['permission'] for row in result]
   return permissions
+
+def check_permission(permission):
+  if 'permissions' in session:
+    return permission in session['permissions']
+  return False
 
 def update_last_login(username, db):
   '''
