@@ -95,8 +95,7 @@ def get_permissions(username, db):
       WHERE username=:u)
     """)
   result = db.execute(query, u=username)
-  permissions = [row['permission'] for row in result]
-  return permissions
+  return [row['permission'] for row in result]
 
 def check_permission(permission):
   if 'permissions' in session:
