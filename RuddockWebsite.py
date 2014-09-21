@@ -436,16 +436,6 @@ def show_gov():
 def show_about_us():
   return render_template('about_us.html')
 
-@app.route('/news')
-def show_news():
-  # TODO: Implement this.
-  return render_template('news.html')
-
-@app.route('/calendar')
-def show_calendar():
-  # TODO: Implement this.
-  return render_template('calendar.html')
-
 @app.route('/map')
 def show_map():
   return render_template('map.html', room_dict=room_dict, hl=0)
