@@ -76,12 +76,9 @@ def reset_key(hashed_pw, salt, username):
 def get_permissions(username, db):
   '''
   Takes a username and database connection as input. Returns a list with
-  all of the permissions available to the user.
+  all of the permissions available to the user. A list is returned because
+  Python sets cannot be stored in cookie data.
   '''
-
-  # Return a list instead of a set because sets cannot be stored in cookie
-  # data.
-  permissions = []
 
   query = text("""
     (SELECT permission
@@ -97,8 +94,7 @@ def get_permissions(username, db):
       WHERE username=:u)
     """)
   result = db.execute(query, u=username)
-  for row in result:
-    permissions.append(row['permission'])
+  permissions = [row['permission'] for row in result]
   return permissions
 
 def update_last_login(username, db):

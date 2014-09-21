@@ -91,7 +91,7 @@ def login():
       session['user_id'] = user_id
       session['permissions'] = permissions
       # True if there's any reason to show a link to the admin interface.
-      session['show_admin'] = len(permissions) > 0
+      session['show_admin'] = Permissions.Admin in session['permissions']
 
       # Update last login time.
       auth.update_last_login(username, connection)
@@ -296,8 +296,8 @@ def show_user_profile(username):
                "Secondary Email", "Status", "Matriculation Year", \
                "Graduation Year", "MSC", "Phone Number", "Residence", \
                "Membership", "Major", "UID", "Is Abroad"]
+    # Defines the order and mapping of displayed attributes to sql columns
     d_dict = OrderedDict(zip(display, cols))
-    #d_dict defines the order and mapping of displayed attributes to sql columns
     query = text("SELECT * FROM users NATURAL JOIN members NATURAL JOIN membership_types WHERE username=:u")
     result = connection.execute(query, u=str(username))
 
@@ -313,29 +313,24 @@ def show_user_profile(username):
   def get_office_info(username):
     """ Procedure to get a user's officer info. """
     cols = ["office_name", "elected", "expired"]
-    query = text("SELECT * FROM office_members NATURAL JOIN users NATURAL " + \
-        "JOIN offices WHERE username = :u ORDER BY elected, expired, " + \
-        "office_name")
-    results = connection.execute(query, u=str(username))
+    query = text("""
+      SELECT office_name, elected, expired
+      FROM office_members NATURAL JOIN users NATURAL JOIN offices
+      WHERE username = :u
+      ORDER BY elected, expired, office_name
+    """)
+    return connection.execute(query, u=str(username))
 
-    # put results in a dictionary
-    res = []
-    result_cols = results.keys()
-    for result in results:
-      temp_dict = {}
-      for i,key in enumerate(result_cols):
-        if key in cols:
-          temp_dict[key] = result[i]
-      res.append(temp_dict)
-    return res
+  def can_edit(username):
+    """ Returns true if user has permission to edit page. """
+    if 'username' not in session:
+      return False
+    return session['username'] == username or \
+        Permissions.UserAdmin in session['permissions']
 
   d_dict_user, q_dict_user = get_user_info(username)
   offices = get_office_info(username)
-
-  # True if user has permission to edit page. UserAdmin can edit anyone's
-  # page, otherwise a user can edit their own page.
-  editable = session['username'] == username or \
-    Permissions.UserAdmin in session['permissions']
+  editable = can_edit(username)
 
   if d_dict_user != None and q_dict_user != None:
     return render_template('view_user.html', display = d_dict_user, \
@@ -481,10 +476,12 @@ def admin_home():
   admin_tools = []
 
   if Permissions.UserAdmin in session['permissions']:
-    admin_tools.append(('Add new members',
-      url_for('add_members', _external=True)))
-    admin_tools.append(('Send account creation reminder',
-      url_for('send_reminder_emails', _external=True)))
+    admin_tools.append({
+      'name': 'Add new members',
+      'link': url_for('add_members', _external=True)})
+    admin_tools.append({
+      'name': 'Send account creation reminder',
+      'link': url_for('send_reminder_emails', _external=True)})
   return render_template('admin.html', tools=admin_tools)
 
 def create_account_hash(user_id, uid, fname, lname):
