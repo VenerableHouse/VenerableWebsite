@@ -3,6 +3,14 @@
 # Maximum file upload size (in bytes).
 MAX_CONTENT_LENGTH = 1 * 1024 * 1024 * 1024
 
-##### ACCESS LEVEL CONSTANTS  #####
-AL_EDIT_PAGE = 3 # access level to edit a page
-AL_USER_ADMIN = 7 # access level to add/edit members
+class Permissions:
+  '''
+  Enumerates administrator permissions. These values are independent of
+  each other, but must be unique. Permissions should be stored in the session
+  '''
+  # Access to the admin page
+  Admin = 0
+  # Website admins.
+  SiteAdmin = 1
+  # Allowed to add and manage users.
+  UserAdmin = 2

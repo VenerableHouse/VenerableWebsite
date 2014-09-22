@@ -1,35 +1,22 @@
 from email_utils import sendEmail
 from sqlalchemy import text
+from flask import session
 SALT_SIZE = 8
 
-def get_user_access_level(username, db):
-  """ Takes a username, and returns the user's access level. """
-  # ACCESS LEVELS:
-  #  0    - not logged in or on campus
-  #  1    - on campus
-  #  2    - logged in
-  #  3..9 - various offices
-  query = text("SELECT IFNULL(MAX(access_level), 2) FROM users NATURAL JOIN" + \
-      " office_members_current NATURAL JOIN offices WHERE username = :u")
-  result = db.execute(query, u = username).first()
-
-  if (result != None):
-    return result[0]
-  # TODO: IMPLEMENT ON-CAMPUS IP CHECK
-  return 0
-
 def get_user_id(username, db):
-  """ Takes a username and returns the user's ID. """
+  ''' Takes a username and returns the user's ID. '''
   query = text("SELECT user_id FROM users WHERE username = :u")
   result = db.execute(query, u = username).first()
 
-  if (result != None):
-    return int(result[0])
+  if result != None:
+    return int(result['user_id'])
   return None
 
 def authenticate(user, passwd, db):
-  """ Takes a username, password, and connection object as input, and checks
-  if this corresponds to an actual user. Salts the password as necessary. """
+  '''
+  Takes a username, password, and connection object as input, and checks
+  if this corresponds to an actual user. Salts the password as necessary.
+  '''
   # get salt and add to password if necessary
   saltQuery = db.execute(text("SELECT salt FROM users WHERE username=:u"),
                          u = user)
@@ -50,8 +37,10 @@ def authenticate(user, passwd, db):
   return 0
 
 def passwd_reset(user, newpasswd, db, salt=True, email=None):
-  """ Resets a user's password with newpasswd. Uses a random salt if salt is
-  set to true. """
+  '''
+  Resets a user's password with newpasswd. Uses a random salt if salt is
+  set to true.
+  '''
   if salt:
     from random import choice
     from string import uppercase, digits
@@ -84,3 +73,40 @@ def reset_key(hashed_pw, salt, username):
     return hash(username + hashed_pw)
   else:
     return hash(salt + hashed_pw)
+
+def get_permissions(username, db):
+  '''
+  Takes a username and database connection as input. Returns a list with
+  all of the permissions available to the user. A list is returned because
+  Python sets cannot be stored in cookie data.
+  '''
+
+  query = text("""
+    (SELECT permission
+      FROM users
+        NATURAL JOIN offices
+        NATURAL JOIN office_members_current
+        NATURAL JOIN office_permissions
+      WHERE username=:u)
+    UNION
+    (SELECT permission
+      FROM users
+        NATURAL JOIN user_permissions
+      WHERE username=:u)
+    """)
+  result = db.execute(query, u=username)
+  return [row['permission'] for row in result]
+
+def check_permission(permission):
+  if 'permissions' in session:
+    return permission in session['permissions']
+  return False
+
+def update_last_login(username, db):
+  '''
+  Takes a username and database connection as input. Updates the last
+  login time for the user.
+  '''
+
+  query = text("UPDATE users SET lastlogin=NOW() WHERE username=:u")
+  db.execute(query, u=username)
