@@ -5,7 +5,6 @@ from collections import OrderedDict
 from sqlalchemy import create_engine, MetaData, text
 import config, auth
 import datetime
-from room_map_dict_def import room_dict
 from time import strftime
 from email_utils import sendEmail
 from constants import *
@@ -435,32 +434,6 @@ def show_gov():
 @app.route('/about_us')
 def show_about_us():
   return render_template('about_us.html')
-
-@app.route('/map')
-def show_map():
-  return render_template('map.html', room_dict=room_dict, hl=0)
-
-@app.route('/map/<room>')
-@login_required()
-def show_map_room(room):
-  '''Shows the map with a specific room highlighted'''
-
-  # Figure out who lives there
-  query = text("SELECT fname, lname, nickname, usenickname, username  \
-     FROM members NATURAL JOIN users WHERE room_num=:id \
-    AND building LIKE '%ruddock%'")
-  results = connection.execute(query, id=room)
-
-  # Make these tuples of ('name', 'username')
-  people = []
-  for person in results:
-    if person[3]:
-      people.append(('%s %s' % (person[2], person[1]), person[4]))
-    else:
-      people.append(('%s %s' % (person[0], person[1]), person[4]))
-
-  return render_template('map.html', room_dict=room_dict, hl=room, \
-    people=people)
 
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required(access_level = AL_USER_ADMIN)
