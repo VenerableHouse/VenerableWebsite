@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% block body %}
+<h2>Start new hassle</h2>
+<p>Select everyone who will be participating in this room hassle.</p>
+
+<form action="{{ url_for('new_hassle_participants_submit') }}"
+  method="POST">
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>Name</th>
+        <th>Graduation Year</th>
+        <th>Membership Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for member in members %}
+      <tr>
+        <td>
+          <input type="checkbox" name="participants"
+            value="{{ member['user_id'] }}"
+            {{ 'checked' if member['participating'] }} />
+        </td>
+        <td>{{ member['name'] }}</td>
+        <td>{{ member['grad_year'] }}</td>
+        <td>{{ member['membership_desc'] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <button type="submit">Next</button>
+</form>
+{% endblock %}

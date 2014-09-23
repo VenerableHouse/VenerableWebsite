@@ -3,15 +3,17 @@ from flask import Flask, request, session, g, redirect, url_for, abort, \
     render_template, flash
 from collections import OrderedDict
 from sqlalchemy import create_engine, MetaData, text
-import config, auth
-import datetime
 from time import strftime
 from email_utils import sendEmail
 from constants import *
+import datetime
 import re
+import config
+import auth
+import hassle
 
 app = Flask(__name__)
-app.debug = False
+app.debug = True
 app.secret_key = config.SECRET_KEY
 
 # Maximum file upload size, in bytes.
@@ -429,24 +431,6 @@ def show_gov():
 def show_about_us():
   return render_template('about_us.html')
 
-@app.route('/admin', methods=['GET', 'POST'])
-@login_required(Permissions.Admin)
-def admin_home():
-  '''
-  Loads a home page for admins, providing links to various tools.
-  '''
-
-  admin_tools = []
-
-  if auth.check_permission(Permissions.UserAdmin):
-    admin_tools.append({
-      'name': 'Add new members',
-      'link': url_for('add_members', _external=True)})
-    admin_tools.append({
-      'name': 'Send account creation reminder',
-      'link': url_for('send_reminder_emails', _external=True)})
-  return render_template('admin.html', tools=admin_tools)
-
 def create_account_hash(user_id, uid, fname, lname):
   '''
   Creates a unique hash for users trying to create an account.
@@ -610,6 +594,28 @@ def create_account():
   return render_template('create_account.html', user_data=user_data, \
       key=key, user_id=user_id)
 
+@app.route('/admin', methods=['GET', 'POST'])
+@login_required(Permissions.Admin)
+def admin_home():
+  '''
+  Loads a home page for admins, providing links to various tools.
+  '''
+
+  admin_tools = []
+
+  if auth.check_permission(Permissions.UserAdmin):
+    admin_tools.append({
+      'name': 'Add new members',
+      'link': url_for('add_members', _external=True)})
+    admin_tools.append({
+      'name': 'Send account creation reminder',
+      'link': url_for('send_reminder_emails', _external=True)})
+
+  if auth.check_permission(Permissions.HassleAdmin):
+    admin_tools.append({
+      'name': 'Room hassle',
+      'link': url_for('run_hassle', _external=True)})
+  return render_template('admin.html', tools=admin_tools)
 
 @app.route('/admin/reminder_email', methods=['GET', 'POST'])
 @login_required(Permissions.UserAdmin)
@@ -973,6 +979,62 @@ def add_members():
 
   return render_template('new_members.html', state='default', \
       path=PATH_TO_TEMPLATE, filename=TEMPLATE_FILENAME)
+
+@app.route('/hassle')
+@login_required(Permissions.HassleAdmin)
+def run_hassle():
+  ''' Logic for room hassles. '''
+  return render_template('hassle.html')
+
+@app.route('/hassle/new')
+@login_required(Permissions.HassleAdmin)
+def new_hassle():
+  ''' Redirects to the first page to start a new room hassle. '''
+  return redirect(url_for('new_hassle_participants'))
+
+@app.route('/hassle/new/participants')
+@login_required(Permissions.HassleAdmin)
+def new_hassle_participants():
+  ''' Select participants for the room hassle. '''
+
+  # Get a list of all current members.
+  members = hassle.get_members(connection)
+  return render_template('hassle_new_participants.html', members=members)
+
+@app.route('/hassle/new/participants/submit', methods=['POST'])
+@login_required(Permissions.HassleAdmin)
+def new_hassle_participants_submit():
+  ''' Submission endpoint for hassle participants. Redirects to next page. '''
+
+  # Get a list of all participants' user IDs.
+  participants = map(lambda x: int(x), request.form.getlist('participants'))
+  # Update the database with this hassle's participants.
+  hassle.set_participants(participants, connection)
+  return redirect(url_for('new_hassle_rooms'))
+
+@app.route('/hassle/new/rooms')
+@login_required(Permissions.HassleAdmin)
+def new_hassle_rooms():
+  ''' Select rooms available for the room hassle. '''
+  return render_template('hassle_new_rooms.html')
+
+@app.route('/hassle/new/rooms/submit', methods=['POST'])
+@login_required(Permissions.HassleAdmin)
+def new_hassle_rooms_submit():
+  ''' Submission endpoint for hassle rooms. Redirects to next page. '''
+  return redirect(url_for('new_hassle_confirm'))
+
+@app.route('/hassle/new/confirm')
+@login_required(Permissions.HassleAdmin)
+def new_hassle_confirm():
+  ''' Confirmation page for new room hassle. '''
+  return render_template('hassle_new_confirm.html')
+
+@app.route('/hassle/new/confirm/submit', methods=['POST'])
+@login_required(Permissions.HassleAdmin)
+def new_hassle_confirm_submit():
+  ''' Submission endpoint for confirmation page. '''
+  return redirect(url_for('run_hassle'))
 
 if __name__ == "__main__":
   app.run()

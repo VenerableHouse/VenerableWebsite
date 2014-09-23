@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block body %}
+<h2>Room Hassle</h2>
+<div>
+  <button type="button" onclick="location.href='{{ url_for('new_hassle') }}'">
+    Start new hassle
+  </button>
+</div>
+{% endblock %}

@@ -14,3 +14,5 @@ class Permissions:
   SiteAdmin = 1
   # Allowed to add and manage users.
   UserAdmin = 2
+  # Allowed to run the room hassle.
+  HassleAdmin = 3
