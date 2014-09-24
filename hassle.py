@@ -1,6 +1,7 @@
 from sqlalchemy import text
+from flask import g
 
-def get_members(connection):
+def get_members():
   ''' Gets all current members (potential hassle participants). '''
 
   query = text("""
@@ -11,16 +12,16 @@ def get_members(connection):
     FROM members_current NATURAL JOIN membership_types
     ORDER BY membership_type, grad_year, name
     """)
-  return connection.execute(query)
+  return g.db.execute(query)
 
-def set_participants(participants, connection):
+def set_participants(participants):
   ''' Sets hassle participants. '''
 
   # Delete old participants.
   delete_query = text("DELETE FROM hassle_participants")
-  connection.execute(delete_query)
+  g.db.execute(delete_query)
 
   # Insert new participants.
   insert_query = text("INSERT INTO hassle_participants (user_id) VALUES (:p)")
   for participant in participants:
-    connection.execute(insert_query, p=participant)
+    g.db.execute(insert_query, p=participant)

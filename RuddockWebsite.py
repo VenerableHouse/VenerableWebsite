@@ -19,9 +19,8 @@ app.secret_key = config.SECRET_KEY
 # Maximum file upload size, in bytes.
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
-# Connect to the MySQL database.
+# Create database engine object.
 engine = create_engine(config.DB_URI, convert_unicode=True)
-connection = engine.connect()
 
 def fetch_all_results(query_result):
   '''
@@ -74,6 +73,22 @@ def login_required(permission=None):
     return update_wrapper(wrapped_function, fn)
   return decorator
 
+@app.before_request
+def before_request():
+  ''' Logic executed before request is processed. '''
+
+  # Connect to the database and publish it in flask.g
+  g.db = engine.connect()
+
+@app.teardown_request
+def teardown_request(exception):
+  ''' Logic executed after every request is finished. '''
+
+  # Close database connection.
+  db = g.get('db', None)
+  if db != None:
+    db.close()
+
 @app.route('/')
 def home():
   return render_template('index.html')
@@ -85,9 +100,9 @@ def login():
     username = request.form['username']
     password = request.form['password']
 
-    user_id = auth.authenticate(username, password, connection)
+    user_id = auth.authenticate(username, password)
     if user_id:
-      permissions = auth.get_permissions(username, connection)
+      permissions = auth.get_permissions(username)
       session['username'] = request.form['username']
       session['user_id'] = user_id
       session['permissions'] = permissions
@@ -95,7 +110,7 @@ def login():
       session['show_admin'] = auth.check_permission(Permissions.Admin)
 
       # Update last login time.
-      auth.update_last_login(username, connection)
+      auth.update_last_login(username)
 
       # return to previous page if in session
       if 'next' in session:
@@ -120,7 +135,7 @@ def forgot_passwd():
     username = request.form['username']
     email = request.form['email']
     query = text("SELECT * FROM users NATURAL JOIN members WHERE username=:u")
-    result = connection.execute(query, u=str(username))
+    result = g.db.execute(query, u=str(username))
     if result.returns_rows and result.rowcount != 0:
       result_cols = result.keys()
       row = result.first()
@@ -155,7 +170,7 @@ def reset_passwd():
 
     # Get the user's email
     query = text("SELECT email FROM members NATURAL JOIN users WHERE username=:username")
-    result = connection.execute(query, username=str(session['r_username']))
+    result = g.db.execute(query, username=str(session['r_username']))
     email = result.first()[0]
 
     if new_password != new_password2:
@@ -164,8 +179,7 @@ def reset_passwd():
     elif new_password == '':
       flash('Passwords cannot be empty. Please try again!')
       return render_template('reset_password.html')
-    elif auth.passwd_reset(session['r_username'], new_password, connection, \
-                           email=email):
+    elif auth.passwd_reset(session['r_username'], new_password, email=email):
       session.pop('r_username')
       flash('Password successfully changed.')
       return redirect(url_for('home'))
@@ -179,7 +193,7 @@ def reset_passwd():
       flash("Missing parameter. Try generating the link again?")
       return redirect(url_for('forgot_passwd'))
     query = text("SELECT * FROM users WHERE user_id=:u")
-    result = connection.execute(query, u=str(user_id))
+    result = g.db.execute(query, u=str(user_id))
     if result.returns_rows and result.rowcount != 0:
       result_cols = result.keys()
       row = result.first()
@@ -203,10 +217,10 @@ def change_passwd():
 
     # Get the user's email
     query = text("SELECT email FROM members WHERE user_id=:id")
-    result = connection.execute(query, id=str(session['user_id']))
+    result = g.db.execute(query, id=str(session['user_id']))
     email = result.first()[0]
 
-    if not auth.authenticate(username, old_password, connection):
+    if not auth.authenticate(username, old_password):
       flash('Wrong old password. Please try again!')
       return render_template('password_change.html')
     if new_password != new_password2:
@@ -215,7 +229,7 @@ def change_passwd():
     elif new_password == '':
       flash('Passwords cannot be empty. Please try again!')
       return render_template('password_change.html')
-    elif auth.passwd_reset(username, new_password, connection, email=email):
+    elif auth.passwd_reset(username, new_password, email=email):
       flash('Password successfully changed.')
       return redirect(url_for('home'))
     else:
@@ -263,7 +277,7 @@ def show_users():
   # perform query
   query = text("SELECT * FROM " + tableName + " NATURAL JOIN membership_types \
      ORDER BY " + ordField + " " + ordDirect)
-  results = connection.execute(query)
+  results = g.db.execute(query)
 
   # put results in a dictionary
   result_cols = results.keys()
@@ -277,7 +291,7 @@ def show_users():
 
   # we also want to map ids to usernames so we can link to individual pages
   query = text("SELECT user_id, username FROM users")
-  results = connection.execute(query)
+  results = g.db.execute(query)
   idMap = dict(list(results)) # key is id, value is username
 
   return render_template('userlist.html', data = res, fields = cols, \
@@ -300,7 +314,7 @@ def show_user_profile(username):
     # Defines the order and mapping of displayed attributes to sql columns
     d_dict = OrderedDict(zip(display, cols))
     query = text("SELECT * FROM users NATURAL JOIN members NATURAL JOIN membership_types WHERE username=:u")
-    result = connection.execute(query, u=str(username))
+    result = g.db.execute(query, u=str(username))
 
     values = result.first()
     if not values:
@@ -320,7 +334,7 @@ def show_user_profile(username):
       WHERE username = :u
       ORDER BY elected, expired, office_name
     """)
-    return connection.execute(query, u=str(username))
+    return g.db.execute(query, u=str(username))
 
   def can_edit(username):
     """ Returns true if user has permission to edit page. """
@@ -354,7 +368,7 @@ def change_user_settings(username):
 
   # Get stored values from database
   query = text("SELECT * FROM users NATURAL JOIN members WHERE username=:u")
-  result = connection.execute(query, u=str(username))
+  result = g.db.execute(query, u=str(username))
   if result.returns_rows and result.rowcount != 0:
     result_cols = result.keys()
     r = result.first()
@@ -378,8 +392,8 @@ def change_user_settings(username):
         new_val = str(params[tag])
 
         query = text("UPDATE members SET %s = :val WHERE user_id = :u" % tag)
-        results = connection.execute(query, \
-            u=auth.get_user_id(username, connection), val=new_val)
+        results = g.db.execute(query, \
+            u=auth.get_user_id(username), val=new_val)
 
         flash("%s was updated!" % tag_names[i])
 
@@ -400,7 +414,7 @@ def show_gov():
       NATURAL JOIN members_current
       NATURAL JOIN users
       """)
-  results = connection.execute(query)
+  results = g.db.execute(query)
 
   # Organize by type (excomm and ucc are special)
   excomm = []
@@ -457,7 +471,7 @@ def create_account():
       return False
 
     query = text("SELECT COUNT(*) FROM users WHERE username=:username")
-    r = connection.execute(query, username=data['username'])
+    r = g.db.execute(query, username=data['username'])
     result = fetch_all_results(r)
     count = result[0]['COUNT(*)']
 
@@ -492,7 +506,7 @@ def create_account():
   def get_user_data(user_id):
     query = text("SELECT fname, lname, uid, matriculate_year, grad_year, \
         email FROM members WHERE user_id=:user_id")
-    r = connection.execute(query, user_id=user_id)
+    r = g.db.execute(query, user_id=user_id)
     result = fetch_all_results(r)
 
     return result[0]
@@ -500,7 +514,7 @@ def create_account():
   def check_key_id_pair(key, user_id):
     # Check that the user_id is valid.
     query = text("SELECT COUNT(*) FROM members WHERE user_id=:user_id")
-    r = connection.execute(query, user_id=user_id)
+    r = g.db.execute(query, user_id=user_id)
     result = fetch_all_results(r)
     count = result[0]['COUNT(*)']
 
@@ -509,7 +523,7 @@ def create_account():
 
     # Make sure an account does not already exist for that user_id.
     query = text("SELECT COUNT(*) FROM users WHERE user_id=:user_id")
-    r = connection.execute(query, user_id=user_id)
+    r = g.db.execute(query, user_id=user_id)
     result = fetch_all_results(r)
     count = result[0]['COUNT(*)']
 
@@ -536,13 +550,12 @@ def create_account():
         (:user_id, :username, :password)")
 
     # Creates the account with an empty password.
-    connection.execute(query, user_id=user_id, username=username, \
+    g.db.execute(query, user_id=user_id, username=username, \
         password='')
 
     # Use the password reset function to set the password, to ensure
     # consistent salting.
-    auth.passwd_reset(username, password, connection, salt=True, \
-        email=False)
+    auth.passwd_reset(username, password, salt=True, email=False)
 
     # Email the user to let them know an account has been created.
     subject = "Thanks for creating an account!"
@@ -556,7 +569,7 @@ def create_account():
 
   def update_birthday(user_id, birthday):
     query = text("UPDATE members SET bday=:bday WHERE user_id=:user_id")
-    connection.execute(query, bday=birthday, user_id=user_id)
+    g.db.execute(query, bday=birthday, user_id=user_id)
 
   ### End helper functions ###
 
@@ -633,7 +646,7 @@ def send_reminder_emails():
 
     query = text("SELECT fname, lname, email, uid, user_id FROM members \
         NATURAL LEFT JOIN users WHERE username IS NULL")
-    r = connection.execute(query)
+    r = g.db.execute(query)
     return fetch_all_results(r)
 
   def send_reminder_email(fname, lname, email, user_id, uid):
@@ -815,7 +828,7 @@ def add_members():
 
     for entry in data:
       # Check if user is in database already
-      r = connection.execute(check_query, uid=entry['uid'])
+      r = g.db.execute(check_query, uid=entry['uid'])
       result = fetch_all_results(r)
       count = result[0]['COUNT(*)']
 
@@ -826,14 +839,14 @@ def add_members():
       membership_type = convert_membership_type(entry['membership_type'])
 
       # Add the user to the database.
-      result = connection.execute(insert_query, fname=entry['fname'], \
+      result = g.db.execute(insert_query, fname=entry['fname'], \
           lname=entry['lname'], uid=entry['uid'], \
           matriculate_year=entry['matriculate_year'], \
           grad_year=entry['grad_year'], email=entry['email'], \
           membership_type=membership_type)
 
       # Get the id of the inserted row (used to create unique hash).
-      r = connection.execute(last_insert_id_query)
+      r = g.db.execute(last_insert_id_query)
       result = fetch_all_results(r)
       user_id = result[0]["LAST_INSERT_ID()"]
 
@@ -998,7 +1011,7 @@ def new_hassle_participants():
   ''' Select participants for the room hassle. '''
 
   # Get a list of all current members.
-  members = hassle.get_members(connection)
+  members = hassle.get_members()
   return render_template('hassle_new_participants.html', members=members)
 
 @app.route('/hassle/new/participants/submit', methods=['POST'])
@@ -1009,7 +1022,7 @@ def new_hassle_participants_submit():
   # Get a list of all participants' user IDs.
   participants = map(lambda x: int(x), request.form.getlist('participants'))
   # Update the database with this hassle's participants.
-  hassle.set_participants(participants, connection)
+  hassle.set_participants(participants)
   return redirect(url_for('new_hassle_rooms'))
 
 @app.route('/hassle/new/rooms')
