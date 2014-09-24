@@ -1,25 +1,25 @@
 from email_utils import sendEmail
 from sqlalchemy import text
-from flask import session
+from flask import session, g
 SALT_SIZE = 8
 
-def get_user_id(username, db):
+def get_user_id(username):
   ''' Takes a username and returns the user's ID. '''
   query = text("SELECT user_id FROM users WHERE username = :u")
-  result = db.execute(query, u = username).first()
+  result = g.db.execute(query, u = username).first()
 
   if result != None:
     return int(result['user_id'])
   return None
 
-def authenticate(user, passwd, db):
+def authenticate(user, passwd):
   '''
-  Takes a username, password, and connection object as input, and checks
-  if this corresponds to an actual user. Salts the password as necessary.
+  Takes a username and password and checks if this corresponds to
+  an actual user. Salts the password as necessary.
   '''
   # get salt and add to password if necessary
-  saltQuery = db.execute(text("SELECT salt FROM users WHERE username=:u"),
-                         u = user)
+  saltQuery = g.db.execute(text("SELECT salt FROM users WHERE username=:u"),
+      u = user)
   # if there's a salt set, then use it
   if saltQuery.returns_rows:
     salt = saltQuery.first()
@@ -28,15 +28,15 @@ def authenticate(user, passwd, db):
       passwd = salt[0] + passwd
 
   # query whether there's a match for the username and password
-  query = db.execute(text("SELECT * FROM users WHERE username=:u AND " \
-                          + "passwd=MD5(:p)"), u = user, p = passwd)
+  query = g.db.execute(text("SELECT * FROM users WHERE username=:u AND " + \
+      "passwd=MD5(:p)"), u = user, p = passwd)
 
   row = query.first()
   if (query.returns_rows and row != None):
     return row[0]
   return 0
 
-def passwd_reset(user, newpasswd, db, salt=True, email=None):
+def passwd_reset(user, newpasswd, salt=True, email=None):
   '''
   Resets a user's password with newpasswd. Uses a random salt if salt is
   set to true.
@@ -47,10 +47,10 @@ def passwd_reset(user, newpasswd, db, salt=True, email=None):
     randSalt = ''.join(choice(uppercase + digits) for i in range(SALT_SIZE))
     newpasswd = randSalt + newpasswd
 
-  query = db.execute(text("UPDATE users SET salt=:s, passwd=MD5(:p) WHERE " + \
-                          "username=:u"), s = randSalt, p = newpasswd, u = user)
+  query = text("UPDATE users SET salt=:s, passwd=MD5(:p) WHERE username=:u")
+  result = g.db.execute(query, s=randSalt, p=newpasswd, u=user)
 
-  if (query.rowcount == 1):
+  if result.rowcount > 0:
     if email:
       # notify user that their password was changed
       try:
@@ -64,9 +64,9 @@ def passwd_reset(user, newpasswd, db, salt=True, email=None):
                   "Something went wrong when trying to email user " + user + \
                   " after changing their password. You should look into this." + \
                   "\n\nException: " + str(e), "[RuddWeb] EMAIL ERROR")
-    return 1
+    return True
   else:
-    return 0
+    return False
 
 def reset_key(hashed_pw, salt, username):
   if salt == None:
@@ -74,11 +74,10 @@ def reset_key(hashed_pw, salt, username):
   else:
     return hash(salt + hashed_pw)
 
-def get_permissions(username, db):
+def get_permissions(username):
   '''
-  Takes a username and database connection as input. Returns a list with
-  all of the permissions available to the user. A list is returned because
-  Python sets cannot be stored in cookie data.
+  Returns a list with all of the permissions available to the user.
+  A list is returned because Python sets cannot be stored in cookie data.
   '''
 
   query = text("""
@@ -94,19 +93,17 @@ def get_permissions(username, db):
         NATURAL JOIN user_permissions
       WHERE username=:u)
     """)
-  result = db.execute(query, u=username)
+  result = g.db.execute(query, u=username)
   return [row['permission'] for row in result]
 
 def check_permission(permission):
+  ''' Returns true if the user has the input permission. '''
   if 'permissions' in session:
     return permission in session['permissions']
   return False
 
-def update_last_login(username, db):
-  '''
-  Takes a username and database connection as input. Updates the last
-  login time for the user.
-  '''
+def update_last_login(username):
+  ''' Updates the last login time for the user. '''
 
   query = text("UPDATE users SET lastlogin=NOW() WHERE username=:u")
-  db.execute(query, u=username)
+  g.db.execute(query, u=username)
