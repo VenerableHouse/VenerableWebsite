@@ -82,8 +82,8 @@ div.navbar, div.sub_navbar {
     height: 28px;
     font-variant: small-caps;
     font-family: Tahoma, Arial, Helvetica, sans-serif;
-    font-size: 14pt; 
-    
+    font-size: 14pt;
+
 }
 
 div.sub_navbar {
@@ -289,7 +289,7 @@ table th {
 
 .view_user table {
   width:100%;
-} 
+}
 
 .view_user th, td {
   text-align: left;
@@ -297,25 +297,11 @@ table th {
   padding:5px;
 }
 
-#map_frame {
-  width:650px;
-  margin:40px auto;
-  margin-bottom:40px;
+div.table_container {
 }
 
-#room_detail {
-  float:left;
-  width:200px;
-  text-align:left;
+div.table_container table {
+  display: inline-block;
+  vertical-align: top;
+  padding: 10px;
 }
-
-#room_detail a {
-  text-decoration:none;
-  color:black;
-}
-
-#map_image {
-  float:right;
-  width:450px;
-}
-

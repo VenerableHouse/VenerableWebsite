@@ -1011,7 +1011,7 @@ def new_hassle_participants():
   ''' Select participants for the room hassle. '''
 
   # Get a list of all current members.
-  members = hassle.get_members()
+  members = hassle.get_all_members()
   return render_template('hassle_new_participants.html', members=members)
 
 @app.route('/hassle/new/participants/submit', methods=['POST'])
@@ -1021,7 +1021,7 @@ def new_hassle_participants_submit():
 
   # Get a list of all participants' user IDs.
   participants = map(lambda x: int(x), request.form.getlist('participants'))
-  # Update the database with this hassle's participants.
+  # Update database with this hassle's participants.
   hassle.set_participants(participants)
   return redirect(url_for('new_hassle_rooms'))
 
@@ -1029,19 +1029,32 @@ def new_hassle_participants_submit():
 @login_required(Permissions.HassleAdmin)
 def new_hassle_rooms():
   ''' Select rooms available for the room hassle. '''
-  return render_template('hassle_new_rooms.html')
+
+  # Get a list of all rooms.
+  rooms = hassle.get_all_rooms()
+  return render_template('hassle_new_rooms.html', rooms=rooms)
 
 @app.route('/hassle/new/rooms/submit', methods=['POST'])
 @login_required(Permissions.HassleAdmin)
 def new_hassle_rooms_submit():
   ''' Submission endpoint for hassle rooms. Redirects to next page. '''
+
+  # Get a list of all room numbers.
+  rooms = map(lambda x: int(x), request.form.getlist('rooms'))
+  # Update database with participating rooms.
+  hassle.set_rooms(rooms)
   return redirect(url_for('new_hassle_confirm'))
 
 @app.route('/hassle/new/confirm')
 @login_required(Permissions.HassleAdmin)
 def new_hassle_confirm():
   ''' Confirmation page for new room hassle. '''
-  return render_template('hassle_new_confirm.html')
+
+  participants = hassle.get_participants()
+  rooms = hassle.get_rooms()
+
+  return render_template('hassle_new_confirm.html', rooms=rooms, \
+      participants=participants)
 
 @app.route('/hassle/new/confirm/submit', methods=['POST'])
 @login_required(Permissions.HassleAdmin)
