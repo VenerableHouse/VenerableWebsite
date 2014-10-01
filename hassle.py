@@ -12,7 +12,33 @@ def get_all_members():
     FROM members_current NATURAL JOIN membership_types
     ORDER BY membership_type, grad_year, name
     """)
-  return g.db.execute(query)
+  return g.db.execute(query).fetchall()
+
+def get_participants():
+  ''' Gets all members participating in the hassle. '''
+
+  query = text("""
+    SELECT user_id, CONCAT(fname, ' ', lname) AS name, grad_year,
+      membership_desc
+    FROM members NATURAL JOIN hassle_participants NATURAL JOIN membership_types
+    ORDER BY membership_type, grad_year, name
+    """)
+  return g.db.execute(query).fetchall()
+
+def get_available_participants():
+  ''' Gets all participants who have not yet picked a room. '''
+
+  query = text("""
+    SELECT user_id, CONCAT(fname, ' ', lname) AS name
+    FROM members NATURAL JOIN hassle_participants
+    WHERE user_id NOT IN (
+      SELECT user_id FROM hassle_events
+      UNION
+      SELECT roommate_id FROM hassle_roommates
+    )
+    ORDER BY name
+    """)
+  return g.db.execute(query).fetchall()
 
 def set_participants(participants):
   ''' Sets hassle participants. '''
@@ -37,7 +63,30 @@ def get_all_rooms():
     FROM rooms
     ORDER BY room_number
     """)
-  return g.db.execute(query)
+  return g.db.execute(query).fetchall()
+
+def get_participating_rooms():
+  ''' Gets all rooms participating in the hassle. '''
+
+  query = text("""
+    SELECT room_number, alley
+    FROM rooms NATURAL JOIN hassle_rooms
+    ORDER BY room_number
+    """)
+  return g.db.execute(query).fetchall()
+
+def get_available_rooms():
+  ''' Gets all rooms that have not been picked. '''
+
+  query = text("""
+    SELECT room_number, alley
+    FROM hassle_rooms NATURAL JOIN rooms
+    WHERE room_number NOT IN (
+      SELECT room_number FROM hassle_events
+    )
+    ORDER BY room_number
+    """)
+  return g.db.execute(query).fetchall()
 
 def set_rooms(rooms):
   ''' Sets rooms available for hassle. '''
@@ -51,33 +100,28 @@ def set_rooms(rooms):
   for room in rooms:
     g.db.execute(insert_query, r=room)
 
-def get_participants():
-  ''' Gets all members participating in the hassle. '''
+def get_events():
+  ''' Returns events in the hassle. '''
 
   query = text("""
-    SELECT user_id, CONCAT(fname, ' ', lname) AS name, grad_year,
-      membership_desc
-    FROM members NATURAL JOIN hassle_participants NATURAL JOIN membership_types
-    ORDER BY membership_type, grad_year, name
+    SELECT hassle_event_id, user_id, CONCAT(fname, ' ', lname) AS name,
+      room_number, alley
+    FROM hassle_events NATURAL JOIN members NATURAL JOIN rooms
+    ORDER BY hassle_event_id
     """)
-  return g.db.execute(query)
+  return g.db.execute(query).fetchall()
 
-def get_rooms():
-  ''' Gets all rooms participating in the hassle. '''
+def get_events_with_roommates():
+  ''' Returns events with additional roommate information. '''
 
-  query = text("""
-    SELECT room_number, alley
-    FROM rooms NATURAL JOIN hassle_rooms
-    ORDER BY room_number
-    """)
-  return g.db.execute(query)
+  events = get_events()
+  results = []
 
-def clear_all():
-  ''' Clears all current hassle data. '''
-
-  g.db.execute(text("DELETE FROM hassle_events"))
-  g.db.execute(text("DELETE FROM hassle_participants"))
-  g.db.execute(text("DELETE FROM hassle_rooms"))
+  for event in events:
+    row_dict = dict(event.items())
+    row_dict['roommates'] = get_roommates(event['user_id'])
+    results.append(row_dict)
+  return results
 
 def clear_events(event_id=None):
   '''
@@ -92,3 +136,22 @@ def clear_events(event_id=None):
   else:
     query = text("DELETE FROM hassle_events")
     g.db.execute(query)
+
+def get_roommates(user_id):
+  ''' Gets all roommates for the provided user. '''
+
+  query = text("""
+    SELECT roommate_id, CONCAT(fname, ' ', lname) AS name
+    FROM hassle_roommates
+      JOIN members ON hassle_roommates.roommate_id = members.user_id
+    WHERE hassle_roommates.user_id=:u
+    ORDER BY name
+    """)
+  return g.db.execute(query, u=user_id).fetchall()
+
+def clear_all():
+  ''' Clears all current hassle data. '''
+
+  g.db.execute(text("DELETE FROM hassle_events"))
+  g.db.execute(text("DELETE FROM hassle_participants"))
+  g.db.execute(text("DELETE FROM hassle_rooms"))

@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
 <script>
-  function new_hassle()
+  function start_new_hassle()
   {
     var msg = "Are you sure you want to start a new hassle? This will clear all existing hassle data.";
     if (confirm(msg))
@@ -12,7 +12,7 @@
 </script>
 <h2>Room Hassle</h2>
 <div>
-  <button type="button" onclick="new_hassle()">
+  <button type="button" onclick="start_new_hassle()">
     Start new hassle
   </button>
 </div>

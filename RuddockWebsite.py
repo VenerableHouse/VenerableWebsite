@@ -997,7 +997,15 @@ def add_members():
 @login_required(Permissions.HassleAdmin)
 def run_hassle():
   ''' Logic for room hassles. '''
-  return render_template('hassle.html')
+
+  available_participants = hassle.get_available_participants()
+  available_rooms = hassle.get_available_rooms()
+  events = hassle.get_events_with_roommates()
+
+  return render_template('hassle.html',
+      available_participants=available_participants,
+      available_rooms=available_rooms,
+      events=events)
 
 @app.route('/hassle/new')
 @login_required(Permissions.HassleAdmin)
@@ -1055,7 +1063,7 @@ def new_hassle_confirm():
   ''' Confirmation page for new room hassle. '''
 
   participants = hassle.get_participants()
-  rooms = hassle.get_rooms()
+  rooms = hassle.get_participating_rooms()
 
   return render_template('hassle_new_confirm.html', rooms=rooms, \
       participants=participants)
