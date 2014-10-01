@@ -1003,6 +1003,10 @@ def run_hassle():
 @login_required(Permissions.HassleAdmin)
 def new_hassle():
   ''' Redirects to the first page to start a new room hassle. '''
+
+  # Clear old data.
+  hassle.clear_all()
+
   return redirect(url_for('new_hassle_participants'))
 
 @app.route('/hassle/new/participants')
@@ -1060,6 +1064,8 @@ def new_hassle_confirm():
 @login_required(Permissions.HassleAdmin)
 def new_hassle_confirm_submit():
   ''' Submission endpoint for confirmation page. '''
+
+  # Nothing to do, everything is already in the database.
   return redirect(url_for('run_hassle'))
 
 if __name__ == "__main__":

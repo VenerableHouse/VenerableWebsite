@@ -1,8 +1,18 @@
 {% extends "layout.html" %}
 {% block body %}
+<script>
+  function new_hassle()
+  {
+    var msg = "Are you sure you want to start a new hassle? This will clear all existing hassle data.";
+    if (confirm(msg))
+    {
+      location.href='{{ url_for('new_hassle') }}';
+    }
+  }
+</script>
 <h2>Room Hassle</h2>
 <div>
-  <button type="button" onclick="location.href='{{ url_for('new_hassle') }}'">
+  <button type="button" onclick="new_hassle()">
     Start new hassle
   </button>
 </div>

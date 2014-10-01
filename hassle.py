@@ -71,3 +71,24 @@ def get_rooms():
     ORDER BY room_number
     """)
   return g.db.execute(query)
+
+def clear_all():
+  ''' Clears all current hassle data. '''
+
+  g.db.execute(text("DELETE FROM hassle_events"))
+  g.db.execute(text("DELETE FROM hassle_participants"))
+  g.db.execute(text("DELETE FROM hassle_rooms"))
+
+def clear_events(event_id=None):
+  '''
+  Clears hassle events. If event_id is provided, all events after (not
+  including) the provided event are cleared. Otherwise, everything is
+  cleared.
+  '''
+
+  if event_id:
+    query = text("DELETE FROM hassle_events WHERE hassle_event_id > :e")
+    g.db.execute(query, e=event_id)
+  else:
+    query = text("DELETE FROM hassle_events")
+    g.db.execute(query)
