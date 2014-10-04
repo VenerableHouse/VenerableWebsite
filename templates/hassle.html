@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
-{% block body %}
+{% block head %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script>
   function start_new_hassle()
   {
@@ -10,10 +11,96 @@
     }
   }
 </script>
+{% endblock %}
+
+{% block body %}
 <h2>Room Hassle</h2>
 <div>
   <button type="button" onclick="start_new_hassle()">
     Start new hassle
   </button>
+  <br><br>
 </div>
+Picked rooms:
+<div id="events">
+  <table>
+    <thead>
+      <tr>
+        {% for alley in alleys %}
+        <th style="width: 16%">Alley {{ alley }}</th>
+        {% endfor %}
+      </tr>
+      <tr>
+        {% for alley in alleys %}
+        <td>
+          <ul>
+            {% for event in events %}
+              {% if event['alley'] == alley %}
+              <li>{{ event['room_number'] }}: {{ event['occupants_str'] }}</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </td>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+</div>
+<form action="{{ url_for('hassle_event') }}" method="POST">
+  <table>
+    <tr>
+      <td>Select a room:</td>
+      <td>
+        <select name="room">
+          {% for room in available_rooms %}
+          <option value="{{ room['room_number'] }}">
+          {{ room['room_number'] }}
+          </option>
+          {% endfor %}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Name:</td>
+      <td>
+        <select name="user_id">
+          {% for participant in available_participants %}
+          <option value="{{ participant['user_id'] }}">
+          {{ participant['name'] }}
+          </option>
+          {% endfor %}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Roommate:</td>
+      <td>
+        <select name="roommate_id">
+          <option value="none">-- No roommate --</option>
+          {% for participant in available_participants %}
+          <option value="{{ participant['user_id'] }}">
+          {{ participant['name'] }}
+          </option>
+          {% endfor %}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Triple?</td>
+      <td>
+          <select name="roommate_id">
+          <option value="none">-- Not a triple --</option>
+          {% for participant in available_participants %}
+          <option value="{{ participant['user_id'] }}">
+          {{ participant['name'] }}
+          </option>
+          {% endfor %}
+        </select>
+      </td>
+    </tr>
+  </table>
+  <button type="submit">Submit</button>
+</form>
 {% endblock %}

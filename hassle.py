@@ -119,9 +119,30 @@ def get_events_with_roommates():
 
   for event in events:
     row_dict = dict(event.items())
-    row_dict['roommates'] = get_roommates(event['user_id'])
+    roommates = get_roommates(event['user_id'])
+    row_dict['roommates'] = roommates
+    occupant_names = [event['name']]
+    for roommate in roommates:
+      occupant_names.append(roommate['name'])
+    row_dict['occupants_str'] = ', '.join(occupant_names)
     results.append(row_dict)
   return results
+
+def new_event(user_id, room_number, roommates):
+  ''' Inserts a new event into the database. '''
+
+  # Insert event.
+  query = text("""
+    INSERT INTO hassle_events (user_id, room_number) VALUES (:u, :r)
+    """)
+  g.db.execute(query, u=user_id, r=room_number)
+
+  # Insert roommates.
+  query = text("""
+    INSERT INTO hassle_roommates (user_id, roommate_id) VALUES (:u, :r)
+    """)
+  for roommate in roommates:
+    g.db.execute(query, u=user_id, r=roommate)
 
 def clear_events(event_id=None):
   '''
@@ -131,11 +152,19 @@ def clear_events(event_id=None):
   '''
 
   if event_id:
+    query = text("""
+      DELETE FROM hassle_roommates
+      WHERE user_id IN (
+        SELECT user_id FROM hassle_events
+        WHERE hassle_event_id > :e
+      )""")
+    g.db.execute(query, e=event_id)
+
     query = text("DELETE FROM hassle_events WHERE hassle_event_id > :e")
     g.db.execute(query, e=event_id)
   else:
-    query = text("DELETE FROM hassle_events")
-    g.db.execute(query)
+    g.db.execute(text("DELETE FROM hassle_roommates"))
+    g.db.execute(text("DELETE FROM hassle_events"))
 
 def get_roommates(user_id):
   ''' Gets all roommates for the provided user. '''
@@ -152,6 +181,7 @@ def get_roommates(user_id):
 def clear_all():
   ''' Clears all current hassle data. '''
 
+  g.db.execute(text("DELETE FROM hassle_roommates"))
   g.db.execute(text("DELETE FROM hassle_events"))
   g.db.execute(text("DELETE FROM hassle_participants"))
   g.db.execute(text("DELETE FROM hassle_rooms"))

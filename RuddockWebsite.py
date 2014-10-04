@@ -1001,11 +1001,34 @@ def run_hassle():
   available_participants = hassle.get_available_participants()
   available_rooms = hassle.get_available_rooms()
   events = hassle.get_events_with_roommates()
+  alleys = [1, 2, 3, 4, 5, 6]
 
   return render_template('hassle.html',
       available_participants=available_participants,
       available_rooms=available_rooms,
-      events=events)
+      events=events,
+      alleys=alleys)
+
+@app.route('/hassle/event', methods=['POST'])
+@login_required(Permissions.HassleAdmin)
+def hassle_event():
+  ''' Submission endpoint for a new event (someone picks a room). '''
+
+  user_id = request.form.get('user_id', None)
+  room_number = request.form.get('room', None)
+  roommates = request.form.getlist('roommate_id')
+
+  if user_id == None or room_number == None:
+    flash("Invalid request - try again?")
+  else:
+    roommates = [r for r in roommates if r != "none"]
+
+    # Check for invalid roommate selection.
+    if user_id in roommates or len(roommates) != len(set(roommates)):
+      flash("Invalid roommate selection.")
+    else:
+      hassle.new_event(user_id, room_number, roommates)
+  return redirect(url_for('run_hassle'))
 
 @app.route('/hassle/new')
 @login_required(Permissions.HassleAdmin)
