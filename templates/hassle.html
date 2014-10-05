@@ -13,7 +13,7 @@
 
   function panic()
   {
-    var msg = "PANIC?";
+    var msg = "Panic?";
     if (confirm(msg))
     {
       location.href='{{ url_for('hassle_restart') }}';
@@ -44,7 +44,7 @@
     Start new hassle
   </button>
   <button type="button" onclick="panic()">
-    PANIC!
+    PANIC
   </button>
   <br><br>
 </div>
@@ -75,62 +75,70 @@ Picked rooms:
     </tbody>
   </table>
 </div>
-<form action="{{ url_for('hassle_event') }}" method="POST">
-  <table>
-    <tr>
-      <td>Select a room:</td>
-      <td>
-        <select id="room_select" name="room">
-          {% for room in available_rooms %}
-          <option value="{{ room['room_number'] }}">
-          {{ room['room_number'] }}
-          </option>
-          {% endfor %}
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td>Name:</td>
-      <td>
-        <select id="name_select" name="user_id">
-          {% for participant in available_participants %}
-          <option value="{{ participant['user_id'] }}">
-          {{ participant['name'] }}
-          </option>
-          {% endfor %}
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td>Roommate:</td>
-      <td>
-        <select name="roommate_id">
-          <option value="none">-- No roommate --</option>
-          {% for participant in available_participants %}
-          <option value="{{ participant['user_id'] }}">
-          {{ participant['name'] }}
-          </option>
-          {% endfor %}
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td>Triple?</td>
-      <td>
-          <select name="roommate_id">
-          <option value="none">-- Not a triple --</option>
-          {% for participant in available_participants %}
-          <option value="{{ participant['user_id'] }}">
-          {{ participant['name'] }}
-          </option>
-          {% endfor %}
-        </select>
-      </td>
-    </tr>
-  </table>
-  <button type="submit">Submit</button>
-</form>
-<br>
+<div id="event_form">
+  <div style="display: inline-block; vertical-align: top">
+    <form action="{{ url_for('hassle_event') }}" method="POST">
+      <table>
+        <tr>
+          <td>Select a room:</td>
+          <td>
+            <select id="room_select" name="room">
+              {% for room in available_rooms %}
+              <option value="{{ room['room_number'] }}">
+              {{ room['room_number'] }}
+              </option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Name:</td>
+          <td>
+            <select id="name_select" name="user_id">
+              {% for participant in available_participants %}
+              <option value="{{ participant['user_id'] }}">
+              {{ participant['name'] }}
+              </option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Roommate:</td>
+          <td>
+            <select name="roommate_id">
+              <option value="none">-- No roommate --</option>
+              {% for participant in available_participants %}
+              <option value="{{ participant['user_id'] }}">
+              {{ participant['name'] }}
+              </option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Triple?</td>
+          <td>
+              <select name="roommate_id">
+              <option value="none">-- Not a triple --</option>
+              {% for participant in available_participants %}
+              <option value="{{ participant['user_id'] }}">
+              {{ participant['name'] }}
+              </option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+      </table>
+      <button type="submit">Submit</button>
+      <br><br>
+    </form>
+  </div>
+  <div style="display: inline-block; vertical-align: top">
+    <img src="{{ url_for('static', filename='images/map_with_beds.png') }}"
+      alt="Ruddock House Map">
+  </div>
+</div>
 <p>All events so far:</p>
 <ul>
   {% for event in events %}
