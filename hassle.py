@@ -124,7 +124,7 @@ def get_events_with_roommates():
     occupant_names = [event['name']]
     for roommate in roommates:
       occupant_names.append(roommate['name'])
-    row_dict['occupants_str'] = ', '.join(occupant_names)
+    row_dict['occupants'] = ', '.join(occupant_names)
     results.append(row_dict)
   return results
 
@@ -156,11 +156,11 @@ def clear_events(event_id=None):
       DELETE FROM hassle_roommates
       WHERE user_id IN (
         SELECT user_id FROM hassle_events
-        WHERE hassle_event_id > :e
+        WHERE hassle_event_id >= :e
       )""")
     g.db.execute(query, e=event_id)
 
-    query = text("DELETE FROM hassle_events WHERE hassle_event_id > :e")
+    query = text("DELETE FROM hassle_events WHERE hassle_event_id >= :e")
     g.db.execute(query, e=event_id)
   else:
     g.db.execute(text("DELETE FROM hassle_roommates"))

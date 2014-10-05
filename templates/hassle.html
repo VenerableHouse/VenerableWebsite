@@ -10,6 +10,30 @@
       location.href='{{ url_for('new_hassle') }}';
     }
   }
+
+  function panic()
+  {
+    var msg = "PANIC?";
+    if (confirm(msg))
+    {
+      location.href='{{ url_for('hassle_restart') }}';
+    }
+  }
+
+  function restart(event_id)
+  {
+    var msg = "Confirm restart?";
+    if (confirm(msg))
+    {
+      location.href='{{ url_for('hassle_restart') }}' + '/' + event_id;
+    }
+  }
+
+  $(document).ready(function()
+  {
+    $("#room_select").prop("selectedIndex", -1);
+    $("#name_select").prop("selectedIndex", -1);
+  });
 </script>
 {% endblock %}
 
@@ -18,6 +42,9 @@
 <div>
   <button type="button" onclick="start_new_hassle()">
     Start new hassle
+  </button>
+  <button type="button" onclick="panic()">
+    PANIC!
   </button>
   <br><br>
 </div>
@@ -36,7 +63,7 @@ Picked rooms:
           <ul>
             {% for event in events %}
               {% if event['alley'] == alley %}
-              <li>{{ event['room_number'] }}: {{ event['occupants_str'] }}</li>
+              <li>{{ event['room_number'] }}: {{ event['occupants'] }}</li>
               {% endif %}
             {% endfor %}
           </ul>
@@ -53,7 +80,7 @@ Picked rooms:
     <tr>
       <td>Select a room:</td>
       <td>
-        <select name="room">
+        <select id="room_select" name="room">
           {% for room in available_rooms %}
           <option value="{{ room['room_number'] }}">
           {{ room['room_number'] }}
@@ -65,7 +92,7 @@ Picked rooms:
     <tr>
       <td>Name:</td>
       <td>
-        <select name="user_id">
+        <select id="name_select" name="user_id">
           {% for participant in available_participants %}
           <option value="{{ participant['user_id'] }}">
           {{ participant['name'] }}
@@ -103,4 +130,11 @@ Picked rooms:
   </table>
   <button type="submit">Submit</button>
 </form>
+<br>
+<p>All events so far:</p>
+<ul>
+  {% for event in events %}
+  <li>{{ event['occupants'] }} picked room {{ event['room_number'] }}. <button onclick="restart({{ event['hassle_event_id'] }})">Restart</button></li>
+  {% endfor %}
+</ul>
 {% endblock %}

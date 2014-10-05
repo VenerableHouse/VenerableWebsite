@@ -1030,6 +1030,16 @@ def hassle_event():
       hassle.new_event(user_id, room_number, roommates)
   return redirect(url_for('run_hassle'))
 
+@app.route('/hassle/restart', defaults={'event_id': None})
+@app.route('/hassle/restart/<int:event_id>')
+@login_required(Permissions.HassleAdmin)
+def hassle_restart(event_id):
+  if event_id == None:
+    hassle.clear_events()
+  else:
+    hassle.clear_events(event_id)
+  return redirect(url_for('run_hassle'))
+
 @app.route('/hassle/new')
 @login_required(Permissions.HassleAdmin)
 def new_hassle():
