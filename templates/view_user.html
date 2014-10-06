@@ -3,14 +3,14 @@
 {% block body %}
   <center><div id="view_user_box">
     <div id="view_user_name">{{ info["fname"] }} {{ info["lname"] }}</div>
-    
+
     <div id="view_user_subtitle">
     {% if info["major"] %}
-    {{ info["major"] }}, 
+    {{ info["major"] }},
     {% endif %}
     Class of {{ info["grad_year"] }}
-    </div> 
-    
+    </div>
+
     {% if info["isabroad"] %}
     <div id="view_user_isabroad">Currently studying abroad</div>
     {% endif %}
@@ -31,8 +31,8 @@
     <div id="view_user_contact">
     {% if info["email"] %}
     <a href="&#109;&#097;&#105;&#108;&#116;&#111;:{{ info["email"] }}" style="text-decoration:none;color:black;">
-    {{ info["email"] }}</a> 
-    
+    {{ info["email"] }}</a>
+
     {% if info["msc"] %}
     &#8226; MSC {{ info["msc"] }}
 
@@ -59,7 +59,7 @@
     {% endif %}
     </div>
 
-    
+
     <table>
       {% if info["bday"] %}
       <tr>
@@ -70,12 +70,7 @@
       <tr>
         {% if info["building"] %}
         <td>Residence:</td>
-        {% if info["building"] == "Ruddock" %}
-        <td><a href="{{ url_for('show_map_room', room=info["room_num"]) }}" style="text-decoration:none;color:black;">
-        {{info["building"]}} {{ info["room_num"] }}</a></td>
-        {% else %}
         <td>{{info["building"]}} {{ info["room_num"] }}</td>
-        {% endif %}
         {% endif %}
       </tr>
       <tr>

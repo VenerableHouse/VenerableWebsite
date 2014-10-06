@@ -3,13 +3,14 @@ from flask import Flask, request, session, g, redirect, url_for, abort, \
     render_template, flash
 from collections import OrderedDict
 from sqlalchemy import create_engine, MetaData, text
-import config, auth
-import datetime
-from room_map_dict_def import room_dict
 from time import strftime
 from email_utils import sendEmail
 from constants import *
+import datetime
 import re
+import config
+import auth
+import hassle
 
 app = Flask(__name__)
 app.debug = False
@@ -444,50 +445,6 @@ def show_gov():
 def show_about_us():
   return render_template('about_us.html')
 
-@app.route('/map')
-def show_map():
-  return render_template('map.html', room_dict=room_dict, hl=0)
-
-@app.route('/map/<room>')
-@login_required()
-def show_map_room(room):
-  '''Shows the map with a specific room highlighted'''
-
-  # Figure out who lives there
-  query = text("SELECT fname, lname, nickname, usenickname, username  \
-     FROM members NATURAL JOIN users WHERE room_num=:id \
-    AND building LIKE '%ruddock%'")
-  results = g.db.execute(query, id=room)
-
-  # Make these tuples of ('name', 'username')
-  people = []
-  for person in results:
-    if person[3]:
-      people.append(('%s %s' % (person[2], person[1]), person[4]))
-    else:
-      people.append(('%s %s' % (person[0], person[1]), person[4]))
-
-  return render_template('map.html', room_dict=room_dict, hl=room, \
-    people=people)
-
-@app.route('/admin', methods=['GET', 'POST'])
-@login_required(Permissions.Admin)
-def admin_home():
-  '''
-  Loads a home page for admins, providing links to various tools.
-  '''
-
-  admin_tools = []
-
-  if auth.check_permission(Permissions.UserAdmin):
-    admin_tools.append({
-      'name': 'Add new members',
-      'link': url_for('add_members', _external=True)})
-    admin_tools.append({
-      'name': 'Send account creation reminder',
-      'link': url_for('send_reminder_emails', _external=True)})
-  return render_template('admin.html', tools=admin_tools)
-
 def create_account_hash(user_id, uid, fname, lname):
   '''
   Creates a unique hash for users trying to create an account.
@@ -650,6 +607,28 @@ def create_account():
   return render_template('create_account.html', user_data=user_data, \
       key=key, user_id=user_id)
 
+@app.route('/admin', methods=['GET', 'POST'])
+@login_required(Permissions.Admin)
+def admin_home():
+  '''
+  Loads a home page for admins, providing links to various tools.
+  '''
+
+  admin_tools = []
+
+  if auth.check_permission(Permissions.UserAdmin):
+    admin_tools.append({
+      'name': 'Add new members',
+      'link': url_for('add_members', _external=True)})
+    admin_tools.append({
+      'name': 'Send account creation reminder',
+      'link': url_for('send_reminder_emails', _external=True)})
+
+  if auth.check_permission(Permissions.HassleAdmin):
+    admin_tools.append({
+      'name': 'Room hassle',
+      'link': url_for('run_hassle', _external=True)})
+  return render_template('admin.html', tools=admin_tools)
 
 @app.route('/admin/reminder_email', methods=['GET', 'POST'])
 @login_required(Permissions.UserAdmin)
@@ -1013,6 +992,122 @@ def add_members():
 
   return render_template('new_members.html', state='default', \
       path=PATH_TO_TEMPLATE, filename=TEMPLATE_FILENAME)
+
+@app.route('/hassle')
+@login_required(Permissions.HassleAdmin)
+def run_hassle():
+  ''' Logic for room hassles. '''
+
+  available_participants = hassle.get_available_participants()
+  available_rooms = hassle.get_available_rooms()
+  events = hassle.get_events_with_roommates()
+  alleys = [1, 2, 3, 4, 5, 6]
+
+  return render_template('hassle.html',
+      available_participants=available_participants,
+      available_rooms=available_rooms,
+      events=events,
+      alleys=alleys)
+
+@app.route('/hassle/event', methods=['POST'])
+@login_required(Permissions.HassleAdmin)
+def hassle_event():
+  ''' Submission endpoint for a new event (someone picks a room). '''
+
+  user_id = request.form.get('user_id', None)
+  room_number = request.form.get('room', None)
+  roommates = request.form.getlist('roommate_id')
+
+  if user_id == None or room_number == None:
+    flash("Invalid request - try again?")
+  else:
+    roommates = [r for r in roommates if r != "none"]
+
+    # Check for invalid roommate selection.
+    if user_id in roommates or len(roommates) != len(set(roommates)):
+      flash("Invalid roommate selection.")
+    else:
+      hassle.new_event(user_id, room_number, roommates)
+  return redirect(url_for('run_hassle'))
+
+@app.route('/hassle/restart', defaults={'event_id': None})
+@app.route('/hassle/restart/<int:event_id>')
+@login_required(Permissions.HassleAdmin)
+def hassle_restart(event_id):
+  if event_id == None:
+    hassle.clear_events()
+  else:
+    hassle.clear_events(event_id)
+  return redirect(url_for('run_hassle'))
+
+@app.route('/hassle/new')
+@login_required(Permissions.HassleAdmin)
+def new_hassle():
+  ''' Redirects to the first page to start a new room hassle. '''
+
+  # Clear old data.
+  hassle.clear_all()
+
+  return redirect(url_for('new_hassle_participants'))
+
+@app.route('/hassle/new/participants')
+@login_required(Permissions.HassleAdmin)
+def new_hassle_participants():
+  ''' Select participants for the room hassle. '''
+
+  # Get a list of all current members.
+  members = hassle.get_all_members()
+  return render_template('hassle_new_participants.html', members=members)
+
+@app.route('/hassle/new/participants/submit', methods=['POST'])
+@login_required(Permissions.HassleAdmin)
+def new_hassle_participants_submit():
+  ''' Submission endpoint for hassle participants. Redirects to next page. '''
+
+  # Get a list of all participants' user IDs.
+  participants = map(lambda x: int(x), request.form.getlist('participants'))
+  # Update database with this hassle's participants.
+  hassle.set_participants(participants)
+  return redirect(url_for('new_hassle_rooms'))
+
+@app.route('/hassle/new/rooms')
+@login_required(Permissions.HassleAdmin)
+def new_hassle_rooms():
+  ''' Select rooms available for the room hassle. '''
+
+  # Get a list of all rooms.
+  rooms = hassle.get_all_rooms()
+  return render_template('hassle_new_rooms.html', rooms=rooms)
+
+@app.route('/hassle/new/rooms/submit', methods=['POST'])
+@login_required(Permissions.HassleAdmin)
+def new_hassle_rooms_submit():
+  ''' Submission endpoint for hassle rooms. Redirects to next page. '''
+
+  # Get a list of all room numbers.
+  rooms = map(lambda x: int(x), request.form.getlist('rooms'))
+  # Update database with participating rooms.
+  hassle.set_rooms(rooms)
+  return redirect(url_for('new_hassle_confirm'))
+
+@app.route('/hassle/new/confirm')
+@login_required(Permissions.HassleAdmin)
+def new_hassle_confirm():
+  ''' Confirmation page for new room hassle. '''
+
+  participants = hassle.get_participants()
+  rooms = hassle.get_participating_rooms()
+
+  return render_template('hassle_new_confirm.html', rooms=rooms, \
+      participants=participants)
+
+@app.route('/hassle/new/confirm/submit', methods=['POST'])
+@login_required(Permissions.HassleAdmin)
+def new_hassle_confirm_submit():
+  ''' Submission endpoint for confirmation page. '''
+
+  # Nothing to do, everything is already in the database.
+  return redirect(url_for('run_hassle'))
 
 if __name__ == "__main__":
   app.run()

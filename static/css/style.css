@@ -1,3 +1,24 @@
+/* Consistent styling for all tables. */
+table th {
+  text-align: center;
+  background-color:#eee;
+  color:#666666;
+  font-weight: bold;
+  cursor: default;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+table td {
+  text-align: left;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
 .clearfix:after {
 	clear: both;
 	display: block;
@@ -82,8 +103,8 @@ div.navbar, div.sub_navbar {
     height: 28px;
     font-variant: small-caps;
     font-family: Tahoma, Arial, Helvetica, sans-serif;
-    font-size: 14pt; 
-    
+    font-size: 14pt;
+
 }
 
 div.sub_navbar {
@@ -196,13 +217,6 @@ div.message_body {
     color:white;
 }
 
-table th {
-    background-color:#eee;
-    color:#666666;
-    font-weight: bold;
-    cursor: default;
-}
-
 .flashes {
     border: 1px solid;
     margin: 10px 0px;
@@ -287,35 +301,8 @@ table th {
 
 }
 
-.view_user table {
-  width:100%;
-} 
-
-.view_user th, td {
-  text-align: left;
-  font-size: 11pt;
-  padding:5px;
+div.table_container table {
+  display: inline-block;
+  vertical-align: top;
+  padding: 10px;
 }
-
-#map_frame {
-  width:650px;
-  margin:40px auto;
-  margin-bottom:40px;
-}
-
-#room_detail {
-  float:left;
-  width:200px;
-  text-align:left;
-}
-
-#room_detail a {
-  text-decoration:none;
-  color:black;
-}
-
-#map_image {
-  float:right;
-  width:450px;
-}
-

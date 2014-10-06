@@ -1,0 +1,148 @@
+{% extends "layout.html" %}
+{% block head %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script>
+  function start_new_hassle()
+  {
+    var msg = "Are you sure you want to start a new hassle? This will clear all existing hassle data.";
+    if (confirm(msg))
+    {
+      location.href='{{ url_for('new_hassle') }}';
+    }
+  }
+
+  function panic()
+  {
+    var msg = "Panic?";
+    if (confirm(msg))
+    {
+      location.href='{{ url_for('hassle_restart') }}';
+    }
+  }
+
+  function restart(event_id)
+  {
+    var msg = "Confirm restart?";
+    if (confirm(msg))
+    {
+      location.href='{{ url_for('hassle_restart') }}' + '/' + event_id;
+    }
+  }
+
+  $(document).ready(function()
+  {
+    $("#room_select").prop("selectedIndex", -1);
+    $("#name_select").prop("selectedIndex", -1);
+  });
+</script>
+{% endblock %}
+
+{% block body %}
+<h2>Room Hassle</h2>
+<div>
+  <button type="button" onclick="start_new_hassle()">
+    Start new hassle
+  </button>
+  <button type="button" onclick="panic()">
+    PANIC
+  </button>
+  <br><br>
+</div>
+Picked rooms:
+<div id="events">
+  <table>
+    <thead>
+      <tr>
+        {% for alley in alleys %}
+        <th style="width: 16%">Alley {{ alley }}</th>
+        {% endfor %}
+      </tr>
+      <tr>
+        {% for alley in alleys %}
+        <td>
+          <ul>
+            {% for event in events %}
+              {% if event['alley'] == alley %}
+              <li>{{ event['room_number'] }}: {{ event['occupants'] }}</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </td>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+</div>
+<div id="event_form">
+  <div style="display: inline-block; vertical-align: top">
+    <form action="{{ url_for('hassle_event') }}" method="POST">
+      <table>
+        <tr>
+          <td>Select a room:</td>
+          <td>
+            <select id="room_select" name="room">
+              {% for room in available_rooms %}
+              <option value="{{ room['room_number'] }}">
+              {{ room['room_number'] }}
+              </option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Name:</td>
+          <td>
+            <select id="name_select" name="user_id">
+              {% for participant in available_participants %}
+              <option value="{{ participant['user_id'] }}">
+              {{ participant['name'] }}
+              </option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Roommate:</td>
+          <td>
+            <select name="roommate_id">
+              <option value="none">-- No roommate --</option>
+              {% for participant in available_participants %}
+              <option value="{{ participant['user_id'] }}">
+              {{ participant['name'] }}
+              </option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Triple?</td>
+          <td>
+              <select name="roommate_id">
+              <option value="none">-- Not a triple --</option>
+              {% for participant in available_participants %}
+              <option value="{{ participant['user_id'] }}">
+              {{ participant['name'] }}
+              </option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+      </table>
+      <button type="submit">Submit</button>
+      <br><br>
+    </form>
+  </div>
+  <div style="display: inline-block; vertical-align: top">
+    <img src="{{ url_for('static', filename='images/map_with_beds.png') }}"
+      alt="Ruddock House Map">
+  </div>
+</div>
+<p>All events so far:</p>
+<ul>
+  {% for event in events %}
+  <li>{{ event['occupants'] }} picked room {{ event['room_number'] }}. <button onclick="restart({{ event['hassle_event_id'] }})">Restart</button></li>
+  {% endfor %}
+</ul>
+{% endblock %}
