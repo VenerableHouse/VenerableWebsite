@@ -5,10 +5,7 @@ table th {
   color: #666666;
   font-weight: bold;
   cursor: default;
-  padding-left: 5px;
-  padding-right: 5px;
-  padding-top: 2px;
-  padding-bottom: 2px;
+  padding: 2px 5px;
 }
 
 table td {
@@ -16,7 +13,7 @@ table td {
   padding: 2px 5px;
 }
 
-.clearfix:after {
+.clearfix: after {
 	clear: both;
 	display: block;
 	content: " ";
@@ -45,183 +42,183 @@ li.clearfix {
 /* End hide from IE-mac */
 
 #borderbox {
-    margin-left:5px;
-    margin-right:5px;
-    margin-top:5px;
-    margin-bottom:5px;
-    border-style:solid;
-    border-width: 5px;
-    border-color: #003060;
-    padding:10px;
-    min-width:450px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  border-style: solid;
+  border-width: 5px;
+  border-color: #003060;
+  padding: 10px;
+  min-width: 450px;
 }
 
 div.title {
-    width: 100%;
-    text-align: center;
-    color: #003060;
-    font-family: Times;
-    #font-family: Tahoma, Arial, Helvetica, sans-serif;
-    font-variant: small-caps;
-    font-size: 36pt;
-    font-weight: bold;
-    height: 68px;
-    margin-top: 0%;
+  width: 100%;
+  text-align: center;
+  color: #003060;
+  font-family: Times;
+  #font-family: Tahoma, Arial, Helvetica, sans-serif;
+  font-variant: small-caps;
+  font-size: 36pt;
+  font-weight: bold;
+  height: 68px;
+  margin-top: 0%;
 }
 
 div.crest {
-    background-color: white;
-    height: 68px;
-    width: 68px;
-    position:absolute;
-    top: 17px;
-    left: 20px;
+  background-color: white;
+  height: 68px;
+  width: 68px;
+  position: absolute;
+  top: 17px;
+  left: 20px;
 }
 
 div.topcorner{
-    clear:both;
-    width: 100%;
-    font-size: 10pt;
-    height: 1.5em;
-    text-align: right;
-    font-family: Tahoma, Arial, Helvetica, sans-serif;
-    font-size: 10pt;
-    margin-bottom: -11pt;
+  clear: both;
+  width: 100%;
+  font-size: 10pt;
+  height: 1.5em;
+  text-align: right;
+  font-family: Tahoma, Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+  margin-bottom: -11pt;
 }
 
 div.navbar, div.sub_navbar {
-    width: calc(100% + 20px);
-    text-align: center;
-    margin-left: -10px;
-    margin-right:-10px;
-    background-color: #003060;
-    color: white;
-    height: 28px;
-    font-variant: small-caps;
-    font-family: Tahoma, Arial, Helvetica, sans-serif;
-    font-size: 14pt;
+  width: calc(100% + 20px);
+  text-align: center;
+  margin-left: -10px;
+  margin-right: -10px;
+  background-color: #003060;
+  color: white;
+  height: 28px;
+  font-variant: small-caps;
+  font-family: Tahoma, Arial, Helvetica, sans-serif;
+  font-size: 14pt;
 }
 
 div.sub_navbar {
-    background-color: #005C5C;
-    height: 22px;
-    font-size:11pt;
+  background-color: #005C5C;
+  height: 22px;
+  font-size: 11pt;
 }
 
 div.sub_navbar_spacer {
-    height: 15px;
+  height: 15px;
 }
 
 div.navbar_links {
-    width: 100%;
-    display: inline;
-    text-align: center;
+  width: 100%;
+  display: inline;
+  text-align: center;
 }
 
 div.page_title {
-    visibility: hidden;
-    position: absolute;
-    left: 10px;
-    display: inline;
+  visibility: hidden;
+  position: absolute;
+  left: 10px;
+  display: inline;
 }
 
 a.navbar, a.sub_navbar {
-    color: white;
-    text-decoration: none;
-    padding-right: 5px;
-    padding-left: 5px;
+  color: white;
+  text-decoration: none;
+  padding-right: 5px;
+  padding-left: 5px;
 }
 
 span.current_page {
-    font-weight: bolder;
+  font-weight: bolder;
 }
 
 div.mainbody {
-    font-family: Tahoma, Arial, Helvetica, sans-serif;
-    font-size: 10pt;
-    width: 100%;
+  font-family: Tahoma, Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+  width: 100%;
 }
 
 tr.row_1 {
 }
 
 tr.row_2 {
-    background-color: lightgrey;
+  background-color: lightgrey;
 }
 
 h2 {
-    text-align: center;
+  text-align: center;
 }
 
 div.announcement {
-    width: 50%;
+  width: 50%;
 }
 
 li.news {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 div.scroll_userlist {
-    overflow: auto;
-    max-height: 200px;
-    display: block;
+  overflow: auto;
+  max-height: 200px;
+  display: block;
 }
 
 div.userlist_row {
-    display: table-row;
+  display: table-row;
 }
 
 div.message_list{
-    width: 70%;
-    display: block;
+  width: 70%;
+  display: block;
 }
 
 div.message {
-    width: 100%;
-    margin-bottom: 5px;
+  width: 100%;
+  margin-bottom: 5px;
 }
 
 div.message_header {
-    width: 100%;
-    display: table-row;
-    background-color: lightgrey;
+  width: 100%;
+  display: table-row;
+  background-color: lightgrey;
 }
 
 div.message_body {
-    width: 100%;
-    display: table-row;
-    margin-left: 30px;
+  width: 100%;
+  display: table-row;
+  margin-left: 30px;
 }
 
 #footer {
-    width: calc(100% + 20px);
-    margin-top: 10px;
-    margin-left: -10px;
-    margin-right:-10px;
-    margin-bottom:-10px;
-    color: white;
-    background-color:#003060;
-    height: 25px;
-    font-variant: small-caps;
-    font-family:times;
-    clear: both;
-    position: relative;
+  width: calc(100% + 20px);
+  margin-top: 10px;
+  margin-left: -10px;
+  margin-right: -10px;
+  margin-bottom: -10px;
+  color: white;
+  background-color: #003060;
+  height: 25px;
+  font-variant: small-caps;
+  font-family: times;
+  clear: both;
+  position: relative;
 }
 
 #footer a {
-    color:white;
+  color: white;
 }
 
 .flashes {
-    border: 1px solid;
-    margin: 10px 0px;
-    padding:15px 10px 15px 50px;
-    background-repeat: no-repeat;
-    background-position: 10px center;
-    font-size: 12px;
-    color: #9F6000;
-    background-color: #FEEFB3;
-    background-image: url('/static/images/orange_message.png');
+  border: 1px solid;
+  margin: 10px 0px;
+  padding: 15px 10px 15px 50px;
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  font-size: 12px;
+  color: #9F6000;
+  background-color: #FEEFB3;
+  background-image: url('/static/images/orange_message.png');
 }
 
 .userlist {
@@ -231,61 +228,58 @@ div.message_body {
   margin-right: auto;
 }
 
-.userlist a:link, .userlist a:visited {
-    color: #003060;
-    font-size: 10px;
-    text-decoration: none;
+.userlist a: link, .userlist a:visited {
+  color: #003060;
+  font-size: 10px;
+  text-decoration: none;
 }
 
-.userlist tr:hover td {
+.userlist tr: hover td {
   background-color: #FFFAF0;
 }
 
 #view_user_box {
   display: inline-block;
-  clear:Both;
-  min-width:300px;
-  padding:20px;
-  margin:0 auto;
-  #border-style:solid;
-  #border-width: 2px;
-  #border-color: #003060;
-  border-radius:15px;
+  clear: Both;
+  min-width: 300px;
+  padding: 20px;
+  margin: 0 auto;
+  border-radius: 15px;
   background-color: #BFCBD7;
 }
 
 #view_user_name {
   color: black;
-  font-size:36pt;
+  font-size: 36pt;
   font-weight: bold;
-  margin-top:-10px;
-  text-align:left;
+  margin-top: -10px;
+  text-align: left;
 }
 
 #view_user_subtitle {
-  font-weight:bold;
-  font-size:16pt;
-  margin-top:-5px;
-  margin-right:0px;
-  margin-left:50px;
-  text-align:right;
+  font-weight: bold;
+  font-size: 16pt;
+  margin-top: -5px;
+  margin-right: 0px;
+  margin-left: 50px;
+  text-align: right;
 }
 
 #view_user_isabroad {
   font-size: 9pt;
-  text-align:center;
-  margin-bottom:-15px;
-  margin-top:15px;
-  font-style:italic;
+  text-align: center;
+  margin-bottom: -15px;
+  margin-top: 15px;
+  font-style: italic;
 
 }
 
 #view_user_contact {
-  font-size:11pt;
+  font-size: 11pt;
   text-align: center;
-  margin-top:30px;
-  margin-bottom:20px;
-  border-style:solid;
+  margin-top: 30px;
+  margin-bottom: 20px;
+  border-style: solid;
   border-width: 2px 0px 2px 0px;
   border-color: #003060;
 }
