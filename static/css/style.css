@@ -13,7 +13,7 @@ table td {
   padding: 2px 5px;
 }
 
-.clearfix: after {
+.clearfix:after {
 	clear: both;
 	display: block;
 	content: " ";
@@ -228,13 +228,13 @@ div.message_body {
   margin-right: auto;
 }
 
-.userlist a: link, .userlist a:visited {
+.userlist a:link, .userlist a:visited {
   color: #003060;
   font-size: 10px;
   text-decoration: none;
 }
 
-.userlist tr: hover td {
+.userlist tr:hover td {
   background-color: #FFFAF0;
 }
 
