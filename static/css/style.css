@@ -124,22 +124,22 @@ div.page_title {
 
 a:link {
   text-decoration: none;
-  color: #003060;
+  color: #0000dd;
 }
 
 a:visited {
   text-decoration: none;
-  color: #003060;
+  color: #0000dd;
 }
 
 a:hover {
   text-decoration: underline;
-  color: #003060;
+  color: #0000dd;
 }
 
 a:active {
   text-decoration: underline;
-  color: #003060;
+  color: #0000dd;
 }
 
 a.navbar, a.sub_navbar {
