@@ -2,10 +2,18 @@
 {% block body %}
   <h2>Log in to Ruddock!</h2>
   <form action="{{ url_for('attempt_login') }}" method="post">
-    <p>Username: <input type=text name=username tabindex="1" autofocus></p>
-    <p>Password: <input type=password name=password tabindex="2"></p>
-    <p><input type=submit value=Login tabindex="3"></p>
+    <table>
+      <tr>
+        <td>Username:</td>
+        <td><input type=text name=username tabindex="1" autofocus></td>
+      </tr>
+      <tr>
+        <td>Password:</td>
+        <td><input type=password name=password tabindex="2"></td>
+      </tr>
+    </table>
+    <br>
+    <button type=submit tabindex="3">Login</button>
   </form>
-
-  Forgot your password? Reset it <a href="{{ url_for('forgot_passwd') }}">here</a>!
+  <p>Forgot your password? Reset it <a href="{{ url_for('forgot_password') }}">here</a>!</p>
 {% endblock body %}

@@ -13,7 +13,7 @@ import auth
 import hassle
 
 app = Flask(__name__)
-app.debug = False
+app.debug = True
 app.secret_key = config.SECRET_KEY
 
 # Maximum file upload size, in bytes.
@@ -125,43 +125,28 @@ def attempt_login():
   flash('Incorrect username or password. Please try again!')
   return render_template('login.html')
 
-@app.route('/forgot-password', methods=['GET', 'POST'])
-def forgot_passwd():
-  """ Procedure to allow users to reset forgotten passwords. """
-  if 'username' in session:
-    flash("You're already logged in!")
-    return redirect(url_for('home'))
-
-  if request.method == 'POST':
-    username = request.form['username']
-    email = request.form['email']
-    query = text("SELECT * FROM users NATURAL JOIN members WHERE username=:u")
-    result = g.db.execute(query, u=str(username))
-    if result.returns_rows and result.rowcount != 0:
-      result_cols = result.keys()
-      row = result.first()
-      q_dict = dict(zip(result_cols, row))
-      if q_dict['email'] == email:
-        reset_key = auth.reset_key(q_dict['passwd'], q_dict['salt'], username)
-        msg = "We received a request to reset this account's password.\n" \
-              "If you didn't request this change, disregard this email.\n" \
-              "If you do want to change your password, please go to:\n" +\
-              url_for('reset_passwd', u=q_dict['user_id'], r=reset_key,
-                  _external=True) + \
-              "\n\nThanks,\nThe Ruddock Website"
-        sendEmail(str(email), msg, "Forgotten Password")
-        flash("An email has been sent.")
-        redirect(url_for('home'))
-      else:
-        flash("Incorrect email.")
-        return render_template('forgot_password.html')
-    else:
-      flash("Incorrect username.")
-      return render_template('forgot_password.html')
+@app.route('/login/forgot')
+def forgot_password():
+  ''' Displays a form for the user to reset a forgotten password. '''
   return render_template('forgot_password.html')
 
+@app.route('/login/forgot/submit', methods=['POST'])
+def forgot_password_submit():
+  ''' Handle forgotten password submission. '''
+
+  username = request.form.get('username', None)
+  email = request.form.get('email', None)
+
+  if auth.handle_forgotten_password(username, email, \
+      url_for('reset_password', _external=True)):
+    flash("An email with a recovery link has been sent. If you no longer have access to your email (alums), please contact an IMSS rep to recover your account.")
+    return redirect(url_for('login'))
+  else:
+    flash("Incorrect username and/or email. If you continue to have issues with account recovery, contact an IMSS rep.")
+    return redirect(url_for('forgot_password'))
+
 @app.route('/reset-password', methods=['GET', 'POST'])
-def reset_passwd():
+def reset_password():
   if request.method == 'POST':
     if 'r_username' not in session:
       flash('You did something naughty')
@@ -1111,4 +1096,4 @@ def new_hassle_confirm_submit():
   return redirect(url_for('run_hassle'))
 
 if __name__ == "__main__":
-  app.run()
+  app.run(port=9001)

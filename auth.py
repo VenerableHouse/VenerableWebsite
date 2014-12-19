@@ -1,78 +1,136 @@
-from email_utils import sendEmail
+import hashlib
+import binascii
+import string
+import random
 from sqlalchemy import text
-from flask import session, g
-SALT_SIZE = 8
+from flask import session, g, url_for
+import constants as const
+import email_utils
+import email_templates
+
+def hash_password(password, salt):
+  '''
+  Wrapper for cryptographically secure hashing method. Use this function for
+  all password hashing.
+  '''
+  output = hashlib.pbkdf2_hmac('sha256', password, salt, const.HASH_ROUNDS)
+  return binascii.hexlify(output)
 
 def get_user_id(username):
   ''' Takes a username and returns the user's ID. '''
   query = text("SELECT user_id FROM users WHERE username = :u")
   result = g.db.execute(query, u = username).first()
 
-  if result != None:
+  if result is not None:
     return int(result['user_id'])
   return None
 
-def authenticate(user, passwd):
+def authenticate(username, password):
   '''
   Takes a username and password and checks if this corresponds to
-  an actual user. Salts the password as necessary.
+  an actual user. Returns user_id if successful, else None.
   '''
-  # get salt and add to password if necessary
-  saltQuery = g.db.execute(text("SELECT salt FROM users WHERE username=:u"),
-      u=user)
-  # if there's a salt set, then use it
-  if saltQuery.returns_rows:
-    salt = saltQuery.first()
-    # make sure username is found and salt isn't null
-    if salt != None and salt[0] != None:
-      passwd = salt[0] + passwd
+  # Get salt
+  query = text("SELECT salt FROM users WHERE username=:u")
+  result = g.db.execute(query, u=username).first()
+  salt = result['salt'] if result is not None and result['salt'] is not None else ''
 
-  # query whether there's a match for the username and password
-  query = g.db.execute(text("SELECT * FROM users WHERE username=:u AND " + \
-      "passwd=MD5(:p)"), u=user, p=passwd)
+  # Hash and check the password.
+  password_hash = hash_password(password, salt)
+  query = text("SELECT user_id FROM users WHERE username=:u AND password_hash=:ph")
+  result = g.db.execute(query, u=username, ph=password_hash).first()
 
-  row = query.first()
-  if (query.returns_rows and row != None):
-    return row[0]
+  if result is not None:
+    return result['user_id']
   return None
 
-def passwd_reset(user, newpasswd, salt=True, email=None):
+def set_password(username, password):
   '''
-  Resets a user's password with newpasswd. Uses a random salt if salt is
-  set to true.
+  Sets the user's password.
   '''
-  if salt:
-    from random import choice
-    from string import uppercase, digits
-    randSalt = ''.join(choice(uppercase + digits) for i in range(SALT_SIZE))
-    newpasswd = randSalt + newpasswd
+  # Always generate a new salt.
+  salt = generate_salt()
+  password_hash = hash_password(password, salt)
+  query = text("UPDATE users SET salt=:s, password_hash=:ph WHERE username=:u")
+  g.db.execute(query, s=salt, ph=password_hash, u=username)
 
-  query = text("UPDATE users SET salt=:s, passwd=MD5(:p) WHERE username=:u")
-  result = g.db.execute(query, s=randSalt, p=newpasswd, u=user)
+def change_password(username, new_password, send_email=False):
+  '''
+  Changes a user's password. If send_email is True, then an email will be sent
+  to the user notifying them that their password has been changed.
+  '''
+  set_password(username, password)
 
-  if result.rowcount > 0:
-    if email:
-      # notify user that their password was changed
-      try:
-        msg = "Your password has been successfully changed.\n" + \
-              "If you did not request a password change, please" + \
-              " email imss@ruddock.caltech.edu immediately.\n" + \
-              "\n\nThanks,\nThe Ruddock Website"
-        sendEmail(str(email), msg, "[RuddWeb] Changed Password")
-      except Exception as e:
-        sendEmail("imss@ruddock.caltech.edu",
-                  "Something went wrong when trying to email user " + user + \
-                  " after changing their password. You should look into this." + \
-                  "\n\nException: " + str(e), "[RuddWeb] EMAIL ERROR")
-    return True
-  else:
-    return False
+  if send_email:
+    # Get the user's name and email.
+    query = text("""
+      SELECT CONCAT(fname, ' ', lname) AS name, email
+      FROM members NATURAL JOIN users
+      WHERE username=:u
+      """)
+    result = g.db.execute(query, u=username).first()
+    if result is not None:
+      email = result['email']
+      name = result['name']
+      subject = "Password change request"
+      msg = email_templates.PasswordChangedEmail.format(name)
+      email_utils.sendEmail(email, msg, subject)
+  return
 
-def reset_key(hashed_pw, salt, username):
-  if salt == None:
-    return hash(username + hashed_pw)
-  else:
-    return hash(salt + hashed_pw)
+def handle_forgotten_password(username, email, reset_endpoint):
+  '''
+  Handles a forgotten password request. Takes a submitted (username, email)
+  pair and checks that the email is associated with that username in the
+  database. If successful, the user is emailed a reset key. Returns True on
+  success, False if the (username, email) pair is not valid.
+  '''
+  # Check username, email pair.
+  query = text("""
+    SELECT user_id, CONCAT(fname, ' ', lname) AS name, email
+    FROM members NATURAL JOIN users
+    WHERE username=:u
+    """)
+  result = g.db.execute(query, u=username).first()
+
+  if result is not None:
+    if email == result['email']:
+      name = result['name']
+      user_id = result['user_id']
+      # Generate a reset key for the user.
+      reset_key = generate_reset_key()
+      query = text("""
+        UPDATE users
+        SET password_reset_key = :rk,
+        password_reset_expiration = NOW() + INTERVAL :time MINUTE
+        WHERE username = :u
+        """)
+      g.db.execute(query, rk=reset_key, \
+          time=const.PWD_RECOVERY_KEY_EXPIRATION, u=username)
+      # Send email to user.
+      msg = email_templates.ResetPasswordEmail.format(name, \
+          # Generate reset link. We can't use url_for because this isn't
+          # in the application context?
+          "{0}?u={1}&k={2}".format(reset_endpoint, user_id, reset_key))
+      subject = "Password reset request"
+      email_utils.sendEmail(email, msg, subject)
+      return True
+  return False
+
+def generate_reset_key():
+  '''
+  Generates a pseudorandom reset key.
+  '''
+  # Characters to choose from
+  chars = string.ascii_letters + string.digits
+  return "".join(random.choice(chars) for i in xrange(const.PWD_RECOVERY_KEY_LENGTH))
+
+def generate_salt():
+  '''
+  Generates a random salt. It's pseudorandom but that's good enough for a salt.
+  '''
+  # Characters to choose from
+  chars = string.ascii_letters + string.digits
+  return "".join(random.choice(chars) for i in xrange(const.SALT_SIZE))
 
 def get_permissions(username):
   '''

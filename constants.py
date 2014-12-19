@@ -3,6 +3,15 @@
 # Maximum file upload size (in bytes).
 MAX_CONTENT_LENGTH = 1 * 1024 * 1024 * 1024
 
+# Authentication constants
+SALT_SIZE = 20
+MIN_PASSWORD_LENGTH = 8
+MAX_PASSWORD_LENGTH = 1024
+HASH_ROUNDS = 100000
+PWD_RECOVERY_KEY_LENGTH = 32
+# Length of time before recovery key expires, in minutes.
+PWD_RECOVERY_KEY_EXPIRATION = 1440
+
 class Permissions:
   '''
   Enumerates administrator permissions. These values are independent of
