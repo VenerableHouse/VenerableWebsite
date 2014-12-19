@@ -2,38 +2,30 @@
   <div class="top_menu" style="height: 130px; ">
   <div class="topcorner">
     {% if not session['username'] %}
-      <a href="{{url_for("login")}}">Login</a>
+      <a href="{{ url_for("login") }}">Login</a>
     {% else %}
-    <a href="{{url_for('show_user_profile',
-      username=session['username'])}}">{{session['username']}}</a> |
+    <a href="{{ url_for('show_user_profile',
+      username=session['username']) }}">{{session['username']}}</a> |
       {% if session['show_admin'] %}
       <a href="{{ url_for('admin_home') }}">Admin</a> |
       {% endif %}
-    <a href="{{url_for("logout")}}">Logout</a>
+    <a href="{{ url_for("logout") }}">Logout</a>
     {% endif %}
   </div>
   <div class="crest" style="height: 72px;" >
-    <img src="{{url_for('static', filename='images/crest.gif')}}"
+    <img src="{{ url_for('static', filename='images/crest.gif') }}"
          height="72px" width="72px" />
   </div>
   <div class="title">Ruddock House</div>
 
   <div class="navbar">
     <div class="navbar_links">
-      <a class="navbar" href="{{url_for("home")}}">Home</a>
-     |<a class="navbar" href="{{url_for("show_users")}}">House lists</a>
-     |<a class="navbar" href="{{url_for("show_gov")}}">Government</a>
+      <a class="navbar" href="{{ url_for("home") }}">Home</a>
+     |<a class="navbar" href="{{ url_for("show_users") }}">House lists</a>
+     |<a class="navbar" href="{{ url_for("show_gov") }}">Government</a>
      |<a class="navbar" href="https://github.com/RuddockHouse/RuddockConstitution/raw/master/constitution.pdf">Constitution</a>
      |<a class="navbar" href="/forum/" target="_new">Forum</a>
-     |<a class="navbar" href="{{url_for("show_about_us")}}">About Us</a>
+     |<a class="navbar" href="{{ url_for("show_about_us") }}">About Us</a>
    </div>
- </div>
- <div class="sub_navbar">
-{# <div class="page_title">Ruddock House</div>
-   <div class="navbar_links">
-     <a class="sub_navbar" href="{{url_for("home")}}">Home</a>
-     |<a class="sub_navbar" href="{{url_for("show_news")}}">News</a>
-     |<a class="sub_navbar" href="{{url_for("show_calendar")}}">Calendar</a>
-   </div> #}
  </div>
 </div>

@@ -19,7 +19,7 @@ def authenticate(user, passwd):
   '''
   # get salt and add to password if necessary
   saltQuery = g.db.execute(text("SELECT salt FROM users WHERE username=:u"),
-      u = user)
+      u=user)
   # if there's a salt set, then use it
   if saltQuery.returns_rows:
     salt = saltQuery.first()
@@ -29,12 +29,12 @@ def authenticate(user, passwd):
 
   # query whether there's a match for the username and password
   query = g.db.execute(text("SELECT * FROM users WHERE username=:u AND " + \
-      "passwd=MD5(:p)"), u = user, p = passwd)
+      "passwd=MD5(:p)"), u=user, p=passwd)
 
   row = query.first()
   if (query.returns_rows and row != None):
     return row[0]
-  return 0
+  return None
 
 def passwd_reset(user, newpasswd, salt=True, email=None):
   '''

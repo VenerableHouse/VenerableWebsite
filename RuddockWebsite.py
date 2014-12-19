@@ -64,7 +64,7 @@ def login_required(permission=None):
         return redirect(url_for('login'))
 
       # Check permissions.
-      if permission != None:
+      if permission is not None:
         if not auth.check_permission(permission):
           flash("You do have have permission to access this page.")
           session['next'] = request.url
@@ -86,42 +86,43 @@ def teardown_request(exception):
 
   # Close database connection.
   db = g.get('db', None)
-  if db != None:
+  if db is not None:
     db.close()
 
 @app.route('/')
 def home():
   return render_template('index.html')
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login')
 def login():
-  """ Procedure to process the login page. Also handles authentication. """
-  if request.method == 'POST':
-    username = request.form['username']
-    password = request.form['password']
+  ''' Displays the login page. '''
+  return render_template('login.html')
 
+@app.route('/login/submit', methods=['POST'])
+def attempt_login():
+  ''' Handles authentication. '''
+
+  username = request.form.get('username', None)
+  password = request.form.get('password', None)
+
+  if username is not None and password is not None:
     user_id = auth.authenticate(username, password)
-    if user_id:
+    if user_id is not None:
       permissions = auth.get_permissions(username)
-      session['username'] = request.form['username']
-      session['user_id'] = user_id
+      session['username'] = username
       session['permissions'] = permissions
       # True if there's any reason to show a link to the admin interface.
       session['show_admin'] = auth.check_permission(Permissions.Admin)
-
-      # Update last login time.
+      # Update last login time
       auth.update_last_login(username)
 
-      # return to previous page if in session
+      # Return to previous page if in session
       if 'next' in session:
         redirect_to = session.pop('next')
         return redirect(redirect_to)
       else:
         return redirect(url_for('home'))
-    else:
-      flash('Incorrect username or password. Please try again!')
-      return render_template('login.html')
-
+  flash('Incorrect username or password. Please try again!')
   return render_template('login.html')
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
@@ -347,7 +348,7 @@ def show_user_profile(username):
   offices = get_office_info(username)
   editable = can_edit(username)
 
-  if d_dict_user != None and q_dict_user != None:
+  if d_dict_user is not None and q_dict_user is not None:
     return render_template('view_user.html', display = d_dict_user, \
         info = q_dict_user, offices = offices, strftime = strftime,
         perm = editable)
