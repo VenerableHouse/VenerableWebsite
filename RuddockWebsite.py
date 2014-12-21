@@ -445,10 +445,6 @@ def show_gov():
 def show_about_us():
   return render_template('about_us.html')
 
-@app.route('/constitution')
-def show_constitution():
-  return render_template('constitution.html')
-
 def create_account_hash(user_id, uid, fname, lname):
   '''
   Creates a unique hash for users trying to create an account.
