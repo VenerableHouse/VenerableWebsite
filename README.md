@@ -13,4 +13,6 @@ We are using [submodules](http://git-scm.com/docs/git-submodule) to serve the co
 
 After each change to the constitution (in the external repository), you will need to update the submodule. Fortunately, Git makes this easy. Simply run `git submodule foreach git pull origin master` from the project parent directory (`../RuddockWebsite/`).
 
+Once you update the submodule, you'll need to commit your changes. This results in a small diff to switch the submodule's reference commit to the new version.
+
 Note: once we update to the newest version of Git (at least 1.8.2), we can simply use `git submodule update --remote` from the project parent directory. Until then, this workaround will work fine.
