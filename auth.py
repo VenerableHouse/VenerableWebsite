@@ -29,6 +29,9 @@ def authenticate(username, password):
   Takes a username and password and checks if this corresponds to
   an actual user. Returns user_id if successful, else None.
   '''
+  # Make sure the password is not too long (hashing extremely long passwords can be used to attack the site).
+  if len(password) > const.MAX_PASSWORD_LENGTH:
+    return None
   # Get salt
   query = text("SELECT salt FROM users WHERE username=:u")
   result = g.db.execute(query, u=username).first()
@@ -47,6 +50,8 @@ def set_password(username, password):
   '''
   Sets the user's password.
   '''
+  if len(password) > const.MAX_PASSWORD_LENGTH:
+    return
   # Always generate a new salt.
   salt = generate_salt()
   password_hash = hash_password(password, salt)
@@ -150,6 +155,9 @@ def handle_password_reset(username, new_password, new_password2):
     flash('Your password must be at least {0} characters long!'.format( \
         const.MIN_PASSWORD_LENGTH))
     return False
+  elif len(new_password) > const.MAX_PASSWORD_LENGTH:
+    flash('Your password cannot be more than {0} characters long!'.format( \
+        const.MAX_PASSWORD_LENGTH))
   else:
     # Actually change the password.
     set_password(username, new_password)
