@@ -1,12 +1,11 @@
 import hashlib
 import binascii
-import string
-import random
 from sqlalchemy import text
-from flask import session, g, url_for
+from flask import session, g, url_for, flash
 import constants as const
 import email_utils
 import email_templates
+import misc_utils
 
 def hash_password(password, salt):
   '''
@@ -53,6 +52,7 @@ def set_password(username, password):
   password_hash = hash_password(password, salt)
   query = text("UPDATE users SET salt=:s, password_hash=:ph WHERE username=:u")
   g.db.execute(query, s=salt, ph=password_hash, u=username)
+  return
 
 def change_password(username, new_password, send_email=False):
   '''
@@ -77,7 +77,7 @@ def change_password(username, new_password, send_email=False):
       email_utils.sendEmail(email, msg, subject)
   return
 
-def handle_forgotten_password(username, email, reset_endpoint):
+def handle_forgotten_password(username, email):
   '''
   Handles a forgotten password request. Takes a submitted (username, email)
   pair and checks that the email is associated with that username in the
@@ -105,32 +105,96 @@ def handle_forgotten_password(username, email, reset_endpoint):
         WHERE username = :u
         """)
       g.db.execute(query, rk=reset_key, \
-          time=const.PWD_RECOVERY_KEY_EXPIRATION, u=username)
+          time=const.PWD_RESET_KEY_EXPIRATION, u=username)
+      # Determine if we want to say "your link expires in _ minutes" or "_ hours".
+      if const.PWD_RESET_KEY_EXPIRATION < 60:
+        expiration_time_str = "{} minutes".format(const.PWD_RESET_KEY_EXPIRATION)
+      else:
+        expiration_time_str = "{} hours".format(const.PWD_RESET_KEY_EXPIRATION / 60)
       # Send email to user.
       msg = email_templates.ResetPasswordEmail.format(name, \
-          # Generate reset link. We can't use url_for because this isn't
-          # in the application context?
-          "{0}?u={1}&k={2}".format(reset_endpoint, user_id, reset_key))
+          url_for('reset_password', reset_key=reset_key, _external=True), \
+          expiration_time_str)
       subject = "Password reset request"
       email_utils.sendEmail(email, msg, subject)
       return True
   return False
 
+def check_reset_key(reset_key):
+  ''' Returns the username if the reset key is valid. Otherwise returns None. '''
+  query = text("""
+    SELECT username
+    FROM users
+    WHERE password_reset_key = :rk AND NOW() < password_reset_expiration
+    """)
+  result = g.db.execute(query, rk=reset_key).first()
+  if result is not None:
+    return result['username']
+  else:
+    return None
+
+def handle_password_reset(username, new_password, new_password2):
+  '''
+  Handles the submitted password reset request. Returns True if successful,
+  False otherwise. Also handles all messages displayed to the user.
+  '''
+  if not new_password:
+    flash('You must provide a password!')
+    return False
+  elif not new_password2:
+    flash('You must confirm your password!')
+  elif new_password != new_password2:
+    flash('Passwords do not match. Please try again!')
+    return False
+  elif len(new_password) < const.MIN_PASSWORD_LENGTH:
+    flash('Your password must be at least {0} characters long!'.format( \
+        const.MIN_PASSWORD_LENGTH))
+    return False
+  else:
+    # Actually change the password.
+    set_password(username, new_password)
+    # Clean up the password reset key, so that it cannot be used again.
+    query = text("""
+      UPDATE users
+      SET password_reset_key = NULL, password_reset_expiration = NULL
+      WHERE username = :u
+      """)
+    g.db.execute(query, u=username)
+    # Get the user's email.
+    query = text("""
+      SELECT CONCAT(fname, ' ', lname) AS name, email
+      FROM members NATURAL JOIN users
+      WHERE username=:u
+      """)
+    result = g.db.execute(query, u=username).first()
+    if result is not None:
+      # Send confirmation email to user.
+      email = result['email']
+      name = result['name']
+      msg = email_templates.ResetPasswordSuccessfulEmail.format(name)
+      subject = "Password reset successful"
+      email_utils.sendEmail(email, msg, subject)
+    flash('Password successfully changed.')
+    return True
+
 def generate_reset_key():
   '''
-  Generates a pseudorandom reset key.
+  Generates a pseudorandom reset key. Guaranteed to be unique in the database.
   '''
-  # Characters to choose from
-  chars = string.ascii_letters + string.digits
-  return "".join(random.choice(chars) for i in xrange(const.PWD_RECOVERY_KEY_LENGTH))
+  while True:
+    reset_key = misc_utils.generate_random_string(const.PWD_RESET_KEY_LENGTH)
+    # Reset keys are random, so is extremely unlikely that they overlap.
+    # However, it would be nice to make sure anyway.
+    query = text("SELECT 1 FROM users WHERE password_reset_key = :rk")
+    result = g.db.execute(query, rk=reset_key).first()
+    # If a result is returned, then the key already exists.
+    if result is None:
+      break
+  return reset_key
 
 def generate_salt():
-  '''
-  Generates a random salt. It's pseudorandom but that's good enough for a salt.
-  '''
-  # Characters to choose from
-  chars = string.ascii_letters + string.digits
-  return "".join(random.choice(chars) for i in xrange(const.SALT_SIZE))
+  ''' Generates a random salt. '''
+  return misc_utils.generate_random_string(const.SALT_SIZE)
 
 def get_permissions(username):
   '''
@@ -162,6 +226,5 @@ def check_permission(permission):
 
 def update_last_login(username):
   ''' Updates the last login time for the user. '''
-
   query = text("UPDATE users SET lastlogin=NOW() WHERE username=:u")
   g.db.execute(query, u=username)
