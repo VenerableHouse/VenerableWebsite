@@ -1,3 +1,10 @@
+a {
+  color: blue;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
 body {
   background: #dddddd;
   font-family: "Roboto", Helvetica, Tahoma, Arial, sans-serif;
@@ -5,6 +12,7 @@ body {
 h1 {
   font-family: "EB Garamond", "Times New Roman", serif;
   font-size: 2.2em;
+  line-height: 120%;
   margin: 0px;
 }
 h2 {
@@ -15,10 +23,38 @@ h2 {
 h3 {
   font-family: "EB Garamond", "Times New Roman", serif;
   font-size: 1.3em;
+  line-height: 150%;
   margin: 0px;
 }
 html {
   margin: 0px;
+}
+input {
+  border: 0px;
+  background-color: #e8e8e8;
+  padding: 7px;
+}
+table {
+  background-color: #f7f7f7;
+  border: 0px;
+  border-collapse: collapse;
+}
+thead {
+  background-color: #a3b9e1;
+}
+thead td, th {
+  padding: 100px;
+}
+td, th {
+  padding: 7px;
+}
+tr:hover {
+  background-color: #dddddd;
+}
+ul {
+  margin: 0px;
+  padding: 0px;
+  padding-left: 20px;
 }
 
 /* Header */
@@ -126,6 +162,21 @@ html {
 #content-body {
   padding: 20px;
 }
+table.form {
+  background-color: white;
+  margin-bottom: 10px;
+}
+.form td, .form th {
+  background-color: white;
+  padding-left: 0px;
+  padding-right: 15px;
+}
+.form tr:hover {
+  background-color: white;
+}
+.link {
+  cursor: pointer;
+}
 .message {
   background-color: #FFEB99;
   border-right: 2px solid #eeeeee;
@@ -133,151 +184,3 @@ html {
   margin-bottom: 15px;
   padding: 10px;
 }
-
-/* Consistent styling for all tables. 
-table th {
-  text-align: center;
-  background-color: #eee;
-  color: #666666;
-  font-weight: bold;
-  cursor: default;
-  padding: 2px 5px;
-}
-
-table td {
-  text-align: left;
-  padding: 2px 5px;
-}
-
-
-div.mainbody {
-  font-family: Tahoma, Arial, Helvetica, sans-serif;
-  font-size: 10pt;
-  width: 100%;
-}
-
-tr.row_1 {
-}
-
-tr.row_2 {
-  background-color: lightgrey;
-}
-
-h2 {
-  text-align: center;
-}
-
-div.announcement {
-  width: 50%;
-}
-
-li.news {
-  margin-bottom: 10px;
-}
-
-div.scroll_userlist {
-  overflow: auto;
-  max-height: 200px;
-  display: block;
-}
-
-div.userlist_row {
-  display: table-row;
-}
-
-div.message_list{
-  width: 70%;
-  display: block;
-}
-
-div.message {
-  width: 100%;
-  margin-bottom: 5px;
-}
-
-div.message_header {
-  width: 100%;
-  display: table-row;
-  background-color: lightgrey;
-}
-
-div.message_body {
-  width: 100%;
-  display: table-row;
-  margin-left: 30px;
-}
-
-.userlist {
-  width: 90%;
-  text-align: center;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.userlist a:link, .userlist a:visited {
-  color: #003060;
-  font-size: 10px;
-  text-decoration: none;
-}
-
-.userlist tr:hover td {
-  background-color: #FFFAF0;
-}
-
-#view_user_box {
-  display: inline-block;
-  clear: Both;
-  min-width: 300px;
-  padding: 20px;
-  margin: 0 auto;
-  border-radius: 15px;
-  background-color: #BFCBD7;
-}
-
-#view_user_name {
-  color: black;
-  font-size: 36pt;
-  font-weight: bold;
-  margin-top: -10px;
-  text-align: left;
-}
-
-#view_user_subtitle {
-  font-weight: bold;
-  font-size: 16pt;
-  margin-top: -5px;
-  margin-right: 0px;
-  margin-left: 50px;
-  text-align: right;
-}
-
-#view_user_isabroad {
-  font-size: 9pt;
-  text-align: center;
-  margin-bottom: -15px;
-  margin-top: 15px;
-  font-style: italic;
-
-}
-
-#view_user_contact {
-  font-size: 11pt;
-  text-align: center;
-  margin-top: 30px;
-  margin-bottom: 20px;
-  border-style: solid;
-  border-width: 2px 0px 2px 0px;
-  border-color: #003060;
-}
-
-#view_user_other {
-  text-align: left;
-  font-size: 11pt;
-
-}
-
-div.table_container table {
-  display: inline-block;
-  vertical-align: top;
-  padding: 10px;
-}*/
