@@ -8,24 +8,20 @@
     {% endblock head %}
   </head>
   <body>
-    <div class="clearfix" id="borderbox">
-      <div class="container">
-        {% include "includes/header.html" %}
-      </div>
-      {% with messages = get_flashed_messages() %}
-        {% if messages %}
-          {% for message in messages %}
-            <div class="flashes">{{ message }}</div>
-          {% endfor %}
-        {% endif %}
-      {% endwith %}
-      <div id="content" style="margin-top:8px">
+    {% include "includes/header.html" %}
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="flashes">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <div id="content">
+      <div id="content-body">
         {% block body %}
         {% endblock body %}
       </div>
-      <div class="container">
-        {% include "includes/footer.html" %}
-      </div>
     </div>
+    {% include "includes/footer.html" %}
   </body>
 </html>
