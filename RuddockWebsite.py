@@ -85,9 +85,8 @@ def teardown_request(exception):
   ''' Logic executed after every request is finished. '''
 
   # Close database connection.
-  db = g.get('db', None)
-  if db is not None:
-    db.close()
+  if g.db != None:
+    g.db.close()
 
 @app.route('/')
 def home():
