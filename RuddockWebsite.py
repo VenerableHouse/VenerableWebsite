@@ -13,7 +13,7 @@ import auth
 import hassle
 
 app = Flask(__name__)
-app.debug = False
+app.debug = True
 app.secret_key = config.SECRET_KEY
 
 # Maximum file upload size, in bytes.

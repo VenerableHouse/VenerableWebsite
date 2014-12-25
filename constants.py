@@ -1,9 +1,12 @@
+import passlib.hash
+
 # Store various constants here
 
 # Maximum file upload size (in bytes).
 MAX_CONTENT_LENGTH = 1 * 1024 * 1024 * 1024
 
 # Authentication constants
+PWD_HASH_ALGORITHM = passlib.hash.pbkdf2_sha256
 SALT_SIZE = 20
 MIN_PASSWORD_LENGTH = 8
 MAX_PASSWORD_LENGTH = 1024

@@ -1,19 +1,12 @@
 import hashlib
-import binascii
+import passlib.hash
+import string
 from sqlalchemy import text
 from flask import session, g, url_for, flash
 import constants as const
 import email_utils
 import email_templates
 import misc_utils
-
-def hash_password(password, salt):
-  '''
-  Wrapper for cryptographically secure hashing method. Use this function for
-  all password hashing.
-  '''
-  output = hashlib.pbkdf2_hmac('sha256', password, salt, const.HASH_ROUNDS)
-  return binascii.hexlify(output)
 
 def get_user_id(username):
   ''' Takes a username and returns the user's ID. '''
@@ -24,39 +17,109 @@ def get_user_id(username):
     return int(result['user_id'])
   return None
 
+def hash_password(password):
+  '''
+  Wrapper for cryptographically secure hashing method. Automatically generates
+  salt. Use this function for all password hashing.
+  '''
+  algorithm = const.PWD_HASH_ALGORITHM
+  password_hash = algorithm.encrypt(password, \
+      salt_size=const.SALT_SIZE, \
+      rounds=const.HASH_ROUNDS)
+  return password_hash
+
+def verify_password(password, password_hash):
+  '''
+  Verifies the username/password combination. The provided password_hash should
+  be the correct hash to verfiy against. This is just a wrapper for the current
+  hashing algorithm.
+  '''
+  algorithm = const.PWD_HASH_ALGORITHM
+  try:
+    return algorithm.verify(password, password_hash)
+  except (TypeError, ValueError):
+    # Something is wrong with the password or hash (wrong algorithm, invalid
+    # characters, etc.
+    return False
+
+def verify_legacy_password(password, legacy_salt, password_hash, algorithm):
+  '''
+  Verifies a password using a legacy algorithm. The provided algorithm should
+  be a string that describes an algorithm that was used in the past. Supported
+  legacy algorithms:
+
+  md5 - used through December 2014
+
+  For security reasons, we do NOT store legacy hashes in the database
+  (algorithms generally become legacy because they are easier to crack).
+  Instead, we use the old hash as the input to the current hashing algorithm.
+  For example, if MD5 is legacy and PBKDF2_SHA256 is the current, then the
+  old hash MD5(password) should be stored as PBKDF2_SHA256(MD5(password)) in
+  the database until the user logs in again and the password is rehashed
+  properly.
+  '''
+  if algorithm == 'md5':
+    legacy_hash = hashlib.md5(legacy_salt + password).hexdigest()
+  else:
+    # Provided algorithm doesn't match anything supported.
+    return False
+  return verify_password(legacy_hash, password_hash)
+
 def authenticate(username, password):
   '''
   Takes a username and password and checks if this corresponds to
   an actual user. Returns user_id if successful, else None.
+
+  This function defaults to using the current hashing algorithm. However, if
+  that fails, then we also run through legacy algorithms, and if any legacy
+  algorithm matches, then we rehash the user's password using the current
+  algorithm and authenticate the user.
   '''
-  # Make sure the password is not too long (hashing extremely long passwords can be used to attack the site).
+  # Make sure the password is not too long (hashing extremely long passwords
+  # can be used to attack the site, so we set an upper limit well beyond what
+  # people generally use for passwords).
   if len(password) > const.MAX_PASSWORD_LENGTH:
     return None
-  # Get salt
-  query = text("SELECT salt FROM users WHERE username=:u")
+  # Get the correct password hash and user_id from the database.
+  query = text("""
+    SELECT user_id, password_hash, legacy_salt
+    FROM users
+    WHERE username=:u
+    """)
   result = g.db.execute(query, u=username).first()
-  salt = result['salt'] if result is not None and result['salt'] is not None else ''
+  if result is None:
+    # Invalid username.
+    return None
+  user_id = result['user_id']
+  password_hash = result['password_hash']
 
-  # Hash and check the password.
-  password_hash = hash_password(password, salt)
-  query = text("SELECT user_id FROM users WHERE username=:u AND password_hash=:ph")
-  result = g.db.execute(query, u=username, ph=password_hash).first()
-
-  if result is not None:
-    return result['user_id']
-  return None
+  result = False
+  # Try current algorithm.
+  if verify_password(password, password_hash):
+    result = True
+  # Try legacy algorithms.
+  else:
+    # Get legacy salt, if present.
+    legacy_salt = result['legacy_salt'] if result['legacy_salt'] is not None else ''
+    # Algorithms to try.
+    legacy_algorithms = ['md5']
+    for algorithm in legacy_algorithms:
+      if verify_legacy_password(password, legacy_salt, password_hash, algorithm):
+        # User is authenticated.
+        result = True
+        # Rehash the password.
+        set_password(username, password)
+        break
+  if result:
+    return user_id
+  else:
+    return None
 
 def set_password(username, password):
-  '''
-  Sets the user's password.
-  '''
-  if len(password) > const.MAX_PASSWORD_LENGTH:
-    return
-  # Always generate a new salt.
-  salt = generate_salt()
-  password_hash = hash_password(password, salt)
-  query = text("UPDATE users SET salt=:s, password_hash=:ph WHERE username=:u")
-  g.db.execute(query, s=salt, ph=password_hash, u=username)
+  ''' Sets the user's password. '''
+  password_hash = hash_password(password)
+  query = text("UPDATE users SET password_hash=:ph WHERE username=:u")
+  g.db.execute(query, ph=password_hash, u=username)
   return
 
 def change_password(username, new_password, send_email=False):
@@ -188,9 +251,13 @@ def handle_password_reset(username, new_password, new_password2):
 def generate_reset_key():
   '''
   Generates a pseudorandom reset key. Guaranteed to be unique in the database.
+  We use only digits and lowercase letters since the database string comparison
+  is case insensitive (we already have more than enough entropy anyway).
   '''
+  chars = string.ascii_lowercase + string.digits
   while True:
-    reset_key = misc_utils.generate_random_string(const.PWD_RESET_KEY_LENGTH)
+    reset_key = misc_utils.generate_random_string(const.PWD_RESET_KEY_LENGTH, \
+        chars=chars)
     # Reset keys are random, so is extremely unlikely that they overlap.
     # However, it would be nice to make sure anyway.
     query = text("SELECT 1 FROM users WHERE password_reset_key = :rk")
@@ -199,10 +266,6 @@ def generate_reset_key():
     if result is None:
       break
   return reset_key
-
-def generate_salt():
-  ''' Generates a random salt. '''
-  return misc_utils.generate_random_string(const.SALT_SIZE)
 
 def get_permissions(username):
   '''
