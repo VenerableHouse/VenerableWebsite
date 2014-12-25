@@ -1,19 +1,19 @@
 body {
   background: #dddddd;
-  font-family: Helvetica, Tahoma, Arial, sans-serif;
+  font-family: "Roboto", Helvetica, Tahoma, Arial, sans-serif;
 }
 h1 {
-  font-family: "Times New Roman", monospace;
+  font-family: "EB Garamond", "Times New Roman", serif;
   font-size: 2.2em;
   margin: 0px;
 }
 h2 {
-  font-family: "Times New Roman", monospace;
-  font-size: 1.7em;
+  font-family: "EB Garamond", "Times New Roman", serif;
+  font-size: 1.9em;
   margin: 0px;
 }
 h3 {
-  font-family: "Times New Roman", monospace;
+  font-family: "EB Garamond", "Times New Roman", serif;
   font-size: 1.3em;
   margin: 0px;
 }
@@ -32,6 +32,7 @@ html {
 #header-image {
   display: table-cell;
   padding-right: 30px;
+  vertical-align: middle;
 }
 #header-main {
   background-color: #003060;
@@ -47,7 +48,7 @@ html {
 #navbar {
   background-color: #ebf3fb;
   box-shadow: 0px 3px 5px #eeeeee;
-  font-family: Helvetica, Tahoma, Arial, sans-serif;
+  font-family: "Roboto", Helvetica, Tahoma, Arial, sans-serif;
   display: table;
   width: 100%;
 }
@@ -80,13 +81,14 @@ html {
 }
 #subtitle {
   display: block;
-  font-family: "Times New Roman", monospace;
+  font-family: "EB Garamond", "Times New Roman", serif;
   font-size: 1.8em;
 }
 #title {
-  display: block
-  font-family: "Times New Roman", monospace;
+  display: block;
+  font-family: "EB Garamond", "Times New Roman", serif;
   font-size: 3.5em;
+  font-weight: bold;
 }
 
 /* Footer */
@@ -124,6 +126,13 @@ html {
 #content-body {
   padding: 20px;
 }
+.message {
+  background-color: #FFEB99;
+  border-right: 2px solid #eeeeee;
+  border-bottom: 2px solid #eeeeee;
+  margin-bottom: 15px;
+  padding: 10px;
+}
 
 /* Consistent styling for all tables. 
 table th {
@@ -140,121 +149,6 @@ table td {
   padding: 2px 5px;
 }
 
-.clearfix:after {
-	clear: both;
-	display: block;
-	content: " ";
-	height: 0px;
-	visibility: hidden;
-}
-
-.clearfix {
-	display: inline-block;
-}
-
-
-* html .clearfix {
-	height: 1%;
-}
-
-.clearfix {
-	display: block;
-}
-
-li.clearfix {
-	display: list-item;
-}
-
-#borderbox {
-  margin-left: 5px;
-  margin-right: 5px;
-  margin-top: 5px;
-  margin-bottom: 5px;
-  border-style: solid;
-  border-width: 5px;
-  border-color: #003060;
-  padding: 10px;
-  min-width: 450px;
-}
-
-div.title {
-  width: 100%;
-  text-align: center;
-  color: #003060;
-  font-family: Times;
-  #font-family: Tahoma, Arial, Helvetica, sans-serif;
-  font-variant: small-caps;
-  font-size: 36pt;
-  font-weight: bold;
-  height: 68px;
-  margin-top: 0%;
-}
-
-div.crest {
-  background-color: white;
-  height: 68px;
-  width: 68px;
-  position: absolute;
-  top: 17px;
-  left: 20px;
-}
-
-div.topcorner{
-  clear: both;
-  width: 100%;
-  font-size: 10pt;
-  height: 1.5em;
-  text-align: right;
-  font-family: Tahoma, Arial, Helvetica, sans-serif;
-  font-size: 10pt;
-  margin-bottom: -11pt;
-}
-
-div.navbar, div.sub_navbar {
-  width: calc(100% + 20px);
-  text-align: center;
-  margin-left: -10px;
-  margin-right: -10px;
-  background-color: #003060;
-  color: white;
-  height: 28px;
-  font-variant: small-caps;
-  font-family: Tahoma, Arial, Helvetica, sans-serif;
-  font-size: 14pt;
-}
-
-div.sub_navbar {
-  background-color: #005C5C;
-  height: 22px;
-  font-size: 11pt;
-}
-
-div.sub_navbar_spacer {
-  height: 15px;
-}
-
-div.navbar_links {
-  width: 100%;
-  display: inline;
-  text-align: center;
-}
-
-div.page_title {
-  visibility: hidden;
-  position: absolute;
-  left: 10px;
-  display: inline;
-}
-
-a.navbar, a.sub_navbar {
-  color: white;
-  padding-right: 5px;
-  padding-left: 5px;
-}
-
-span.current_page {
-  font-weight: bolder;
-}
 
 div.mainbody {
   font-family: Tahoma, Arial, Helvetica, sans-serif;
@@ -311,37 +205,6 @@ div.message_body {
   width: 100%;
   display: table-row;
   margin-left: 30px;
-}
-
-#footer {
-  width: calc(100% + 20px);
-  margin-top: 10px;
-  margin-left: -10px;
-  margin-right: -10px;
-  margin-bottom: -10px;
-  color: white;
-  background-color: #003060;
-  height: 25px;
-  font-variant: small-caps;
-  font-family: times;
-  clear: both;
-  position: relative;
-}
-
-#footer a {
-  color: white;
-}
-
-.flashes {
-  border: 1px solid;
-  margin: 10px 0px;
-  padding: 15px 10px 15px 50px;
-  background-repeat: no-repeat;
-  background-position: 10px center;
-  font-size: 12px;
-  color: #9F6000;
-  background-color: #FEEFB3;
-  background-image: url('/static/images/orange_message.png');
 }
 
 .userlist {
