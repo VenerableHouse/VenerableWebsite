@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block body %}
+  <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
   <h2>House Lists</h2>
   {# Show link to change current/alumni filtering #}
   {% if filterType == 'current' %}
@@ -16,21 +17,17 @@
     <a href="{{ url_for('show_users', filterType='current') }}">current students</a> or
     <a href="{{ url_for('show_users', filterType='alumni') }}">alumni</a>.
   {% endif %}
+  Click on the columns to sort.
   <br /><br />
 
-  <table class="userlist">
-  {# First display header, with links to sort #}
-    <thead>
+  <table class="sortable userlist">
+  {# First display header #}
+    <thead style="cursor: pointer;">
       <tr>
         {% for field in fields %}
-        {% if fieldMap[field] %} {# Only display not-null fields #}
-        <th>{{ fieldMap[field] }} {# Maps sql field to display value #}
-          <a href="{{ url_for('show_users', field=field,
-                              filterType=filterType) }}">&#9650;</a>
-          <a href="{{ url_for('show_users', field=field,
-                              filterType=filterType, dir='DESC')}}">&#9660;</a>
-        </th>
-        {% endif %}
+          {% if fieldMap[field] %} {# Only display not-null fields #}
+            <th>{{ fieldMap[field] }}</th>
+          {% endif %}
         {% endfor %}
       </tr>
     </thead>
