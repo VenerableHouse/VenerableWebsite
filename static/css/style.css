@@ -1,4 +1,80 @@
-/* Consistent styling for all tables. */
+body {
+  background: #dddddd;
+}
+h1 {
+  font-size: 1.7em;
+}
+h2 {
+  font-size: 1.4em;
+}
+h3 {
+  font-size: 1.2em;
+}
+
+/* Header */
+#header {
+  display: table;
+  max-width: 900px;
+  text-align: center;
+  width: 100%;
+}
+#header-image {
+  display: table-cell;
+  padding-right: 30px;
+}
+#header-main {
+  background-color: #003060;
+  padding: 20px;
+  text-align: center;
+}
+#header-text {
+  color: white;
+  display: table-cell;
+  text-align: left;
+  vertical-align: middle;
+}
+#navbar {
+  background-color: #eeeeee;
+  box-shadow: 0px 3px 5px #eeeeee;
+  font-family: Helvetica, Tahoma, Arial, sans-serif;
+  display: table;
+  width: 100%;
+}
+#navbar-links {
+  display: inline-block;
+  float: left;
+  text-align: left;
+  vertical-align: middle;
+}
+#navbar-login {
+  display: inline-block;
+  float: right;
+  text-align: right;
+  vertical-align: middle;
+}
+.navbar-link {
+  border-bottom: 3px solid #eeeeee;
+  color: black;
+  display: inline-block;
+  padding: 15px;
+  padding-bottom: 12px;
+}
+.navbar-link:hover {
+  border-bottom: 3px solid blue;
+  cursor: pointer;
+}
+#subtitle {
+  display: block;
+  font-size: 1.8em;
+}
+#title {
+  display: block;
+  font-size: 3.5em;
+}
+
+
+
+/* Consistent styling for all tables. 
 table th {
   text-align: center;
   background-color: #eee;
@@ -25,7 +101,6 @@ table td {
 	display: inline-block;
 }
 
-/* Hide these rules from IE-mac \*/
 
 * html .clearfix {
 	height: 1%;
@@ -38,8 +113,6 @@ table td {
 li.clearfix {
 	display: list-item;
 }
-
-/* End hide from IE-mac */
 
 #borderbox {
   margin-left: 5px;
@@ -120,26 +193,6 @@ div.page_title {
   position: absolute;
   left: 10px;
   display: inline;
-}
-
-a:link {
-  text-decoration: none;
-  color: #0000dd;
-}
-
-a:visited {
-  text-decoration: none;
-  color: #0000dd;
-}
-
-a:hover {
-  text-decoration: underline;
-  color: #0000dd;
-}
-
-a:active {
-  text-decoration: underline;
-  color: #0000dd;
 }
 
 a.navbar, a.sub_navbar {
@@ -313,4 +366,4 @@ div.table_container table {
   display: inline-block;
   vertical-align: top;
   padding: 10px;
-}
+}*/
