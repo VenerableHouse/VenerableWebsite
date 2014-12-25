@@ -252,16 +252,6 @@ def show_users():
   display = [None, "Last", "First", "Email", "Matr.", "Grad.", "Major", "Type"]
   fieldMap = dict(zip(cols, display))
 
-  # get order by information from request arguments
-  if 'field' in request.args and request.args['field'] in cols:
-    ordField = request.args['field']
-  else:
-    ordField = 'lname'
-  if 'dir' in request.args and request.args['dir'] in ['ASC', 'DESC']:
-    ordDirect = request.args['dir']
-  else:
-    ordDirect = 'ASC'
-
   # check which table to read from
   if 'filterType' in request.args and request.args['filterType'] == 'current':
     tableName = 'members_current'
@@ -274,8 +264,7 @@ def show_users():
     filterType = 'all'
 
   # perform query
-  query = text("SELECT * FROM " + tableName + " NATURAL JOIN membership_types \
-     ORDER BY " + ordField + " " + ordDirect)
+  query = text("SELECT * FROM " + tableName + " NATURAL JOIN membership_types")
   results = g.db.execute(query)
 
   # put results in a dictionary

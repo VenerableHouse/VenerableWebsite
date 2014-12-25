@@ -19,10 +19,10 @@
       <div class="navbar-link" onclick="location.href='{{url_for("show_gov")}}'">
         <a href="{{url_for("show_gov")}}">Government</a>
       </div>
-      <div class="navbar-link" onclick="location.href='{{url_for("static", filename="constitution/constitution.pdf")}}'">
+      <div class="navbar-link" onclick="window.open('{{url_for("static", filename="constitution/constitution.pdf")}}')">
         <a href="{{url_for("static", filename="constitution/constitution.pdf")}}" target="_blank">Constitution</a>
       </div>
-      <div class="navbar-link" onclick="location.href='/forum/'">
+      <div class="navbar-link" onclick="window.open('/forum/')">
         <a href="/forum/" target="_new">Forum</a>
       </div>
       <div class="navbar-link" onclick="location.href='{{url_for("show_about_us")}}'">

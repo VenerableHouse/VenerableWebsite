@@ -50,14 +50,11 @@ table {
 thead {
   background-color: #a3b9e1;
 }
-thead td, th {
-  padding: 100px;
-}
-td, th {
+td {
   padding: 7px;
 }
-tr:hover {
-  background-color: #dddddd;
+th {
+  padding: 10px;
 }
 ul {
   margin: 0px;
@@ -92,6 +89,7 @@ ul {
   color: white;
   display: table-cell;
   padding: 20px;
+  padding-top: 15px;
   text-align: left;
   vertical-align: middle;
 }
@@ -136,7 +134,8 @@ ul {
 #subtitle {
   display: block;
   font-family: "EB Garamond", "Times New Roman", serif;
-  font-size: 2.3em;
+  font-size: 2.1em;
+  margin-top: -10px;
 }
 #title {
   display: block;
@@ -154,7 +153,7 @@ ul {
 }
 #about a {
   color: white;
-  text-decoration: none;
+  text-decoration: underline;
 }
 #copyright {
   color: white;
@@ -199,6 +198,9 @@ table.form {
 }
 .link {
   cursor: pointer;
+}
+tr.link:hover {
+  background-color: #dddddd;
 }
 .message {
   background-color: #FFEB99;
