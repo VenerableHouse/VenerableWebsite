@@ -4,31 +4,31 @@
 <h2>Add new members</h2>
 
   {% if state == 'default' %}
-  <p>Use this to add a single member to the website. All fields are required.</p>
+  Use this to add a single member to the website. All fields are required. <br/><br/>
 
   <form action="" method="post">
     <input type="hidden" name="mode" value="single" />
-    <table>
+    <table class="form">
       <tr>
-        <td>First Name:</td>
+        <td>First Name</td>
         <td><input type="text" name="fname" /></td>
-        <td>Last Name:</td>
+        <td>Last Name</td>
         <td><input type="text" name="lname" /></td>
       </tr>
       <tr>
-        <td>Matriculation Year:</td>
-        <td><input type="text" name="matriculate_year" /></td>
-        <td>Graduation Year:</td>
-        <td><input type="text" name="grad_year" /></td>
+        <td>Matriculation Year</td>
+        <td><input type="number" name="matriculate_year" /></td>
+        <td>Graduation Year</td>
+        <td><input type="number" name="grad_year" /></td>
       </tr>
       <tr>
-        <td>UID:</td>
-        <td><input type="text" name="uid" /></td>
-        <td>Email:</td>
-        <td><input type="text" name="email" /></td>
+        <td>UID</td>
+        <td><input type="number" name="uid" /></td>
+        <td>Email</td>
+        <td><input type="email" name="email" /></td>
       </tr>
       <tr>
-        <td>Membership Type:</td>
+        <td>Membership Type</td>
         <td><select name="membership_type">
           <option value="full">Full</option>
           <option value="social">Social</option>
@@ -52,15 +52,15 @@
   </form>
 
   {% elif state == 'preview' %}
-  <p>Are you sure you want to add the following members?</p>
+  Are you sure you want to add the following members?<br /><br />
   <form action="" method="post">
     <input type="hidden" name="raw_data" value="{{ raw_data }}" />
     <table>
-      <tr>
+      <thead><tr>
         {% for field in field_list %}
         <th>{{ field['name'] }}</th>
         {% endfor %}
-      </tr>
+      </tr></thead>
       {% for entry in data %}
       <tr>
         {% for field in field_list %}
@@ -68,7 +68,7 @@
         {% endfor %}
       </tr>
       {% endfor %}
-    </table>
+    </table><br />
     {# Confirm buttons #}
     <button type="submit" name="state" value="default">No</button>
     <button type="submit" name="state" value="confirmed">Yes</button>

@@ -1,24 +1,60 @@
 {% extends "layout.html" %}
 {% block body %}
   <h2>Update This Information</h2>
+  <br/>
   <form action="" method="post">
 
-    <p>Nickname: <input type=text name=nickname {% if params["nickname"] %} value="{{ params["nickname"] }}" {% endif %}></p>
-    <p>Use Nickname: <input type="radio" name=usenickname {% if params['usenickname']==1 %} checked {% endif %} value=1>Yes<input type="radio" name=usenickname {% if params['usenickname']==0 %} checked {% endif %} value=0>No</p>
-    <p>Birthday (YYYY-MM-DD): <input type=text name=bday {% if params["bday"] %} value="{{ params["bday"] }}" {% endif %}></p>
-    <p>Primary Email: <input type=text name=email style="width:200px" {% if params["email"] %} value="{{ params["email"] }}" {% endif %}></p>
-    <p>Secondary Email: <input type=text name=email2 style="width:200px" {% if params["email2"] %} value="{{ params["email2"] }}" {% endif %}></p>
-    <p>MSC: <input type=text name=msc style="width:40px" {% if params["msc"] %} value="{{ params["msc"] }}" {% endif %}></p>
-    <p>Phone: <input type=text name=phone {% if params["phone"] %} value="{{ params["phone"] }}" {% endif %}></p>
-    <p>Building: <input type=text name=building {% if params["building"] %} value="{{ params["building"] }}" {% endif %}></p>
-    <p>Room Number: <input type=text name=room_num style="width: 40px" {% if params["room_num"] %} value="{{ params["room_num"] }}" {% endif %}></p>
-    <p>Major: <input type=text name=major style="width:200px" {% if params["major"] %} value="{{ params["major"] }}" {% endif %}></p>
-    <p>Abroad: <input type="radio" name=isabroad {% if params['isabroad']==1 %} checked {% endif %} value=1>Yes <input type="radio" name=isabroad {% if params['isabroad']==0 %} checked {% endif %}  value=0>No</p>
-
-    <p><input type=submit value="Save Changes"></p>
+    <table class="form">
+      <tr>
+        <td>Nickname</td>
+        <td><input type=text name=nickname {% if params["nickname"] %} value="{{ params["nickname"] }}" {% endif %}></td>
+      </tr>
+      <tr>
+        <td>Use Nickname</td>
+        <td><input type="radio" name=usenickname {% if params['usenickname']==1 %} checked {% endif %} value=1> Yes  <input type="radio" name=usenickname {% if params['usenickname']==0 %} checked {% endif %} value=0>No</td>
+      </tr>
+      <tr>
+        <td>Birthday (YYYY-MM-DD)</td>
+        <td><input type=text name=bday {% if params["bday"] %} value="{{ params["bday"] }}" {% endif %}></td>
+      </tr>
+      <tr>
+        <td>Primary Email</td>
+        <td><input type=text name=email style="width:200px" {% if params["email"] %} value="{{ params["email"] }}" {% endif %}></td>
+      </tr>
+      <tr>
+        <td>Secondary Email</td>
+        <td><input type=text name=email2 style="width:200px" {% if params["email2"] %} value="{{ params["email2"] }}" {% endif %}></td>
+      </tr>
+      <tr>
+        <td>MSC</td>
+        <td><input type=text name=msc style="width:40px" {% if params["msc"] %} value="{{ params["msc"] }}" {% endif %}></td>
+      </tr>
+      <tr>
+        <td>Phone</td>
+        <td><input type=text name=phone {% if params["phone"] %} value="{{ params["phone"] }}" {% endif %}></td>
+      </tr>
+      <tr>
+        <td>Building</td>
+        <td><input type=text name=building {% if params["building"] %} value="{{ params["building"] }}" {% endif %}></td>
+      </tr>
+      <tr>
+        <td>Room Number</td>
+        <td><input type=text name=room_num style="width: 40px" {% if params["room_num"] %} value="{{ params["room_num"] }}" {% endif %}></td>
+      </tr>
+      <tr>
+        <td>Major</td>
+        <td><input type=text name=major style="width:200px" {% if params["major"] %} value="{{ params["major"] }}" {% endif %}></td>
+      </tr>
+      <tr>
+        <td>Abroad</td>
+        <td><input type="radio" name=isabroad {% if params['isabroad']==1 %} checked {% endif %} value=1> Yes  <input type="radio" name=isabroad {% if params['isabroad']==0 %} checked {% endif %} value=0>No</td>
+      </tr>
+    </table>
+    <input type=submit value="Save Changes">
   </form>
 
   {% if params["username"] == session["username"] %}
+  <br/>
   <h2>Edit Your Settings</h2>
   <a href="{{ url_for('change_passwd') }}">Click here</a> to change your password!
   {% endif %}
