@@ -181,6 +181,10 @@ ul {
   padding: 20px;
   text-align: left;
 }
+#event-form {
+  clear: both;
+  display: block;
+}
 table.form {
   background-color: white;
   margin-bottom: 10px;
