@@ -8,6 +8,7 @@ a:hover {
 body {
   background: #dddddd;
   font-family: "Roboto", Helvetica, Tahoma, Arial, sans-serif;
+  text-align: left;
 }
 h1 {
   font-family: "EB Garamond", "Times New Roman", serif;
@@ -60,7 +61,7 @@ ul {
 /* Header */
 #header {
   display: table;
-  max-width: 900px;
+  max-width: 1000px;
   text-align: center;
   width: 100%;
   z-index: 0;
@@ -84,9 +85,11 @@ ul {
 #navbar {
   background-color: #ebf3fb;
   box-shadow: 0px 3px 5px #eeeeee;
-  font-family: "Roboto", Helvetica, Tahoma, Arial, sans-serif;
   display: table;
+  font-family: "Roboto", Helvetica, Tahoma, Arial, sans-serif;
+  position: relative;
   width: 100%;
+  z-index: 10;
 }
 #navbar-links {
   display: inline-block;
@@ -148,7 +151,7 @@ ul {
   background-color: #003060;
   clear: both;
   display: table;
-  max-width: 900px;
+  max-width: 1000px;
   width: 100%;
 }
 
@@ -156,11 +159,12 @@ ul {
 #content {
   background-color: white;
   margin: 0px;
-  max-width: 900px;
-  z-index: 10;
+  max-width: 1000px;
+  z-index: 0;
 }
 #content-body {
   padding: 20px;
+  text-align: left;
 }
 table.form {
   background-color: white;
