@@ -2,7 +2,7 @@ from functools import update_wrapper
 from flask import Flask, request, session, g, redirect, url_for, abort, \
     render_template, flash
 from collections import OrderedDict
-from sqlalchemy import create_engine, MetaData, text
+from sqlalchemy import create_engine, text
 from time import strftime
 from email_utils import sendEmail
 from constants import *
@@ -13,7 +13,7 @@ import auth
 import hassle
 
 app = Flask(__name__)
-app.debug = True
+app.debug = False
 app.secret_key = config.SECRET_KEY
 
 # Maximum file upload size, in bytes.
@@ -122,7 +122,7 @@ def attempt_login():
       else:
         return redirect(url_for('home'))
   flash('Incorrect username or password. Please try again!')
-  return render_template('login.html')
+  return redirect(url_for('login'))
 
 @app.route('/login/forgot')
 def forgot_password():
@@ -416,8 +416,11 @@ def create_account():
       return False
 
     pwd_length = len(data['password'])
-    if pwd_length < 8:
+    if pwd_length < MIN_PASSWORD_LENGTH:
       flash("Password is too short.")
+      return False
+    elif pwd_length > MAX_PASSWORD_LENGTH:
+      flash("Password is too long.")
       return False
 
     if not re.compile(r'.*[a-zA-Z]').match(data['password']) or not \
@@ -477,16 +480,15 @@ def create_account():
     parameters have already been validated.
     '''
 
-    query = text("INSERT INTO users (user_id, username, passwd) VALUES \
-        (:user_id, :username, :password)")
+    query = text("""
+      INSERT INTO users (user_id, username, password_hash)
+      VALUES (:user_id, :username, :password)
+      """)
 
     # Creates the account with an empty password.
-    g.db.execute(query, user_id=user_id, username=username, \
-        password='')
-
-    # Use the password reset function to set the password, to ensure
-    # consistent salting.
-    auth.passwd_reset(username, password, salt=True, email=False)
+    g.db.execute(query, user_id=user_id, username=username, password='')
+    # Set the password.
+    auth.change_password(username, password, send_email=False)
 
     # Email the user to let them know an account has been created.
     subject = "Thanks for creating an account!"

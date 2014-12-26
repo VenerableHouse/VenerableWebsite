@@ -8,84 +8,171 @@ import email_utils
 import email_templates
 import misc_utils
 
-def get_user_id(username):
-  ''' Takes a username and returns the user's ID. '''
-  query = text("SELECT user_id FROM users WHERE username = :u")
-  result = g.db.execute(query, u = username).first()
+class PasswordHashParser:
+  '''
+  Class to manage parsed password hashes. See comments for authenticate() for
+  the format this class expects.
+  '''
 
-  if result is not None:
-    return int(result['user_id'])
+  # Static list of supported hashing algorithms.
+  valid_algorithms = ['md5', 'pbkdf2_sha256']
+
+  def __init__(self):
+    # Algorithm, rounds, and salt are lists. The order in which elements appear
+    # in the list must be the order in which the algorithms are to be applied,
+    # which is the same as the order in which they are stored. So if we want
+    # sha256(md5(password)), then we have $md5|sha256$ which becomes
+    # ['md5', 'sha256'].
+    self.algorithms = []
+    self.rounds = []
+    self.salts = []
+    self.password_hash = None
+
+  def __str__(self):
+    '''
+    Method to convert object into string. This method is overridden to conver
+    the object into the full hash string it was generated from. Can also be
+    used to generate a full hash string.
+    '''
+    # Cannot be used if not initialized.
+    if self.password_hash is None:
+      return None
+    algorithms = self.algorithms
+    rounds = map(lambda x: str(x) if x is not None else '', self.rounds)
+    salts = self.salts
+
+    algorithm_str = '|'.join(algorithms)
+    rounds_str = '|'.join(rounds)
+    salt_str = '|'.join(salts)
+    return "${0}${1}${2}${3}".format(algorithm_str, rounds_str, salt_str, \
+        self.password_hash)
+
+  def parse(self, full_hash):
+    '''
+    Parses a hash in the format:
+
+      $algorithm1|...|algorithmN$rounds1|...|roundsN$salt1|...|saltN$hash
+
+    Returns True if successful, False if something unexpected happens.
+    '''
+    hash_components = full_hash.split('$')
+    # Expect 5 components (empty string, algorithms, rounds, salts, hash).
+    if len(hash_components) != 5 or hash_components[0] != '':
+      return False
+
+    algorithms = hash_components[1].split('|')
+    rounds = hash_components[2].split('|')
+    salts = hash_components[3].split('|')
+    password_hash = hash_components[4]
+
+    # Algorithms must be valid.
+    if any(map(lambda x: x not in PasswordHashParser.valid_algorithms, algorithms)):
+      return False
+
+    # Rounds must be integers. If empty string, set to None (not all algorithms
+    # supported use key stretching).
+    try:
+      rounds = map(lambda x: int(x) if len(x) != 0 else None, rounds)
+    except ValueError:
+      # Something wasn't an integer.
+      return False
+
+    # At least one algorithm must be given and all lists must be the same length.
+    if len(algorithms) == 0 or \
+        len(algorithms) != len(rounds) or len(algorithms) != len(salts):
+      return False
+
+    # Update with parsed values.
+    self.algorithms = algorithms
+    self.rounds = rounds
+    self.salts = salts
+    self.password_hash = password_hash
+    return True
+
+  def verify_password(self, password):
+    '''
+    Verifies a password by applying each algorithm in turn to the password.
+    Returns True if successful, else False.
+    '''
+    if self.password_hash is None:
+      # Not initialized properly.
+      return False
+
+    test_hash = password
+    for i in xrange(len(self.algorithms)):
+      algorithm = self.algorithms[i]
+      rounds = self.rounds[i]
+      salt = self.salts[i]
+      test_hash = hash_password(test_hash, salt, rounds, algorithm)
+    return test_hash == self.password_hash
+
+  def is_legacy(self):
+    ''' Returns true if the hashing algorithm is not the most current version. '''
+    return len(self.algorithms) != 1 or \
+        self.algorithms[0] != const.PWD_HASH_ALGORITHM or \
+        self.rounds[0] != const.HASH_ROUNDS
+
+
+def hash_password(password, salt, rounds, algorithm):
+  '''
+  Hashes the password with the salt and algorithm provided. The supported
+  algorithms are in PasswordHashParser.valid_algorithms.
+
+  Returns just the hash (not the full hash string). Returns None if an error
+  occurs.
+
+  Algorithms using the passlib library are returned in base64 format.
+  Algorithms using the hashlib library are returned in hex format.
+  '''
+  if algorithm == 'pbkdf2_sha256':
+    # Rounds must be set.
+    if rounds is None:
+      return None
+    result = passlib.hash.pbkdf2_sha256.encrypt(password, salt=salt, rounds=rounds)
+    # Return just the hash.
+    return result.split('$')[-1]
+  elif algorithm == 'md5':
+    # Rounds is ignored.
+    return hashlib.md5(salt + password).hexdigest()
   return None
-
-def hash_password(password):
-  '''
-  Wrapper for cryptographically secure hashing method. Automatically generates
-  salt. Use this function for all password hashing.
-  '''
-  algorithm = const.PWD_HASH_ALGORITHM
-  password_hash = algorithm.encrypt(password, \
-      salt_size=const.SALT_SIZE, \
-      rounds=const.HASH_ROUNDS)
-  return password_hash
-
-def verify_password(password, password_hash):
-  '''
-  Verifies the username/password combination. The provided password_hash should
-  be the correct hash to verfiy against. This is just a wrapper for the current
-  hashing algorithm.
-  '''
-  algorithm = const.PWD_HASH_ALGORITHM
-  try:
-    return algorithm.verify(password, password_hash)
-  except (TypeError, ValueError):
-    # Something is wrong with the password or hash (wrong algorithm, invalid
-    # characters, etc.
-    return False
-
-def verify_legacy_password(password, legacy_salt, password_hash, algorithm):
-  '''
-  Verifies a password using a legacy algorithm. The provided algorithm should
-  be a string that describes an algorithm that was used in the past. Supported
-  legacy algorithms:
-
-  md5 - used through December 2014
-
-  For security reasons, we do NOT store legacy hashes in the database
-  (algorithms generally become legacy because they are easier to crack).
-  Instead, we use the old hash as the input to the current hashing algorithm.
-  For example, if MD5 is legacy and PBKDF2_SHA256 is the current, then the
-  old hash MD5(password) should be stored as PBKDF2_SHA256(MD5(password)) in
-  the database until the user logs in again and the password is rehashed
-  properly.
-  '''
-  if algorithm == 'md5':
-    legacy_hash = hashlib.md5(legacy_salt + password).hexdigest()
-  else:
-    # Provided algorithm doesn't match anything supported.
-    return False
-  return verify_password(legacy_hash, password_hash)
 
 def authenticate(username, password):
   '''
-  Takes a username and password and checks if this corresponds to
-  an actual user. Returns user_id if successful, else None.
+  Takes a username and password and checks if this corresponds to an actual
+  user. Returns user_id if successful, else None.
 
-  This function defaults to using the current hashing algorithm. However, if
-  that fails, then we also run through legacy algorithms, and if any legacy
-  algorithm matches, then we rehash the user's password using the current
-  algorithm and authenticate the user.
+  Handling of current and legacy hashing algorithms:
+  ==================================================
+
+  We store legacy hashes in the format:
+
+    $algorithm1|...|algorithmN$rounds1|...|roundsN$salt1|...|saltN$hash
+
+  Where algorithmN is the most current algorithm (think of it as piping the
+  result of one algorithm to the next). To compute the hash, we execute:
+
+    algorithmN(saltN + algorithmN-1(saltN-1 + ... algorithm1(salt1 + password)))
+
+  We do not store hashes from legacy algorithms in the database. Instead, we
+  use the output from the first hash as the 'password' input to the next hash,
+  so all passwords are hashed with the more secure algorithm. If a password is
+  authenticated using a legacy hash, it is then rehashed using only the most
+  current algorithm.
+
+  Storing hashes in this format was designed to make it easier to upgrade
+  algorithms in the future (simply take the actual hash as the password,
+  generate a new salt, and then append the new algorithm, number of rounds, and
+  salt as appropriate.
   '''
+
   # Make sure the password is not too long (hashing extremely long passwords
   # can be used to attack the site, so we set an upper limit well beyond what
   # people generally use for passwords).
   if len(password) > const.MAX_PASSWORD_LENGTH:
     return None
+
   # Get the correct password hash and user_id from the database.
-  query = text("""
-    SELECT user_id, password_hash, legacy_salt
-    FROM users
-    WHERE username=:u
-    """)
+  query = text("SELECT user_id, password_hash FROM users WHERE username=:u")
   result = g.db.execute(query, u=username).first()
   if result is None:
     # Invalid username.
@@ -93,33 +180,34 @@ def authenticate(username, password):
   user_id = result['user_id']
   password_hash = result['password_hash']
 
-  result = False
-  # Try current algorithm.
-  if verify_password(password, password_hash):
-    result = True
-  # Try legacy algorithms.
-  else:
-    # Get legacy salt, if present.
-    legacy_salt = result['legacy_salt'] if result['legacy_salt'] is not None else ''
-    # Algorithms to try.
-    legacy_algorithms = ['md5']
-    for algorithm in legacy_algorithms:
-      if verify_legacy_password(password, legacy_salt, password_hash, algorithm):
-        # User is authenticated.
-        result = True
+  # Parse the hash into a PasswordHashParser object.
+  parser = PasswordHashParser()
+  if parser.parse(password_hash):
+    if parser.verify_password(password):
+      # Check if password was legacy.
+      if parser.is_legacy():
         # Rehash the password.
         set_password(username, password)
-        break
-  if result:
-    return user_id
-  else:
-    return None
+      # User is authenticated.
+      return user_id
+  return None
 
 def set_password(username, password):
-  ''' Sets the user's password. '''
-  password_hash = hash_password(password)
+  ''' Sets the user's password. Automatically generates a new salt. '''
+  algorithm = const.PWD_HASH_ALGORITHM
+  rounds = const.HASH_ROUNDS
+  salt = generate_salt()
+  password_hash = hash_password(password, salt, rounds, algorithm)
+
+  # Create new password hash string.
+  parser = PasswordHashParser()
+  parser.algorithms = [algorithm]
+  parser.rounds = [rounds]
+  parser.salts = [salt]
+  parser.password_hash = password_hash
+  full_hash = str(parser)
   query = text("UPDATE users SET password_hash=:ph WHERE username=:u")
-  g.db.execute(query, ph=password_hash, u=username)
+  g.db.execute(query, ph=full_hash, u=username)
   return
 
 def change_password(username, new_password, send_email=False):
@@ -127,7 +215,7 @@ def change_password(username, new_password, send_email=False):
   Changes a user's password. If send_email is True, then an email will be sent
   to the user notifying them that their password has been changed.
   '''
-  set_password(username, password)
+  set_password(username, new_password)
 
   if send_email:
     # Get the user's name and email.
@@ -248,6 +336,12 @@ def handle_password_reset(username, new_password, new_password2):
     flash('Password successfully changed.')
     return True
 
+def generate_salt():
+  '''
+  Generates a pseudorandom salt.
+  '''
+  return misc_utils.generate_random_string(const.SALT_SIZE)
+
 def generate_reset_key():
   '''
   Generates a pseudorandom reset key. Guaranteed to be unique in the database.
@@ -288,6 +382,15 @@ def get_permissions(username):
     """)
   result = g.db.execute(query, u=username)
   return [row['permission'] for row in result]
+
+def get_user_id(username):
+  ''' Takes a username and returns the user's ID. '''
+  query = text("SELECT user_id FROM users WHERE username = :u")
+  result = g.db.execute(query, u = username).first()
+
+  if result is not None:
+    return int(result['user_id'])
+  return None
 
 def check_permission(permission):
   ''' Returns true if the user has the input permission. '''
