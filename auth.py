@@ -10,8 +10,39 @@ import misc_utils
 
 class PasswordHashParser:
   '''
-  Class to manage parsed password hashes. See comments for authenticate() for
-  the format this class expects.
+  Class to manage parsed password hashes.
+
+  Handling of current and legacy hashing algorithms:
+  ==================================================
+
+  We store all hashes in the format:
+
+    $algorithm1|...|algorithmN$rounds1|...|roundsN$salt1|...|saltN$hash
+
+  Where algorithmN is the most current algorithm (think of it as piping the
+  result of one algorithm to the next). To compute the hash, we execute:
+
+    algorithmN(saltN + algorithmN-1(saltN-1 + ... algorithm1(salt1 + password)))
+
+  We do not store hashes from legacy algorithms in the database (the whole
+  point of upgrading algorithms is to improve hash strength). Instead, we use
+  the output from the first hash as the 'password' input to the next hash, so
+  all passwords are hashed with the more secure algorithm. To keep track of the
+  algorithm and parameters (rounds, salt) for each step, we use the format
+  above. For example, if a password is initally hashed with MD5, then later
+  upgraded to SHA1, then later upgraded to PBKDF2_SHA256, the hash string might
+  look like this:
+
+    $md5|sha1|pbkdf2_sha256$||100000$salt1|salt2|salt3$final_hash_here
+
+  Note that 'rounds' may be the empty string if it does not apply to the
+  algorithm used.
+
+  Storing hashes in this format was designed to make it easier to upgrade
+  algorithms in the future (simply take the actual hash as the password,
+  generate a new salt, and then append the new algorithm, number of rounds, and
+  salt to the modular hash formatted string). Upgrading algorithms with this
+  design should be invisible to users.
   '''
 
   # Static list of supported hashing algorithms.
@@ -112,7 +143,6 @@ class PasswordHashParser:
         self.algorithms[0] != const.PWD_HASH_ALGORITHM or \
         self.rounds[0] != const.HASH_ROUNDS
 
-
 def hash_password(password, salt, rounds, algorithm):
   '''
   Hashes the password with the salt and algorithm provided. The supported
@@ -139,30 +169,8 @@ def hash_password(password, salt, rounds, algorithm):
 def authenticate(username, password):
   '''
   Takes a username and password and checks if this corresponds to an actual
-  user. Returns user_id if successful, else None.
-
-  Handling of current and legacy hashing algorithms:
-  ==================================================
-
-  We store legacy hashes in the format:
-
-    $algorithm1|...|algorithmN$rounds1|...|roundsN$salt1|...|saltN$hash
-
-  Where algorithmN is the most current algorithm (think of it as piping the
-  result of one algorithm to the next). To compute the hash, we execute:
-
-    algorithmN(saltN + algorithmN-1(saltN-1 + ... algorithm1(salt1 + password)))
-
-  We do not store hashes from legacy algorithms in the database. Instead, we
-  use the output from the first hash as the 'password' input to the next hash,
-  so all passwords are hashed with the more secure algorithm. If a password is
-  authenticated using a legacy hash, it is then rehashed using only the most
-  current algorithm.
-
-  Storing hashes in this format was designed to make it easier to upgrade
-  algorithms in the future (simply take the actual hash as the password,
-  generate a new salt, and then append the new algorithm, number of rounds, and
-  salt as appropriate.
+  user. Returns user_id if successful, else None. If a legacy algorithm is
+  used, then the password is rehashed using the current algorithm.
   '''
 
   # Make sure the password is not too long (hashing extremely long passwords
