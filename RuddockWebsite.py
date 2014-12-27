@@ -1,4 +1,3 @@
-from functools import update_wrapper
 from flask import Flask, request, session, g, redirect, url_for, abort, \
     render_template, flash
 from collections import OrderedDict
@@ -6,18 +5,22 @@ from sqlalchemy import create_engine, MetaData, text
 from time import strftime
 from email_utils import sendEmail
 from constants import *
+from decorators import *
 import datetime
 import re
 import config
 import auth
-import hassle
+from modules import hassle_bp
 
 app = Flask(__name__)
-app.debug = False
+app.debug = True
 app.secret_key = config.SECRET_KEY
 
 # Maximum file upload size, in bytes.
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+
+# Load blueprint modules
+app.register_blueprint(hassle_bp.hassle_bp)
 
 # Create database engine object.
 engine = create_engine(config.DB_URI, convert_unicode=True)
@@ -47,31 +50,6 @@ def display_error_msg(msg=False, redirect_location=None):
 
   flash(msg)
   return redirect(url_for(redirect_location))
-
-def login_required(permission=None):
-  '''
-  Login required decorator. Requires user to be logged in. If a permission
-  is provided, then user must also have the appropriate permissions to
-  access the page.
-  '''
-  def decorator(fn):
-    def wrapped_function(*args, **kwargs):
-      # User must be logged in.
-      if 'username' not in session:
-        flash("This page requires you to be logged in.")
-        # Store page to be loaded after login in session.
-        session['next'] = request.url
-        return redirect(url_for('login'))
-
-      # Check permissions.
-      if permission != None:
-        if not auth.check_permission(permission):
-          flash("You do have have permission to access this page.")
-          session['next'] = request.url
-          return redirect(url_for('login'))
-      return fn(*args, **kwargs)
-    return update_wrapper(wrapped_function, fn)
-  return decorator
 
 @app.before_request
 def before_request():
@@ -626,7 +604,7 @@ def admin_home():
   if auth.check_permission(Permissions.HassleAdmin):
     admin_tools.append({
       'name': 'Room hassle',
-      'link': url_for('run_hassle', _external=True)})
+      'link': url_for('hassle_bp.run_hassle', _external=True)})
   return render_template('admin.html', tools=admin_tools)
 
 @app.route('/admin/reminder_email', methods=['GET', 'POST'])
@@ -992,121 +970,6 @@ def add_members():
   return render_template('new_members.html', state='default', \
       path=PATH_TO_TEMPLATE, filename=TEMPLATE_FILENAME)
 
-@app.route('/hassle')
-@login_required(Permissions.HassleAdmin)
-def run_hassle():
-  ''' Logic for room hassles. '''
-
-  available_participants = hassle.get_available_participants()
-  available_rooms = hassle.get_available_rooms()
-  events = hassle.get_events_with_roommates()
-  alleys = [1, 2, 3, 4, 5, 6]
-
-  return render_template('hassle.html',
-      available_participants=available_participants,
-      available_rooms=available_rooms,
-      events=events,
-      alleys=alleys)
-
-@app.route('/hassle/event', methods=['POST'])
-@login_required(Permissions.HassleAdmin)
-def hassle_event():
-  ''' Submission endpoint for a new event (someone picks a room). '''
-
-  user_id = request.form.get('user_id', None)
-  room_number = request.form.get('room', None)
-  roommates = request.form.getlist('roommate_id')
-
-  if user_id == None or room_number == None:
-    flash("Invalid request - try again?")
-  else:
-    roommates = [r for r in roommates if r != "none"]
-
-    # Check for invalid roommate selection.
-    if user_id in roommates or len(roommates) != len(set(roommates)):
-      flash("Invalid roommate selection.")
-    else:
-      hassle.new_event(user_id, room_number, roommates)
-  return redirect(url_for('run_hassle'))
-
-@app.route('/hassle/restart', defaults={'event_id': None})
-@app.route('/hassle/restart/<int:event_id>')
-@login_required(Permissions.HassleAdmin)
-def hassle_restart(event_id):
-  if event_id == None:
-    hassle.clear_events()
-  else:
-    hassle.clear_events(event_id)
-  return redirect(url_for('run_hassle'))
-
-@app.route('/hassle/new')
-@login_required(Permissions.HassleAdmin)
-def new_hassle():
-  ''' Redirects to the first page to start a new room hassle. '''
-
-  # Clear old data.
-  hassle.clear_all()
-
-  return redirect(url_for('new_hassle_participants'))
-
-@app.route('/hassle/new/participants')
-@login_required(Permissions.HassleAdmin)
-def new_hassle_participants():
-  ''' Select participants for the room hassle. '''
-
-  # Get a list of all current members.
-  members = hassle.get_all_members()
-  return render_template('hassle_new_participants.html', members=members)
-
-@app.route('/hassle/new/participants/submit', methods=['POST'])
-@login_required(Permissions.HassleAdmin)
-def new_hassle_participants_submit():
-  ''' Submission endpoint for hassle participants. Redirects to next page. '''
-
-  # Get a list of all participants' user IDs.
-  participants = map(lambda x: int(x), request.form.getlist('participants'))
-  # Update database with this hassle's participants.
-  hassle.set_participants(participants)
-  return redirect(url_for('new_hassle_rooms'))
-
-@app.route('/hassle/new/rooms')
-@login_required(Permissions.HassleAdmin)
-def new_hassle_rooms():
-  ''' Select rooms available for the room hassle. '''
-
-  # Get a list of all rooms.
-  rooms = hassle.get_all_rooms()
-  return render_template('hassle_new_rooms.html', rooms=rooms)
-
-@app.route('/hassle/new/rooms/submit', methods=['POST'])
-@login_required(Permissions.HassleAdmin)
-def new_hassle_rooms_submit():
-  ''' Submission endpoint for hassle rooms. Redirects to next page. '''
-
-  # Get a list of all room numbers.
-  rooms = map(lambda x: int(x), request.form.getlist('rooms'))
-  # Update database with participating rooms.
-  hassle.set_rooms(rooms)
-  return redirect(url_for('new_hassle_confirm'))
-
-@app.route('/hassle/new/confirm')
-@login_required(Permissions.HassleAdmin)
-def new_hassle_confirm():
-  ''' Confirmation page for new room hassle. '''
-
-  participants = hassle.get_participants()
-  rooms = hassle.get_participating_rooms()
-
-  return render_template('hassle_new_confirm.html', rooms=rooms, \
-      participants=participants)
-
-@app.route('/hassle/new/confirm/submit', methods=['POST'])
-@login_required(Permissions.HassleAdmin)
-def new_hassle_confirm_submit():
-  ''' Submission endpoint for confirmation page. '''
-
-  # Nothing to do, everything is already in the database.
-  return redirect(url_for('run_hassle'))
 
 if __name__ == "__main__":
-  app.run()
+  app.run(port=4999)
