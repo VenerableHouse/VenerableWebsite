@@ -643,11 +643,9 @@ def add_members():
         :email, :membership_type, :key)
         """)
     check_query = text("SELECT 1 FROM members WHERE uid=:uid")
-    last_insert_id_query = text("SELECT LAST_INSERT_ID() AS last_id")
 
     members_added_count = 0
     members_skipped_count = 0
-    members_errors_count = 0
 
     for entry in data:
       # Check if user is in database already
@@ -666,9 +664,6 @@ def add_members():
           membership_type=membership_type,
           key=create_account_key)
 
-      # Get the id of the inserted row (used to create unique hash).
-      result = g.db.execute(last_insert_id_query).first()
-      user_id = result['last_id']
       entry['name'] = entry['fname'] + ' ' + entry['lname']
 
       # Email the user
@@ -680,9 +675,8 @@ def add_members():
       sendEmail(to, msg, subject)
       members_added_count += 1
 
-    flash(str(members_added_count) + " members were successfully added, " +
-        str(members_skipped_count) + " members were skipped, and " +
-        str(members_errors_count) + " members encountered errors.")
+    flash(str(members_added_count) + " members were successfully added, and " +
+        str(members_skipped_count) + " members were skipped.")
 
     # Remind admin to add users to mailing lists.
     flash("IMPORTANT: Don't forget to add the new members to manual email lists, like spam@ruddock!")
