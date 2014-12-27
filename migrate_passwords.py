@@ -31,13 +31,11 @@ if __name__ == '__main__':
       password_hash = auth.hash_password(md5_hash, salt, const.HASH_ROUNDS,
           const.PWD_HASH_ALGORITHM)
 
-      parser = auth.PasswordHashParser()
-      parser.algorithms = ['md5', const.PWD_HASH_ALGORITHM]
-      parser.rounds = [None, const.HASH_ROUNDS]
-      parser.salts = [md5_salt, salt]
-      parser.password_hash = password_hash
-
-      # Full hash string
+      # Get full hash string.
+      algorithms = ['md5', const.PWD_HASH_ALGORITHM]
+      rounds = [None, const.HASH_ROUNDS]
+      salts = [md5_salt, salt]
+      parser = auth.PasswordHashParser(algorithms, rounds, salts, password_hash)
       full_hash = str(parser)
 
       # Insert into database

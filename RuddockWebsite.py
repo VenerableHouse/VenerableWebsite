@@ -11,6 +11,7 @@ import re
 import config
 import auth
 import hassle
+import email_templates
 
 app = Flask(__name__)
 app.debug = False
@@ -163,10 +164,11 @@ def reset_password_submit(reset_key):
     return redirect(url_for('forgot_password'))
   new_password = request.form.get('password', '')
   new_password2 = request.form.get('password2', '')
-  # The password reset handler takes care of all the flashes.
   if auth.handle_password_reset(username, new_password, new_password2):
+    flash('Password reset was successful.')
     return redirect(url_for('home'))
   else:
+    # Password reset handler handles error flashes.
     return redirect(url_for('reset_password', reset_key=reset_key))
 
 @app.route('/logout')
@@ -376,179 +378,69 @@ def show_gov():
 def show_about_us():
   return render_template('about_us.html')
 
-def create_account_hash(user_id, uid, fname, lname):
-  '''
-  Creates a unique hash for users trying to create an account.
-  '''
-  return hash(str(user_id) + str(uid) + str(fname) + str(lname))
-
-@app.route('/create_account', methods=['GET', 'POST'])
-def create_account():
-  '''
-  Allows the user to create an account. The user should have receieved
-  an email when the secretary imported him/her into the database with
-  a unique link to create the account with.
-  '''
-
-  def validate_data(data):
-    '''
-    Checks that the provided username, password, and birthday are valid.
-    '''
-
-    # Check username
-    username_regex = re.compile(r'^[a-zA-Z0-9\-\_]{1,32}$')
-    if not username_regex.match(data['username']):
-      flash("Invalid username.")
-      return False
-
-    query = text("SELECT COUNT(*) FROM users WHERE username=:username")
-    r = g.db.execute(query, username=data['username'])
-    result = fetch_all_results(r)
-    count = result[0]['COUNT(*)']
-
-    if count != 0:
-      flash("Username already in use.")
-      return False
-
-    # Check password
-    if data['password'] != data['password2']:
-      flash("Passwords do not match.")
-      return False
-
-    pwd_length = len(data['password'])
-    if pwd_length < MIN_PASSWORD_LENGTH:
-      flash("Password is too short.")
-      return False
-    elif pwd_length > MAX_PASSWORD_LENGTH:
-      flash("Password is too long.")
-      return False
-
-    if not re.compile(r'.*[a-zA-Z]').match(data['password']) or not \
-        re.compile(r'.*[0-9]').match(data['password']):
-          flash("Password should contain both numbers and letters.")
-          return False
-
-    # Check birthday
-    try:
-      datetime.datetime.strptime(data['birthday'], '%Y-%m-%d')
-    except ValueError:
-      flash("Invalid birthday.")
-      return False
-
-    return True
+@app.route('/account/create/<create_account_key>')
+def create_account(create_account_key):
+  ''' Checks the key. If valid, displays the create account page. '''
 
   def get_user_data(user_id):
-    query = text("SELECT fname, lname, uid, matriculate_year, grad_year, \
-        email FROM members WHERE user_id=:user_id")
-    r = g.db.execute(query, user_id=user_id)
-    result = fetch_all_results(r)
-
-    return result[0]
-
-  def check_key_id_pair(key, user_id):
-    # Check that the user_id is valid.
-    query = text("SELECT COUNT(*) FROM members WHERE user_id=:user_id")
-    r = g.db.execute(query, user_id=user_id)
-    result = fetch_all_results(r)
-    count = result[0]['COUNT(*)']
-
-    if count != 1:
-      return False
-
-    # Make sure an account does not already exist for that user_id.
-    query = text("SELECT COUNT(*) FROM users WHERE user_id=:user_id")
-    r = g.db.execute(query, user_id=user_id)
-    result = fetch_all_results(r)
-    count = result[0]['COUNT(*)']
-
-    if count != 0:
-      return False
-
-    # Check the key.
-    user_data = get_user_data(user_id)
-    true_hash = create_account_hash(user_id, user_data['uid'], \
-        user_data['fname'], user_data['lname'])
-
-    if str(true_hash) != str(key):
-      return False
-
-    return True
-
-  def create_new_user(user_id, username, password, email):
-    '''
-    Creates a new account with the given parameters. Assumes that all
-    parameters have already been validated.
-    '''
-
+    ''' Helper to get user data. '''
     query = text("""
-      INSERT INTO users (user_id, username, password_hash)
-      VALUES (:user_id, :username, :password)
+      SELECT fname, lname, uid, matriculate_year, grad_year, email
+      FROM members
+      WHERE user_id=:uid
       """)
+    return g.db.execute(query, uid=user_id).first()
 
-    # Creates the account with an empty password.
-    g.db.execute(query, user_id=user_id, username=username, password='')
-    # Set the password.
-    auth.change_password(username, password, send_email=False)
-
-    # Email the user to let them know an account has been created.
-    subject = "Thanks for creating an account!"
-    msg = "You have just created an account on the Ruddock website with " + \
-        "the username \"" + username + "\".\n" + \
-        "If this was not you, please email imss@ruddock.caltech.edu immediately.\n\n" + \
-        "Thanks!\n" + \
-        "The Ruddock IMSS Team"
-    to = email
-    sendEmail(to, msg, subject)
-
-  def update_birthday(user_id, birthday):
-    query = text("UPDATE members SET bday=:bday WHERE user_id=:user_id")
-    g.db.execute(query, bday=birthday, user_id=user_id)
-
-  ### End helper functions ###
-
-  if request.method == 'POST':
-    key = request.form['k']
-    user_id = request.form['u']
-
-    if not key or not user_id or not check_key_id_pair(key, user_id):
-      return display_error_msg()
-
-    user_data = get_user_data(user_id)
-
-    data = {}
-    data['username'] = request.form['username']
-    data['password'] = request.form['password']
-    data['password2'] = request.form['password2']
-    data['birthday'] = request.form['birthday']
-
-    if validate_data(data):
-      create_new_user(user_id, data['username'], data['password'], \
-          user_data['email'])
-      update_birthday(user_id, data['birthday'])
-
-      flash('Account successfully created.')
-      return redirect(url_for('home'))
-
-  key = request.args.get('k', default=None)
-  user_id = request.args.get('u', default=None)
-
-  if not key or not user_id or not check_key_id_pair(key, user_id):
-    return display_error_msg()
+  user_id = auth.check_create_account_key(create_account_key)
+  if user_id is None:
+    flash('Invalid request. Please check your link and try again. If you continue to encounter problems, please find an IMSS rep.')
+    return redirect(url_for('home'))
 
   user_data = get_user_data(user_id)
+  if user_data is None:
+    flash('An unexpected error occurred. Please find an IMSS rep.')
+    return redirect(url_for('home'))
+  return render_template('create_account.html', user_data=user_data,
+      key=create_account_key)
 
-  return render_template('create_account.html', user_data=user_data, \
-      key=key, user_id=user_id)
+@app.route('/account/create/<create_account_key>/submit', methods=['POST'])
+def create_account_submit(create_account_key):
+  ''' Handles a create account request. '''
+  user_id = auth.check_create_account_key(create_account_key)
+  if user_id is None:
+    # Key is invalid.
+    flash("Someone's been naughty.")
+    return redirect(url_for('home'))
+  username = request.form.get('username', None)
+  password = request.form.get('password', None)
+  password2 = request.form.get('password2', None)
+  birthday = request.form.get('birthday', None)
+  if username is None or password is None or password2 is None or birthday is None:
+    flash('Invalid request.')
+    return redirect(url_for('home'))
 
-@app.route('/admin', methods=['GET', 'POST'])
+  # Username and password will be checked by account creation.
+  # Check birthday format.
+  try:
+    datetime.datetime.strptime(birthday, '%Y-%m-%d')
+  except ValueError:
+    flash("Invalid birthday.")
+    return redirect(url_for('create_account', create_account_key=create_account_key))
+  if auth.handle_create_account(user_id, username, password, password2):
+    # Update birthday.
+    query = text("UPDATE members SET bday=:b WHERE user_id=:uid")
+    g.db.execute(query, b=birthday, uid=user_id)
+    flash('Account successfully created.')
+    return redirect(url_for('home'))
+  else:
+    # Flashes already handled.
+    return redirect(url_for('create_account', create_account_key=create_account_key))
+
+@app.route('/admin')
 @login_required(Permissions.Admin)
 def admin_home():
-  '''
-  Loads a home page for admins, providing links to various tools.
-  '''
-
+  ''' Loads a home page for admins, providing links to various tools. '''
   admin_tools = []
-
   if auth.check_permission(Permissions.UserAdmin):
     admin_tools.append({
       'name': 'Add new members',
@@ -556,7 +448,6 @@ def admin_home():
     admin_tools.append({
       'name': 'Send account creation reminder',
       'link': url_for('send_reminder_emails', _external=True)})
-
   if auth.check_permission(Permissions.HassleAdmin):
     admin_tools.append({
       'name': 'Room hassle',
@@ -632,12 +523,13 @@ def add_members():
     '''
     This takes a membership description (full member, social member, etc)
     and converts it to the corresponding type. Expects input to be valid
-    and one of (full, social, associate).
+    and one of (full, social, associate, RA).
     '''
 
     full_regex = re.compile(r'^full(| member)$', re.I)
     social_regex = re.compile(r'^social(| member)$', re.I)
     assoc_regex = re.compile(r'^associate(| member)$', re.I)
+    ra_regex = re.compile(r'^(resident associate|ra)$', re.I)
 
     if full_regex.match(membership_desc):
       return 1
@@ -645,6 +537,8 @@ def add_members():
       return 2
     elif assoc_regex.match(membership_desc):
       return 3
+    elif ra_regex.match(membership_desc):
+      return 4
     else:
       return False
 
@@ -720,26 +614,21 @@ def add_members():
     for line in new_members_data.split(delim):
       if line == "":
         continue
-
       values = line.split(',')
       if len(values) != len(field_list):
         flash("Invalid data submitted.")
         return False
-
       # Skip title line if present
       if values[0] == field_list[0]['name']:
         continue
-
       entry = {}
       for i in range(len(field_list)):
         field = field_list[i]
         entry[field['field']] = values[i]
       data.append(entry)
-
     for entry in data:
       if not validate_data(entry):
         return False
-
     return data
 
   def add_new_members(data):
@@ -747,13 +636,14 @@ def add_members():
     This adds the members to the database and them emails them with
     account creation information. Assumes data has already been validated.
     '''
-
-    insert_query = text("INSERT INTO members (fname, lname, uid, \
-        matriculate_year, grad_year, email, membership_type) \
-        VALUES (:fname, :lname, :uid, :matriculate_year, :grad_year, \
-        :email, :membership_type)")
-    check_query = text("SELECT COUNT(*) FROM members WHERE uid=:uid")
-    last_insert_id_query = text("SELECT LAST_INSERT_ID()")
+    insert_query = text("""
+      INSERT INTO members (fname, lname, uid, matriculate_year,
+        grad_year, email, membership_type, create_account_key)
+      VALUES (:fname, :lname, :uid, :matriculate_year, :grad_year,
+        :email, :membership_type, :key)
+        """)
+    check_query = text("SELECT 1 FROM members WHERE uid=:uid")
+    last_insert_id_query = text("SELECT LAST_INSERT_ID() AS last_id")
 
     members_added_count = 0
     members_skipped_count = 0
@@ -761,88 +651,54 @@ def add_members():
 
     for entry in data:
       # Check if user is in database already
-      r = g.db.execute(check_query, uid=entry['uid'])
-      result = fetch_all_results(r)
-      count = result[0]['COUNT(*)']
-
-      if count != 0:
+      result = g.db.execute(check_query, uid=entry['uid']).first()
+      if result is not None:
         members_skipped_count += 1
         continue
 
       membership_type = convert_membership_type(entry['membership_type'])
-
+      create_account_key = auth.generate_create_account_key()
       # Add the user to the database.
-      result = g.db.execute(insert_query, fname=entry['fname'], \
-          lname=entry['lname'], uid=entry['uid'], \
-          matriculate_year=entry['matriculate_year'], \
-          grad_year=entry['grad_year'], email=entry['email'], \
-          membership_type=membership_type)
+      result = g.db.execute(insert_query, fname=entry['fname'],
+          lname=entry['lname'], uid=entry['uid'],
+          matriculate_year=entry['matriculate_year'],
+          grad_year=entry['grad_year'], email=entry['email'],
+          membership_type=membership_type,
+          key=create_account_key)
 
       # Get the id of the inserted row (used to create unique hash).
-      r = g.db.execute(last_insert_id_query)
-      result = fetch_all_results(r)
-      user_id = result[0]["LAST_INSERT_ID()"]
-
-      user_hash = create_account_hash(user_id, entry['uid'], entry['fname'], \
-          entry['lname'])
+      result = g.db.execute(last_insert_id_query).first()
+      user_id = result['last_id']
       entry['name'] = entry['fname'] + ' ' + entry['lname']
 
       # Email the user
       subject = "Welcome to the Ruddock House Website!"
-      msg = "Hey " + entry['name'] + ",\n\n" + \
-          "You have been added to the Ruddock House Website. In order to " + \
-          "access private areas of our site, please complete " + \
-          "registration by creating an account here:\n" + \
-          url_for('create_account', k=user_hash, u=user_id, _external=True) + \
-          "\n\n" + \
-          "Thanks!\n" + \
-          "The Ruddock IMSS Team\n\n" + \
-          "PS: If you have any questions or concerns, please contact us " + \
-          "at imss@ruddock.caltech.edu"
+      msg = email_templates.AddedToWebsiteEmail.format(entry['name'],
+          url_for('create_account', create_account_key=create_account_key,
+            _external=True))
       to = entry['email']
-
-      try:
-        sendEmail(to, msg, subject)
-        members_added_count += 1
-
-      except Exception as e:
-        sendEmail("imss@ruddock.caltech.edu",
-            "Something went wrong when trying to email " + entry['name'] + \
-            ". You should look into this.\n\n" + \
-            "Exception: " + str(e),
-            "Add members email error")
-
-        members_errors_count += 1
+      sendEmail(to, msg, subject)
+      members_added_count += 1
 
     flash(str(members_added_count) + " members were successfully added, " +
         str(members_skipped_count) + " members were skipped, and " +
         str(members_errors_count) + " members encountered errors.")
 
     # Remind admin to add users to mailing lists.
-    flash("IMPORTANT: Don't forget to add the new members to manual " + \
-        "email lists, like spam@ruddock!")
+    flash("IMPORTANT: Don't forget to add the new members to manual email lists, like spam@ruddock!")
 
     # Send an email to IMSS to alert them that users have been added.
     to = "imss@ruddock.caltech.edu"
     subject = "Members were added to the Ruddock Website"
-    msg = "Hey,\n\n" + \
-        "The following members have been added to the Ruddock Website:\n\n"
-    for entry in data:
-      msg += entry['name'] + '\n'
-
-    msg += "\nYou should run the email update script to add the new " + \
-        "members.\n\n" + \
-        "Thanks!\n" + \
-        "The Ruddock Website"
+    entries = '\n'.join([entry['fname'] + ' ' + entry['lname'] for entry in data])
+    msg = email_templates.MembersAddedEmail.format(entries)
     sendEmail(to, msg, subject, usePrefix=False)
-
 
   def get_raw_data(field_list):
     '''
     For processing data in add single member mode, this converts
     request data to a csv string. Returns false if unsuccessful.
     '''
-
     values = []
     for field in field_list:
       if request.form.has_key(field['field']):
@@ -854,7 +710,6 @@ def add_members():
       else:
         flash('Invalid request.')
         return False
-
     return ','.join(values)
 
   ### End helper function definitions ###
@@ -883,7 +738,6 @@ def add_members():
   state = 'default'
   if request.method == 'POST' and request.form.has_key('state'):
     state = request.form['state']
-
   if state == 'preview':
     # The mode must be provided and valid.
     if request.form.has_key('mode') and \
@@ -892,37 +746,28 @@ def add_members():
     else:
       flash('Invalid request.')
       state = 'default'
-
   if state == 'preview':
     if mode == 'single':
       raw_data = get_raw_data(field_list)
-
     else:
       if request.files.has_key('new_members_file'):
         new_members_file = request.files['new_members_file']
         raw_data = new_members_file.read()
       else:
         raw_data = False
-
     if raw_data:
       data = process_data(raw_data, field_list)
-
       if data:
         return render_template('new_members.html', state='preview', \
             data=data, field_list=field_list, raw_data=raw_data)
-
   elif state == 'confirmed':
     if request.form.has_key('raw_data'):
       raw_data = request.form['raw_data']
-
       data = process_data(raw_data, field_list)
-
       if data:
         add_new_members(data)
-
     else:
       flash('Invalid request.')
-
   return render_template('new_members.html', state='default', \
       path=PATH_TO_TEMPLATE, filename=TEMPLATE_FILENAME)
 

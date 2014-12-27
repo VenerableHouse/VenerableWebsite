@@ -3,8 +3,7 @@ PasswordChangedEmail = \
 Hi {0},
 
 Your password has been successfully changed. If you did not request a password
-change, please let an IMSS rep know immediately. You can email us at
-imss@ruddock.caltech.edu or find one of us in person.
+change, please let an IMSS rep know immediately.
 
 Thanks!
 The Ruddock Website
@@ -15,9 +14,8 @@ ResetPasswordEmail = \
 Hi {0},
 
 We have received a request to reset this account's password. If you didn't
-request this change, let an IMSS rep know immediately, though you can safely
-disregard this email. Otherwise, please go to this link to change your
-password:
+request this change, let an IMSS rep know immediately. Otherwise, you can use
+this link to change your password:
 
 {1}
 
@@ -32,10 +30,47 @@ ResetPasswordSuccessfulEmail = \
 Hi {0},
 
 Your password has been successfully reset. If you did not request a password
-reset, please let an IMSS rep know immediately. You can email us at
-imss@ruddock.caltech.edu or find one of us in person.
+reset, please let an IMSS rep know immediately.
 
 Thanks!
 The Ruddock Website
 '''
 
+CreateAccountSuccessfulEmail = \
+'''
+Hi {0},
+
+You have just created an account for the Ruddock website with the username
+"{1}". If this was not you, please let an IMSS rep know immediately.
+
+Thanks!
+The Ruddock Website
+'''
+
+AddedToWebsiteEmail = \
+'''
+Hi {0},
+
+You have been added to the Ruddock House Website. In order to access private
+areas of our site, please complete registration by creating an account here:
+
+{1}
+
+If you have any questions or concerns, please find an IMSS rep or email us at
+imss@ruddock.caltech.edu.
+
+Thanks!
+The Ruddock Website
+'''
+
+MembersAddedEmail = \
+'''
+The following members have been added to the Ruddock Website:
+
+{0}
+
+You should run the email update script to add the new members.
+
+Thanks!
+The Ruddock Website
+'''

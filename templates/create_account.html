@@ -4,10 +4,8 @@
 <h2>Create an account</h2>
 <p style="color: red">All fields are required.</p>
 
-<form action="" method="post">
-  <p>Choose a username and password (max 32 characters).</p>
-  <input type="hidden" name="k" value="{{ key }}" />
-  <input type="hidden" name="u" value="{{ user_id }}" />
+<form action="{{ url_for('create_account_submit', create_account_key=key) }}" method="post">
+  <p>Choose a username and password.</p>
   <table>
     <tr>
       <td>Username:</td>
