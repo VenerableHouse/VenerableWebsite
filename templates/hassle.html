@@ -7,7 +7,7 @@
     var msg = "Are you sure you want to start a new hassle? This will clear all existing hassle data.";
     if (confirm(msg))
     {
-      location.href='{{ url_for('hassle_bp.new_hassle') }}';
+      location.href='{{ url_for('hassle.new_hassle') }}';
     }
   }
 
@@ -16,7 +16,7 @@
     var msg = "Panic?";
     if (confirm(msg))
     {
-      location.href='{{ url_for('hassle_bp.hassle_restart') }}';
+      location.href='{{ url_for('hassle.hassle_restart') }}';
     }
   }
 
@@ -25,7 +25,7 @@
     var msg = "Confirm restart?";
     if (confirm(msg))
     {
-      location.href='{{ url_for('hassle_bp.hassle_restart') }}' + '/' + event_id;
+      location.href='{{ url_for('hassle.hassle_restart') }}' + '/' + event_id;
     }
   }
 
@@ -77,7 +77,7 @@ Picked rooms:
 </div>
 <div id="event_form">
   <div style="display: inline-block; vertical-align: top">
-    <form action="{{ url_for('hassle_bp.hassle_event') }}" method="POST">
+    <form action="{{ url_for('hassle.hassle_event') }}" method="POST">
       <table>
         <tr>
           <td>Select a room:</td>

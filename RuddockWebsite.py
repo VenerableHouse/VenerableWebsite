@@ -10,7 +10,8 @@ import datetime
 import re
 import config
 import auth
-from modules import hassle_bp
+
+from modules.hassle.routes import blueprint as hassle_blueprint
 
 app = Flask(__name__)
 app.debug = True
@@ -20,7 +21,7 @@ app.secret_key = config.SECRET_KEY
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
 # Load blueprint modules
-app.register_blueprint(hassle_bp.hassle_bp)
+app.register_blueprint(hassle_blueprint)
 
 # Create database engine object.
 engine = create_engine(config.DB_URI, convert_unicode=True)
@@ -604,7 +605,7 @@ def admin_home():
   if auth.check_permission(Permissions.HassleAdmin):
     admin_tools.append({
       'name': 'Room hassle',
-      'link': url_for('hassle_bp.run_hassle', _external=True)})
+      'link': url_for('hassle.run_hassle', _external=True)})
   return render_template('admin.html', tools=admin_tools)
 
 @app.route('/admin/reminder_email', methods=['GET', 'POST'])
