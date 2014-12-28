@@ -20,7 +20,7 @@ def login_required(permission=None):
       # Check permissions.
       if permission != None:
         if not auth.check_permission(permission):
-          flash("You do have have permission to access this page.")
+          flash("You do not have permission to access this page.")
           session['next'] = request.url
           return redirect(url_for('login'))
       return fn(*args, **kwargs)
