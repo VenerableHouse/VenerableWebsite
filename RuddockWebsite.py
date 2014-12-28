@@ -337,7 +337,7 @@ def show_user_profile(username):
 
   if d_dict_user != None and q_dict_user != None:
     return render_template('view_user.html', display = d_dict_user, \
-        info = q_dict_user, offices = offices, strftime = strftime,
+        info = q_dict_user, offices = list(offices), strftime = strftime,
         perm = editable)
   else:
     flash("User does not exist!")
