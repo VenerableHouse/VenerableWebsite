@@ -1,31 +1,52 @@
 <div id="header">
-  <div class="top_menu" style="height: 130px; ">
-  <div class="topcorner">
-    {% if not session['username'] %}
-      <a href="{{ url_for("login") }}">Login</a>
-    {% else %}
-    <a href="{{ url_for('show_user_profile',
-      username=session['username']) }}">{{session['username']}}</a> |
-      {% if session['show_admin'] %}
-      <a href="{{ url_for('admin_home') }}">Admin</a> |
-      {% endif %}
-    <a href="{{ url_for("logout") }}">Logout</a>
-    {% endif %}
+  <div id="header-main">
+  <center>
+    <div id="header-image"><img src="{{ url_for('static', filename='images/crest.png') }}"/></div>
+    <div id="header-text">
+      <div id="title">Ruddock House</div>
+      <div id="subtitle">California Institute of Technology</div>
+    </div>
   </div>
-  <div class="crest" style="height: 72px;" >
-    <img src="{{ url_for('static', filename='images/crest.gif') }}"
-         height="72px" width="72px" />
-  </div>
-  <div class="title">Ruddock House</div>
 
-  <div class="navbar">
-    <div class="navbar_links">
-      <a class="navbar" href="{{ url_for("home") }}">Home</a>
-     |<a class="navbar" href="{{ url_for("show_users") }}">House lists</a>
-     |<a class="navbar" href="{{ url_for("show_gov") }}">Government</a>
-     |<a class="navbar" href="{{ url_for("static", filename="constitution/constitution.pdf") }}" target='_blank'>Constitution</a>
-     |<a class="navbar" href="/forum/" target="_new">Forum</a>
-     |<a class="navbar" href="{{ url_for("show_about_us") }}">About Us</a>
-   </div>
- </div>
+  <div id="navbar">
+    <div id="navbar-links">
+      <div class="navbar-link" onclick="location.href='{{ url_for("home") }}'">
+        <a href="{{ url_for("home") }}">Home</a>
+      </div>
+      <div class="navbar-link" onclick="location.href='{{ url_for("show_users") }}'">
+        <a href="{{ url_for("show_users") }}">House Lists</a>
+      </div>
+      <div class="navbar-link" onclick="location.href='{{ url_for("show_gov") }}'">
+        <a href="{{ url_for("show_gov") }}">Government</a>
+      </div>
+      <div class="navbar-link" onclick="location.href='{{ url_for("static", filename="constitution/constitution.pdf") }}'">
+        <a href="{{ url_for("static", filename="constitution/constitution.pdf") }}">Constitution</a>
+      </div>
+      <div class="navbar-link" onclick="location.href='/forum/'">
+        <a href="/forum/">Forum</a>
+      </div>
+      <div class="navbar-link" onclick="location.href='{{ url_for("show_about_us") }}'">
+        <a href="{{ url_for("show_about_us") }}">About Us</a>
+      </div>
+    </div>
+    <div id="navbar-login">
+      {% if not session['username'] %}
+        <div class="navbar-link" onclick="location.href='{{ url_for("login") }}'">
+          <a href="{{ url_for("login") }}">Login</a>
+        </div>
+      {% else %}
+        <div class="navbar-link" onclick="location.href='{{ url_for("show_user_profile", username=session["username"]) }}'">
+          <a href="{{ url_for('show_user_profile', username=session['username']) }}">{{session['username']}}</a>
+        </div>
+        {% if session['show_admin'] %}
+          <div class="navbar-link" onclick="location.href='{{ url_for("admin_home") }}'">
+            <a href="{{ url_for('admin_home') }}">Admin</a>
+          </div>
+        {% endif %}
+        <div class="navbar-link" onclick="location.href='{{ url_for("logout") }}'">
+          <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
 </div>

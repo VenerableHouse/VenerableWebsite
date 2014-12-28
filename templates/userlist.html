@@ -1,6 +1,8 @@
 {% extends "layout.html" %}
 
 {% block body %}
+  <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
+  <h2>House Lists</h2>
   {# Show link to change current/alumni filtering #}
   {% if filterType == 'current' %}
     Currently showing only current students. View
@@ -15,25 +17,24 @@
     <a href="{{ url_for('show_users', filterType='current') }}">current students</a> or
     <a href="{{ url_for('show_users', filterType='alumni') }}">alumni</a>.
   {% endif %}
+  Click on the columns to sort.
+  <br><br>
 
-  <table class="userlist">
-  {# First display header, with links to sort #}
-    <tr>
-      {% for field in fields %}
-      {% if fieldMap[field] %} {# Only display not-null fields #}
-      <th>{{ fieldMap[field] }} {# Maps sql field to display value #}
-        <a href="{{ url_for('show_users', field=field,
-                            filterType=filterType) }}">&#9650;</a>
-        <a href="{{ url_for('show_users', field=field,
-                            filterType=filterType, dir='DESC')}}">&#9660;</a>
-      </th>
-      {% endif %}
-      {% endfor %}
-    </tr>
+  <table class="sortable userlist">
+  {# First display header #}
+    <thead style="cursor: pointer;">
+      <tr>
+        {% for field in fields %}
+          {% if fieldMap[field] %} {# Only display not-null fields #}
+            <th>{{ fieldMap[field] }}</th>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    </thead>
   {# Now, display each row #}
   {% for result in data %}
   {% if idMap[result['user_id']] %}
-  <tr onclick="location.href='{{ url_for('show_user_profile', 
+  <tr class="link" onclick="location.href='{{ url_for('show_user_profile', 
     username=idMap[result['user_id']]) }}'">
   {% else %}
   <tr>

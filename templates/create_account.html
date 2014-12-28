@@ -1,49 +1,49 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<h2>Create an account</h2>
+<h2>Create An Account</h2>
 <p style="color: red">All fields are required.</p>
 
 <form action="{{ url_for('create_account_submit', create_account_key=key) }}" method="post">
   <p>Choose a username and password.</p>
-  <table>
+  <table class="form">
     <tr>
-      <td>Username:</td>
+      <td>Username</td>
       <td><input type="text" name="username" /></td>
     </tr>
     <tr>
-      <td>Password:</td>
+      <td>Password</td>
       <td><input type="password" name="password" /></td>
     </tr>
     <tr>
-      <td>Confirm password:</td>
+      <td>Confirm password</td>
       <td><input type="password" name="password2" /></td>
     </tr>
   </table>
   <p>Please fill in/verify your personal information.</p>
-  <table>
+  <table class="form">
     <tr>
-      <td>First Name:</td>
+      <td>First Name</td>
       <td>{{ user_data['fname'] }}</td>
     </tr>
     <tr>
-      <td>Last Name:</td>
+      <td>Last Name</td>
       <td>{{ user_data['lname'] }}</td>
     </tr>
     <tr>
-      <td>Matriculation year:</td>
+      <td>Matriculation Year</td>
       <td>{{ user_data['matriculate_year'] }}</td>
     </tr>
     <tr>
-      <td>Graduation year:</td>
+      <td>Graduation Year</td>
       <td>{{ user_data['grad_year'] }}</td>
     </tr>
     <tr>
-      <td>Email:</td>
+      <td>Email</td>
       <td>{{ user_data['email'] }}</td>
     </tr>
     <tr>
-      <td>Birthday (YYYY-MM-DD):</td>
+      <td>Birthday (YYYY-MM-DD)</td>
       <td><input type="text" name="birthday" /></td>
     </tr>
   </table>
