@@ -6,7 +6,7 @@ import helpers as hassle_helpers
 
 blueprint = Blueprint('hassle', __name__, template_folder='templates')
 
-@blueprint.route('/hassle')
+@blueprint.route('/')
 @login_required(Permissions.HassleAdmin)
 def run_hassle():
   ''' Logic for room hassles. '''
@@ -22,7 +22,7 @@ def run_hassle():
       events=events,
       alleys=alleys)
 
-@blueprint.route('/hassle/event', methods=['POST'])
+@blueprint.route('/event', methods=['POST'])
 @login_required(Permissions.HassleAdmin)
 def hassle_event():
   ''' Submission endpoint for a new event (someone picks a room). '''
@@ -43,8 +43,8 @@ def hassle_event():
       hassle_helpers.new_event(user_id, room_number, roommates)
   return redirect(url_for('hassle.run_hassle'))
 
-@blueprint.route('/hassle/restart', defaults={'event_id': None})
-@blueprint.route('/hassle/restart/<int:event_id>')
+@blueprint.route('/restart', defaults={'event_id': None})
+@blueprint.route('/restart/<int:event_id>')
 @login_required(Permissions.HassleAdmin)
 def hassle_restart(event_id):
   if event_id == None:
@@ -53,7 +53,7 @@ def hassle_restart(event_id):
     hassle_helpers.clear_events(event_id)
   return redirect(url_for('hassle.run_hassle'))
 
-@blueprint.route('/hassle/new')
+@blueprint.route('/new')
 @login_required(Permissions.HassleAdmin)
 def new_hassle():
   ''' Redirects to the first page to start a new room hassle_helpers. '''
@@ -63,7 +63,7 @@ def new_hassle():
 
   return redirect(url_for('hassle.new_hassle_participants'))
 
-@blueprint.route('/hassle/new/participants')
+@blueprint.route('/new/participants')
 @login_required(Permissions.HassleAdmin)
 def new_hassle_participants():
   ''' Select participants for the room hassle_helpers. '''
@@ -72,7 +72,7 @@ def new_hassle_participants():
   members = hassle_helpers.get_all_members()
   return render_template('hassle_new_participants.html', members=members)
 
-@blueprint.route('/hassle/new/participants/submit', methods=['POST'])
+@blueprint.route('/new/participants/submit', methods=['POST'])
 @login_required(Permissions.HassleAdmin)
 def new_hassle_participants_submit():
   ''' Submission endpoint for hassle participants. Redirects to next page. '''
@@ -83,7 +83,7 @@ def new_hassle_participants_submit():
   hassle_helpers.set_participants(participants)
   return redirect(url_for('hassle.new_hassle_rooms'))
 
-@blueprint.route('/hassle/new/rooms')
+@blueprint.route('/new/rooms')
 @login_required(Permissions.HassleAdmin)
 def new_hassle_rooms():
   ''' Select rooms available for the room hassle_helpers. '''
@@ -92,7 +92,7 @@ def new_hassle_rooms():
   rooms = hassle_helpers.get_all_rooms()
   return render_template('hassle_new_rooms.html', rooms=rooms)
 
-@blueprint.route('/hassle/new/rooms/submit', methods=['POST'])
+@blueprint.route('/new/rooms/submit', methods=['POST'])
 @login_required(Permissions.HassleAdmin)
 def new_hassle_rooms_submit():
   ''' Submission endpoint for hassle rooms. Redirects to next page. '''
@@ -103,7 +103,7 @@ def new_hassle_rooms_submit():
   hassle_helpers.set_rooms(rooms)
   return redirect(url_for('hassle.new_hassle_confirm'))
 
-@blueprint.route('/hassle/new/confirm')
+@blueprint.route('/new/confirm')
 @login_required(Permissions.HassleAdmin)
 def new_hassle_confirm():
   ''' Confirmation page for new room hassle_helpers. '''
@@ -114,7 +114,7 @@ def new_hassle_confirm():
   return render_template('hassle_new_confirm.html', rooms=rooms, \
       participants=participants)
 
-@blueprint.route('/hassle/new/confirm/submit', methods=['POST'])
+@blueprint.route('/new/confirm/submit', methods=['POST'])
 @login_required(Permissions.HassleAdmin)
 def new_hassle_confirm_submit():
   ''' Submission endpoint for confirmation page. '''

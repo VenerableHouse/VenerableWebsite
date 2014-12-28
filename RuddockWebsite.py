@@ -24,8 +24,8 @@ app.secret_key = config.SECRET_KEY
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
 # Load blueprint modules
-app.register_blueprint(hassle_blueprint)
-app.register_blueprint(admin_blueprint)
+app.register_blueprint(hassle_blueprint, url_prefix='/hassle')
+app.register_blueprint(admin_blueprint, url_prefix='/admin')
 
 # Create database engine object.
 engine = create_engine(config.DB_URI, convert_unicode=True)

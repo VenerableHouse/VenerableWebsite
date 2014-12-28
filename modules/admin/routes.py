@@ -7,7 +7,7 @@ import helpers as admin_helpers
 
 blueprint = Blueprint('admin', __name__, template_folder='templates')
 
-@blueprint.route('/admin', methods=['GET', 'POST'])
+@blueprint.route('/', methods=['GET', 'POST'])
 @login_required(Permissions.Admin)
 def admin_home():
   '''
@@ -30,7 +30,7 @@ def admin_home():
       'link': url_for('hassle.run_hassle', _external=True)})
   return render_template('admin.html', tools=admin_tools)
 
-@blueprint.route('/admin/reminder_email', methods=['GET', 'POST'])
+@blueprint.route('/reminder_email', methods=['GET', 'POST'])
 @login_required(Permissions.UserAdmin)
 def send_reminder_emails():
   '''
@@ -56,7 +56,7 @@ def send_reminder_emails():
   else:
     return render_template('create_account_reminder.html', data=data)
 
-@blueprint.route('/admin/add_members', methods=['GET', 'POST'])
+@blueprint.route('/add_members', methods=['GET', 'POST'])
 @login_required(Permissions.UserAdmin)
 def add_members():
   '''
