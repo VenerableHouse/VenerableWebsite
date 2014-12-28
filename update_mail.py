@@ -5,20 +5,26 @@ import config
 from subprocess import check_call
 from email_utils import sendEmail
 import tempfile
+# for checking sudo
+import sys
+import os
 
-def updateFromList(results, lst):
+ALERT_EMAILS = ['secretary@ruddock.caltech.edu', 'imss@ruddock.caltech.edu']
+
+def updateMailmanEmailList(results, lst):
   print "Updating list: " + lst
 
   # write emails to flat file
   if len(results) <= 0:
-     sendEmail('imss@ruddock.caltech.edu', 'Email list has no subscribers: ' + \
-        query + '\n\nFor list: ' + lst, '[RuddWeb] THE EMAIL SCRIPT IS BROKEN')
+     sendEmail(ALERT_EMAILS,
+         'Email list has no subscribers: ' + str(lst),
+         '[RuddWeb] An email list has no subscribers.')
   else:
     try:
       f = tempfile.NamedTemporaryFile()
       for result in results:
         f.write(result[0] + '\n')
-      for addition in getAdditionalEmails(lst):
+      for addition in getAdditionalEmailsForMailmanList(lst):
         f.write(addition[0] + '\n')
       f.flush() # flush so file can be read by `sync_members`
 
@@ -28,23 +34,21 @@ def updateFromList(results, lst):
 
       f.close() # this also deletes the tempfile
     except Exception as e:
-      sendEmail('imss@ruddock.caltech.edu', 'Exception: ' + str(e) + \
-          '\n\nFor list: ' + lst, '[RuddWeb] THE EMAIL SCRIPT IS BROKEN')
+      sendEmail(ALERT_EMAILS,
+          'Exception: ' + str(e) + '\n\nFor list: ' + str(lst),
+          '[RuddWeb] THE EMAIL SCRIPT IS BROKEN')
 
-def getAdditionalEmails(lst):
+def getAdditionalEmailsForMailmanList(lst):
   #print "Getting additional emails for list: " + lst
   query = text("SELECT email FROM updating_email_lists_additions WHERE listname=:lst")
   emails = connection.execute(query, lst=lst).fetchall()
   return emails
 
-def update_aliases():
+def updateEmailAliases(connection):
   """Updates postfix aliases for all users"""
 
-  # Connect to the mySQL database.
-  engine = create_engine(config.DB_URI, convert_unicode=True)
-  connection = engine.connect()
-
-  user_emails_query = text("select members.email, users.username from members join users on members.user_id=users.user_id")
+  # Make SQL query
+  user_emails_query = text("SELECT members.email, users.username FROM members NATURAL JOIN users")
   user_emails = connection.execute(user_emails_query).fetchall()
 
   # Get the current aliases in order to only add new users, and write changes
@@ -67,7 +71,7 @@ def update_aliases():
 
   # Rewrite the alias file, checking for updates and new aliases
   current_alias_file = open("/etc/aliases_custom", "wb")
-  
+
   # Check all existing lines for updates
   for line in current_alias_file_lines:
     if ": " in line:
@@ -76,8 +80,10 @@ def update_aliases():
         if current_aliases[alias[0]] == new_aliases[alias[0]]:
           current_alias_file.write(line)
         else:
-          current_alias_file.write("{0}: {1}\n".format(alias[0],
-                                                     new_aliases[alias[0]]))
+          # If users remove their email, take them off the alias list
+          if new_aliases[alias[0]] != "":
+            current_alias_file.write("{0}: {1}\n".format(alias[0],
+                                                         new_aliases[alias[0]]))
     else:
       current_alias_file.write(line)
 
@@ -87,10 +93,15 @@ def update_aliases():
         # A user has to have an email to get an alias
         if email != "":
           current_alias_file.write("{0}: {1}\n".format(user, email))
-  
 
+  # Update the postfix alias db and reload the postfix config
+  check_call("newaliases", shell=True)
+  check_call("postfix reload", shell=True)
 
 if __name__ == "__main__":
+  # Don't do anything if not sudo.
+  if os.geteuid() != 0:
+    sys.exit("Updating mail requires sudo. Please try again with super user.")
 
   # Connect to the mySQL database.
   engine = create_engine(config.DB_URI, convert_unicode=True)
@@ -103,7 +114,7 @@ if __name__ == "__main__":
   for (lst, query) in lists:
     # perform query to get emails
     results = connection.execute(text(query)).fetchall()
-    updateFromList(results, lst)
+    updateMailmanEmailList(results, lst)
 
   ### Now, update email lists which correspond to an office ###
   lists_query = text("SELECT office_id, office_email FROM offices WHERE office_email IS NOT NULL")
@@ -114,7 +125,8 @@ if __name__ == "__main__":
                   FROM office_members_current NATURAL JOIN offices NATURAL JOIN members_current \
                   WHERE office_id = :oid")
     results = connection.execute(query, oid=office_id).fetchall()
-    updateFromList(results, lst)
+    updateMailmanEmailList(results, lst)
 
   # Update aliases for all users
-  update_aliases()
+  updateEmailAliases(connection)
+
