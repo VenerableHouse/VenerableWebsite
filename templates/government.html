@@ -6,12 +6,12 @@
     <h2>{{ name }}</h2>
     <h3>{{ "[" + email + " at ruddock.caltech.edu" + "]" if email }}</h3>
     <br>
-    <table class="userlist sortable" style="width: 100%;">
+    <table class="userlist sortable">
     {# First display header #}
       <thead><tr style="cursor: pointer;">
-        <th>Office</th>
-        <th>Name</th>
-        <th>Office Email (at ruddock.caltech.edu)</th>
+        <th width='25%'>Office</th>
+        <th width='25%'>Name</th>
+        <th width='25%'>Office Email (at ruddock.caltech.edu)</th>
       </tr></thead>
       {# Now, display each row #}
       {% for position in positions %}
