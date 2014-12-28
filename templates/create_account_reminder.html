@@ -2,16 +2,15 @@
 
 {% block body %}
 <h2>Send account creation reminder emails</h2>
-
-<p>Do you want to send a reminder email to these people?</p>
+Do you want to send a reminder email to these people?<br><br>
 
 <form action="" method="post">
   <table>
-    <tr>
+    <thead><tr>
       <th>First Name</th>
       <th>Last Name</th>
       <th>Email</th>
-    </tr>
+    </tr></thead>
     {% for member in data %}
     <tr>
       <td>{{ member['fname'] }}</td>
@@ -19,7 +18,7 @@
       <td>{{ member['email'] }}</td>
     </tr>
     {% endfor %}
-  </table>
+  </table><br>
 
   <button type="submit" name="state" value="no">No</button>
   <button type="submit" name="state" value="yes">Yes</button>
