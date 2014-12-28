@@ -4,7 +4,7 @@ from constants import *
 
 import helpers as hassle_helpers
 
-blueprint = Blueprint('hassle', __name__)
+blueprint = Blueprint('hassle', __name__, template_folder='templates')
 
 @blueprint.route('/hassle')
 @login_required(Permissions.HassleAdmin)
