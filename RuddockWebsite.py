@@ -401,12 +401,6 @@ def show_gov():
 def show_about_us():
   return render_template('about_us.html')
 
-def create_account_hash(user_id, uid, fname, lname):
-  '''
-  Creates a unique hash for users trying to create an account.
-  '''
-  return hash(str(user_id) + str(uid) + str(fname) + str(lname))
-
 @app.route('/create_account', methods=['GET', 'POST'])
 def create_account():
   '''
