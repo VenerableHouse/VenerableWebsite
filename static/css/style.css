@@ -52,6 +52,7 @@ thead {
 }
 td {
   padding: 7px;
+  vertical-align: top;
 }
 th {
   padding: 7px;

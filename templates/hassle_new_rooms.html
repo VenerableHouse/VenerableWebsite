@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
 <h2>Start new hassle</h2>
-Select all rooms that will be used in this hassle.<br /><br />
+Select all rooms that will be used in this hassle.<br><br>
 
 <form action="{{ url_for('new_hassle_rooms_submit') }}" method="POST">
   <table>
@@ -24,7 +24,7 @@ Select all rooms that will be used in this hassle.<br /><br />
       </tr>
       {% endfor %}
     </tbody>
-  </table><br/>
+  </table><br>
   <button type="button"
     onclick="location.href='{{ url_for('new_hassle_participants') }}'">
     Previous

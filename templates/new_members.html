@@ -4,7 +4,7 @@
 <h2>Add new members</h2>
 
   {% if state == 'default' %}
-  Use this to add a single member to the website. All fields are required. <br/><br/>
+  Use this to add a single member to the website. All fields are required. <br><br>
 
   <form action="" method="post">
     <input type="hidden" name="mode" value="single" />
@@ -38,7 +38,7 @@
     </table>
     <button type="submit" name="state" value="preview">Submit</button>
   </form>
-  <br />
+  <br>
   <p>Alternatively, if you need to add many users at once, download and fill out the template provided below.</p>
 
   <p><a href="{{ path }}">{{ filename }}</a></p>
@@ -47,12 +47,12 @@
   <form action="" method="post" enctype="multipart/form-data">
     <input type="hidden" name="mode" value="multi" />
     <input type="file" name="new_members_file" />
-    <br /><br />
+    <br><br>
     <button type="submit" name="state" value="preview">Submit</button>
   </form>
 
   {% elif state == 'preview' %}
-  Are you sure you want to add the following members?<br /><br />
+  Are you sure you want to add the following members?<br><br>
   <form action="" method="post">
     <input type="hidden" name="raw_data" value="{{ raw_data }}" />
     <table>
@@ -68,7 +68,7 @@
         {% endfor %}
       </tr>
       {% endfor %}
-    </table><br />
+    </table><br>
     {# Confirm buttons #}
     <button type="submit" name="state" value="default">No</button>
     <button type="submit" name="state" value="confirmed">Yes</button>

@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
 <h2>Start new hassle</h2>
-Please verify that the participating members and rooms is correct.<br/><br/>
+Please verify that the participating members and rooms is correct.<br><br>
 
 <form action="{{ url_for('new_hassle_confirm_submit') }}" method="POST">
   <div class="table_container">
@@ -23,7 +23,7 @@ Please verify that the participating members and rooms is correct.<br/><br/>
         {% endfor %}
       </tbody>
     </table>
-    <br/>
+    <br>
     <table>
       <thead>
         <tr>
@@ -40,7 +40,7 @@ Please verify that the participating members and rooms is correct.<br/><br/>
         {% endfor %}
       </tbody>
     </table>
-  </div><br/>
+  </div><br>
   <button type="button"
     onclick="location.href='{{ url_for('new_hassle_participants') }}'">
     Edit participants/rooms

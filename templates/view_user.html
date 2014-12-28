@@ -46,7 +46,7 @@
   {% if info["isabroad"] %}
   <i>Currently studying abroad</i>
   {% endif %}
-  <br />
+  <br>
 
   {# All other information #}
   <table>
@@ -93,7 +93,7 @@
   </table>
 
   {% if perm %}
-  <br />
+  <br>
   <a href="{{ url_for('change_user_settings',
     username = info["username"])}}">Click here</a> to edit this information!
   {% endif %}

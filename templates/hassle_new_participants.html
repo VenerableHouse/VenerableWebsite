@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
 <h2>Start new hassle</h2>
-Select everyone who will be participating in this room hassle.<br/><br/>
+Select everyone who will be participating in this room hassle.<br><br>
 
 <form action="{{ url_for('new_hassle_participants_submit') }}" method="POST">
   <table>
@@ -28,7 +28,7 @@ Select everyone who will be participating in this room hassle.<br/><br/>
       {% endfor %}
     </tbody>
   </table>
-  <br/>
+  <br>
   <button type="submit">Next</button>
 </form>
 {% endblock %}
