@@ -14,7 +14,7 @@ import auth
 from modules.hassle.routes import blueprint as hassle_blueprint
 
 app = Flask(__name__)
-app.debug = True
+app.debug = False
 app.secret_key = config.SECRET_KEY
 
 # Maximum file upload size, in bytes.
@@ -973,4 +973,4 @@ def add_members():
 
 
 if __name__ == "__main__":
-  app.run(port=4999)
+  app.run()
