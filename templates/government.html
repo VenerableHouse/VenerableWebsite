@@ -1,31 +1,28 @@
 {% extends "layout.html" %}
-
-{# TODO: Style this better. #}
-
 {% block body %}
+  <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
   {% for name, email, positions in all_types %}
     {# Display name and email of group #}
-    <div style="text-align:center">
-      <h2 style="display:inline-block">{{ name }}</h2>
-      {{ "[" + email + " at ruddock.caltech.edu" + "]" if email }}
-    </div>
-    <table class="userlist">
+    <h2>{{ name }}</h2>
+    <h3>{{ "[" + email + " at ruddock.caltech.edu" + "]" if email }}</h3>
+    <br>
+    <table class="userlist sortable">
     {# First display header #}
-      <tr>
+      <thead><tr style="cursor: pointer;">
         <th width='25%'>Office</th>
         <th width='25%'>Name</th>
         <th width='25%'>Office Email (at ruddock.caltech.edu)</th>
-      </tr>
-    {# Now, display each row #}
-    {% for position in positions %}
-    <tr onclick="location.href='{{ url_for('show_user_profile',
-      username=position['username']) }}'">
-      <td>{{ position['office_name'] }}</td>
-      <td>{{ position['name'] }}</td>
-      <td>{{ position['office_email'] if position['office_email'] else '[Click Here]' }}</td>
-    </tr>
-    {% endfor %}
-  </table>
+      </tr></thead>
+      {# Now, display each row #}
+      {% for position in positions %}
+        <tr class="link" onclick="location.href='{{ url_for('show_user_profile',
+          username=position['username']) }}'">
+          <td>{{ position['office_name'] }}</td>
+          <td>{{ position['name'] }}</td>
+          <td>{{ position['office_email'] if position['office_email'] else '[Click Here]' }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+    <br>
   {% endfor %}
-
 {% endblock body %}

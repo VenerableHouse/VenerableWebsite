@@ -39,6 +39,7 @@
 
 {% block body %}
 <h2>Room Hassle</h2>
+<br>
 <div>
   <button type="button" onclick="start_new_hassle()">
     Start new hassle
@@ -48,7 +49,8 @@
   </button>
   <br><br>
 </div>
-Picked rooms:
+
+<h3>Picked rooms</h3>
 <div id="events">
   <table>
     <thead>
@@ -57,30 +59,30 @@ Picked rooms:
         <th style="width: 16%">Alley {{ alley }}</th>
         {% endfor %}
       </tr>
-      <tr>
-        {% for alley in alleys %}
-        <td>
-          <ul>
-            {% for event in events %}
-              {% if event['alley'] == alley %}
-              <li>{{ event['room_number'] }}: {{ event['occupants'] }}</li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-        </td>
-        {% endfor %}
-      </tr>
     </thead>
-    <tbody>
-    </tbody>
+    <tr>
+      {% for alley in alleys %}
+      <td>
+        <ul>
+          {% for event in events %}
+            {% if event['alley'] == alley %}
+            <li>{{ event['room_number'] }}: {{ event['occupants'] }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </td>
+      {% endfor %}
+    </tr>
   </table>
+  <br>
 </div>
+
 <div id="event_form">
-  <div style="display: inline-block; vertical-align: top">
+  <div style="display: inline-block; padding-right: 20px; vertical-align: top">
     <form action="{{ url_for('hassle.hassle_event') }}" method="POST">
-      <table>
+      <table class="form">
         <tr>
-          <td>Select a room:</td>
+          <td>Select a room</td>
           <td>
             <select id="room_select" name="room">
               {% for room in available_rooms %}
@@ -92,7 +94,7 @@ Picked rooms:
           </td>
         </tr>
         <tr>
-          <td>Name:</td>
+          <td>Name</td>
           <td>
             <select id="name_select" name="user_id">
               {% for participant in available_participants %}
@@ -104,7 +106,7 @@ Picked rooms:
           </td>
         </tr>
         <tr>
-          <td>Roommate:</td>
+          <td>Roommate</td>
           <td>
             <select name="roommate_id">
               <option value="none">-- No roommate --</option>
@@ -139,7 +141,8 @@ Picked rooms:
       alt="Ruddock House Map">
   </div>
 </div>
-<p>All events so far:</p>
+
+<h3>All events so far</h3>
 <ul>
   {% for event in events %}
   <li>{{ event['occupants'] }} picked room {{ event['room_number'] }}. <button onclick="restart({{ event['hassle_event_id'] }})">Restart</button></li>
