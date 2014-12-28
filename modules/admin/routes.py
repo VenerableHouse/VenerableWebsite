@@ -1,8 +1,11 @@
 from flask import Blueprint, render_template, redirect, flash, url_for, request, g
-from sqlalchemy import text
 from decorators import *
 from constants import *
 from helpers import *
+
+# TODO: Shouldn't need these lines once move helper functions
+from sqlalchemy import text
+from email_utils import sendEmail
 
 blueprint = Blueprint('admin', __name__, template_folder='templates')
 
