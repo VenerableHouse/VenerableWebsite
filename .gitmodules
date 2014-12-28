@@ -1,0 +1,3 @@
+[submodule "static/constitution"]
+	path = static/constitution
+	url = https://github.com/RuddockHouse/RuddockConstitution.git

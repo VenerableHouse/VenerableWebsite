@@ -1,36 +1,20 @@
 {% extends "layout.html" %}
 
 {% block body %}
-  <center><div id="view_user_box">
-    <div id="view_user_name">{{ info["fname"] }} {{ info["lname"] }}</div>
-
-    <div id="view_user_subtitle">
+  <center>
+  {# Name and subtitle #}
+  <h2>{{ info["fname"] }} {{ info["lname"] }}</h2>
+  <h3>
     {% if info["major"] %}
-    {{ info["major"] }},
+      {{ info["major"] }},
     {% endif %}
     Class of {{ info["grad_year"] }}
-    </div>
+  </h3>
 
-    {% if info["isabroad"] %}
-    <div id="view_user_isabroad">Currently studying abroad</div>
-    {% endif %}
-
-    {# Display offices for this user, if any #}
-    {% for office in offices %}
-    <div id="view_user_isabroad">
-    {{ office['office_name'] }}: {{ office['elected'].strftime('%b \'%y') }} to
-      {% if office['expired'] %}
-        {{ office['expired'].strftime('%b \'%y') }}
-      {% else %}
-        Present
-      {% endif %}
-    </div>
-    {% endfor %}
-
-
-    <div id="view_user_contact">
+  {# Contact Information #}
+  <div id="view_user_contact">
     {% if info["email"] %}
-    <a href="&#109;&#097;&#105;&#108;&#116;&#111;:{{ info["email"] }}" style="text-decoration:none;color:black;">
+    <a href="&#109;&#097;&#105;&#108;&#116;&#111;:{{ info["email"] }}">
     {{ info["email"] }}</a>
 
     {% if info["msc"] %}
@@ -57,42 +41,62 @@
     {% endif %}
     {% endif %}
     {% endif %}
-    </div>
+  </div>
 
+  {% if info["isabroad"] %}
+  <i>Currently studying abroad</i>
+  {% endif %}
+  <br>
 
-    <table>
-      {% if info["bday"] %}
+  {# All other information #}
+  <table>
+    {# Display offices for this user, if any #}
+    {% if offices %}
       <tr>
-        <td>Birthday:</td>
-        <td>{{ strftime("%B %d, %Y", info["bday"].timetuple()) }}</td>
+        <td>Offices</td>
+        <td><ul>
+          {% for office in offices %}
+            <li>{{ office['office_name'] }}: {{ office['elected'].strftime('%b \'%y') }} to
+            {% if office['expired'] %}
+              {{ office['expired'].strftime('%b \'%y') }}
+            {% else %}
+              Present
+            {% endif %}
+          {% endfor %}
+        </ul></td>
       </tr>
-      {% endif %}
-      <tr>
-        {% if info["building"] %}
-        <td>Residence:</td>
-        <td>{{info["building"]}} {{ info["room_num"] }}</td>
-        {% endif %}
-      </tr>
-      <tr>
-        <td>Membership:</td>
-        <td>{{ info["membership_desc"] }}</td>
-      </tr>
-      {% if info["email2"] %}
-      <tr>
-          <td>Alt. Email:</td>
-          <td><a href="&#109;&#097;&#105;&#108;&#116;&#111;:{{ info["email2"] }}" style="text-decoration:none;color:black;">
-            {{ info["email2"] }}</a></td>
-      </tr>
-      {% endif %}
-
-    </table>
-
-    {% if perm %}
-    <div id="view_user_contact">
-      <a href="{{ url_for('change_user_settings',
-        username = info["username"])}}">Click here</a> to edit this information!
-    </div>
     {% endif %}
 
-  </div></center>
+    {% if info["bday"] %}
+      <tr>
+        <td>Birthday</td>
+        <td>{{ strftime("%B %d, %Y", info["bday"].timetuple()) }}</td>
+      </tr>
+    {% endif %}
+    <tr>
+      {% if info["building"] %}
+      <td>Residence</td>
+      <td>{{info["building"]}} {{ info["room_num"] }}</td>
+      {% endif %}
+    </tr>
+    <tr>
+      <td>Membership</td>
+      <td>{{ info["membership_desc"] }}</td>
+    </tr>
+    {% if info["email2"] %}
+      <tr>
+        <td>Alt. Email</td>
+        <td><a href="&#109;&#097;&#105;&#108;&#116;&#111;:{{ info["email2"] }}">
+          {{ info["email2"] }}</a></td>
+      </tr>
+    {% endif %}
+  </table>
+
+  {% if perm %}
+  <br>
+  <a href="{{ url_for('change_user_settings',
+    username = info["username"])}}">Click here</a> to edit this information!
+  {% endif %}
+
+  </center>
 {% endblock body %}

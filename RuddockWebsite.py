@@ -85,9 +85,8 @@ def teardown_request(exception):
   ''' Logic executed after every request is finished. '''
 
   # Close database connection.
-  db = g.get('db', None)
-  if db != None:
-    db.close()
+  if g.db != None:
+    g.db.close()
 
 @app.route('/')
 def home():
@@ -253,16 +252,6 @@ def show_users():
   display = [None, "Last", "First", "Email", "Matr.", "Grad.", "Major", "Type"]
   fieldMap = dict(zip(cols, display))
 
-  # get order by information from request arguments
-  if 'field' in request.args and request.args['field'] in cols:
-    ordField = request.args['field']
-  else:
-    ordField = 'lname'
-  if 'dir' in request.args and request.args['dir'] in ['ASC', 'DESC']:
-    ordDirect = request.args['dir']
-  else:
-    ordDirect = 'ASC'
-
   # check which table to read from
   if 'filterType' in request.args and request.args['filterType'] == 'current':
     tableName = 'members_current'
@@ -275,8 +264,7 @@ def show_users():
     filterType = 'all'
 
   # perform query
-  query = text("SELECT * FROM " + tableName + " NATURAL JOIN membership_types \
-     ORDER BY " + ordField + " " + ordDirect)
+  query = text("SELECT * FROM " + tableName + " NATURAL JOIN membership_types")
   results = g.db.execute(query)
 
   # put results in a dictionary
@@ -349,7 +337,7 @@ def show_user_profile(username):
 
   if d_dict_user != None and q_dict_user != None:
     return render_template('view_user.html', display = d_dict_user, \
-        info = q_dict_user, offices = offices, strftime = strftime,
+        info = q_dict_user, offices = list(offices), strftime = strftime,
         perm = editable)
   else:
     flash("User does not exist!")
@@ -1110,4 +1098,4 @@ def new_hassle_confirm_submit():
   return redirect(url_for('run_hassle'))
 
 if __name__ == "__main__":
-  app.run()
+  app.run(port=9000)
