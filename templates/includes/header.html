@@ -7,7 +7,7 @@
     <a href="{{url_for('show_user_profile',
       username=session['username'])}}">{{session['username']}}</a> |
       {% if session['show_admin'] %}
-      <a href="{{ url_for('admin_home') }}">Admin</a> |
+      <a href="{{ url_for('admin.admin_home') }}">Admin</a> |
       {% endif %}
     <a href="{{url_for("logout")}}">Logout</a>
     {% endif %}
