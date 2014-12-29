@@ -429,9 +429,9 @@ def show_gov():
 
   return render_template('government.html', all_types = all_types)
 
-@app.route('/about_us')
-def show_about_us():
-  return render_template('about_us.html')
+@app.route('/contact')
+def contact():
+  return render_template('contact.html')
 
 def create_account_hash(user_id, uid, fname, lname):
   '''
