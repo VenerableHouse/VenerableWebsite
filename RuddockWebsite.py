@@ -248,24 +248,23 @@ def show_users():
   """ Procedure to show a list of all users, with all membership details. """
   # store which columns we want, and their displaynames
   cols = ["user_id", "lname", "fname", "email", "matriculate_year", \
-          "grad_year", "major", "membership_desc"]
+          "grad_year", "major", "membership_desc_short"]
   display = [None, "Last", "First", "Email", "Matr.", "Grad.", "Major", "Type"]
   fieldMap = dict(zip(cols, display))
 
   # check which table to read from
-  if 'filterType' in request.args and request.args['filterType'] == 'current':
-    tableName = 'members_current'
-    filterType = 'current'
-  elif 'filterType' in request.args and request.args['filterType'] == 'alumni':
-    tableName = 'members_alumni'
-    filterType = 'alumni'
+  filterType = request.args.get('filterType', None)
+  if filterType == 'current':
+    table_name = 'members_current'
+  elif filterType == 'alumni':
+    table_name = 'members_alumni'
   else:
-    tableName = 'members'
-    filterType = 'all'
+    table_name = 'members'
 
   # perform query
-  query = text("SELECT * FROM " + tableName + " NATURAL JOIN membership_types")
-  results = g.db.execute(query)
+  query = text("SELECT * FROM {0} NATURAL JOIN membership_types".format(
+      table_name))
+  results = g.db.execute(query, t=table_name)
 
   # put results in a dictionary
   result_cols = results.keys()
