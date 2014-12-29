@@ -1098,4 +1098,4 @@ def new_hassle_confirm_submit():
   return redirect(url_for('run_hassle'))
 
 if __name__ == "__main__":
-  app.run(port=9000)
+  app.run()
