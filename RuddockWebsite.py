@@ -686,21 +686,18 @@ def add_members():
     '''
     This takes a membership description (full member, social member, etc)
     and converts it to the corresponding type. Expects input to be valid
-    and one of (full, social, associate).
+    and one of (full, social, associate, RA).
     '''
-
-    full_regex = re.compile(r'^full(| member)$', re.I)
-    social_regex = re.compile(r'^social(| member)$', re.I)
-    assoc_regex = re.compile(r'^associate(| member)$', re.I)
-
-    if full_regex.match(membership_desc):
-      return 1
-    elif social_regex.match(membership_desc):
-      return 2
-    elif assoc_regex.match(membership_desc):
-      return 3
+    query = text("""
+      SELECT membership_type FROM membership_types
+      WHERE membership_desc = :d
+      OR membership_desc_short = :d
+      """)
+    result = g.db.execute(query, d=membership_desc).first()
+    if result is None:
+      return None
     else:
-      return False
+      return result['membership_type']
 
   def validate_data(data):
     '''
@@ -843,7 +840,7 @@ def add_members():
 
       # Email the user
       subject = "Welcome to the Ruddock House Website!"
-      msg = "Hey " + entry['name'] + ",\n\n" + \
+      msg = "Hey " + entry['fname'] + ' ' + entry['lname'] + ",\n\n" + \
           "You have been added to the Ruddock House Website. In order to " + \
           "access private areas of our site, please complete " + \
           "registration by creating an account here:\n" + \
@@ -882,7 +879,7 @@ def add_members():
     msg = "Hey,\n\n" + \
         "The following members have been added to the Ruddock Website:\n\n"
     for entry in data:
-      msg += entry['name'] + '\n'
+      msg += entry['fname'] + ' ' + entry['lname'] + '\n'
 
     msg += "\nYou should run the email update script to add the new " + \
         "members.\n\n" + \
