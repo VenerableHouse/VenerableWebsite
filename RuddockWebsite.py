@@ -4,9 +4,9 @@ from flask import Flask, request, session, g, redirect, url_for, abort, \
 from collections import OrderedDict
 from sqlalchemy import create_engine, MetaData, text
 from time import strftime
+from datetime import datetime
 from email_utils import sendEmail
 from constants import *
-import datetime
 import re
 import config
 import auth
@@ -21,6 +21,9 @@ app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
 # Create database engine object.
 engine = create_engine(config.DB_URI, convert_unicode=True)
+
+# Update jinja global functions
+app.jinja_env.globals.update(current_year=lambda: datetime.now().year)
 
 def fetch_all_results(query_result):
   '''
@@ -485,7 +488,7 @@ def create_account():
 
     # Check birthday
     try:
-      datetime.datetime.strptime(data['birthday'], '%Y-%m-%d')
+      datetime.strptime(data['birthday'], '%Y-%m-%d')
     except ValueError:
       flash("Invalid birthday.")
       return False
