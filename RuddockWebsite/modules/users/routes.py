@@ -1,12 +1,11 @@
 from flask import Blueprint, render_template, redirect, flash, url_for, request, g
-from decorators import *
-from constants import *
+from RuddockWebsite.decorators import *
+from RuddockWebsite.constants import *
 from sqlalchemy import text
 from time import strftime
 
-import auth
-
-from modules.users import blueprint, helpers
+from RuddockWebsite import auth
+from RuddockWebsite.modules.users import blueprint, helpers
 
 @blueprint.route('/')
 @login_required()

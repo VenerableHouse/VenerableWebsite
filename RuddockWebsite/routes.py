@@ -1,49 +1,14 @@
-from flask import Flask, request, session, g, redirect, url_for, abort, \
+from flask import request, session, g, redirect, url_for, abort, \
     render_template, flash
-from sqlalchemy import create_engine, MetaData, text
-from email_utils import sendEmail
-from constants import *
-from decorators import *
-from common_helpers import *
+from sqlalchemy import text
 import datetime
 import re
-import config
-import auth
 
-# Import blueprint modules
-from modules.users.routes import blueprint as users_blueprint
-from modules.hassle.routes import blueprint as hassle_blueprint
-from modules.admin.routes import blueprint as admin_blueprint
-
-app = Flask(__name__)
-app.debug = False
-app.secret_key = config.SECRET_KEY
-
-# Maximum file upload size, in bytes.
-app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
-
-# Load blueprint modules
-app.register_blueprint(users_blueprint, url_prefix='/users')
-app.register_blueprint(hassle_blueprint, url_prefix='/hassle')
-app.register_blueprint(admin_blueprint, url_prefix='/admin')
-
-# Create database engine object.
-engine = create_engine(config.DB_URI, convert_unicode=True)
-
-@app.before_request
-def before_request():
-  ''' Logic executed before request is processed. '''
-
-  # Connect to the database and publish it in flask.g
-  g.db = engine.connect()
-
-@app.teardown_request
-def teardown_request(exception):
-  ''' Logic executed after every request is finished. '''
-
-  # Close database connection.
-  if g.db != None:
-    g.db.close()
+from RuddockWebsite import app, auth
+from RuddockWebsite.constants import *
+from RuddockWebsite.common_helpers import *
+from RuddockWebsite.decorators import *
+from RuddockWebsite.email_utils import sendEmail
 
 @app.route('/')
 def home():
@@ -396,6 +361,3 @@ def create_account():
 
   return render_template('create_account.html', user_data=user_data, \
       key=key, user_id=user_id)
-
-if __name__ == "__main__":
-  app.run()

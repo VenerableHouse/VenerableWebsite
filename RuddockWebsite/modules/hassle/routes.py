@@ -1,8 +1,8 @@
 from flask import render_template, redirect, flash, url_for, request
-from decorators import *
-from constants import *
+from RuddockWebsite.decorators import *
+from RuddockWebsite.constants import *
 
-from modules.hassle import blueprint, helpers
+from RuddockWebsite.modules.hassle import blueprint, helpers
 
 @blueprint.route('/')
 @login_required(Permissions.HassleAdmin)

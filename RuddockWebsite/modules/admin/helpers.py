@@ -2,8 +2,8 @@ from flask import g, url_for, request
 from sqlalchemy import text
 import re
 
-from common_helpers import *
-from email_utils import sendEmail
+from RuddockWebsite.common_helpers import *
+from RuddockWebsite.email_utils import sendEmail
 
 def get_members_without_accounts():
   '''

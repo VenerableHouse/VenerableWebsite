@@ -1,6 +1,7 @@
 from functools import update_wrapper
 from flask import session, redirect, flash
-import auth
+
+from RuddockWebsite import auth
 
 def login_required(permission=None):
   '''

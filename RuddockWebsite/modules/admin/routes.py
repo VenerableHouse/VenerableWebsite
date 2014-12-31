@@ -1,9 +1,9 @@
 from flask import render_template, redirect, flash, url_for, request
-from decorators import *
-from constants import *
-from common_helpers import *
+from RuddockWebsite.decorators import *
+from RuddockWebsite.constants import *
+from RuddockWebsite.common_helpers import *
 
-from modules.admin import blueprint, helpers
+from RuddockWebsite.modules.admin import blueprint, helpers
 
 @blueprint.route('/', methods=['GET', 'POST'])
 @login_required(Permissions.Admin)

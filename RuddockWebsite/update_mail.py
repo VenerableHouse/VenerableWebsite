@@ -1,9 +1,9 @@
 # for querying the db
 from sqlalchemy import create_engine, text
-import config
+from RuddockWebsite import config
 # for updating mailman
 from subprocess import check_call
-from email_utils import sendEmail
+from RuddockWebsite.email_utils import sendEmail
 import tempfile
 
 def updateFromList(results, lst):
