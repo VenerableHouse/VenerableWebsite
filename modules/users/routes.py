@@ -5,9 +5,8 @@ from sqlalchemy import text
 from time import strftime
 
 import auth
-import helpers as users_helpers
 
-blueprint = Blueprint('users', __name__, template_folder='templates')
+from modules.users import blueprint, helpers
 
 @blueprint.route('/')
 @login_required()
@@ -56,9 +55,9 @@ def show_users():
 @login_required()
 def show_user_profile(username):
   """ Procedure to show a user's profile and membership details. """
-  d_dict_user, q_dict_user = users_helpers.get_user_info(username)
-  offices = users_helpers.get_office_info(username)
-  editable = users_helpers.can_edit(username)
+  d_dict_user, q_dict_user = helpers.get_user_info(username)
+  offices = helpers.get_office_info(username)
+  editable = helpers.can_edit(username)
 
   if d_dict_user != None and q_dict_user != None:
     return render_template('view_user.html', display = d_dict_user, \

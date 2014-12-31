@@ -1,19 +1,17 @@
-from flask import Blueprint, render_template, redirect, flash, url_for, request
+from flask import render_template, redirect, flash, url_for, request
 from decorators import *
 from constants import *
 
-import helpers as hassle_helpers
-
-blueprint = Blueprint('hassle', __name__, template_folder='templates')
+from modules.hassle import blueprint, helpers
 
 @blueprint.route('/')
 @login_required(Permissions.HassleAdmin)
 def run_hassle():
   ''' Logic for room hassles. '''
 
-  available_participants = hassle_helpers.get_available_participants()
-  available_rooms = hassle_helpers.get_available_rooms()
-  events = hassle_helpers.get_events_with_roommates()
+  available_participants = helpers.get_available_participants()
+  available_rooms = helpers.get_available_rooms()
+  events = helpers.get_events_with_roommates()
   alleys = [1, 2, 3, 4, 5, 6]
 
   return render_template('hassle.html',
@@ -40,7 +38,7 @@ def hassle_event():
     if user_id in roommates or len(roommates) != len(set(roommates)):
       flash("Invalid roommate selection.")
     else:
-      hassle_helpers.new_event(user_id, room_number, roommates)
+      helpers.new_event(user_id, room_number, roommates)
   return redirect(url_for('hassle.run_hassle'))
 
 @blueprint.route('/restart', defaults={'event_id': None})
@@ -48,28 +46,28 @@ def hassle_event():
 @login_required(Permissions.HassleAdmin)
 def hassle_restart(event_id):
   if event_id == None:
-    hassle_helpers.clear_events()
+    helpers.clear_events()
   else:
-    hassle_helpers.clear_events(event_id)
+    helpers.clear_events(event_id)
   return redirect(url_for('hassle.run_hassle'))
 
 @blueprint.route('/new')
 @login_required(Permissions.HassleAdmin)
 def new_hassle():
-  ''' Redirects to the first page to start a new room hassle_helpers. '''
+  ''' Redirects to the first page to start a new room helpers. '''
 
   # Clear old data.
-  hassle_helpers.clear_all()
+  helpers.clear_all()
 
   return redirect(url_for('hassle.new_hassle_participants'))
 
 @blueprint.route('/new/participants')
 @login_required(Permissions.HassleAdmin)
 def new_hassle_participants():
-  ''' Select participants for the room hassle_helpers. '''
+  ''' Select participants for the room helpers. '''
 
   # Get a list of all current members.
-  members = hassle_helpers.get_all_members()
+  members = helpers.get_all_members()
   return render_template('hassle_new_participants.html', members=members)
 
 @blueprint.route('/new/participants/submit', methods=['POST'])
@@ -80,16 +78,16 @@ def new_hassle_participants_submit():
   # Get a list of all participants' user IDs.
   participants = map(lambda x: int(x), request.form.getlist('participants'))
   # Update database with this hassle's participants.
-  hassle_helpers.set_participants(participants)
+  helpers.set_participants(participants)
   return redirect(url_for('hassle.new_hassle_rooms'))
 
 @blueprint.route('/new/rooms')
 @login_required(Permissions.HassleAdmin)
 def new_hassle_rooms():
-  ''' Select rooms available for the room hassle_helpers. '''
+  ''' Select rooms available for the room helpers. '''
 
   # Get a list of all rooms.
-  rooms = hassle_helpers.get_all_rooms()
+  rooms = helpers.get_all_rooms()
   return render_template('hassle_new_rooms.html', rooms=rooms)
 
 @blueprint.route('/new/rooms/submit', methods=['POST'])
@@ -100,16 +98,16 @@ def new_hassle_rooms_submit():
   # Get a list of all room numbers.
   rooms = map(lambda x: int(x), request.form.getlist('rooms'))
   # Update database with participating rooms.
-  hassle_helpers.set_rooms(rooms)
+  helpers.set_rooms(rooms)
   return redirect(url_for('hassle.new_hassle_confirm'))
 
 @blueprint.route('/new/confirm')
 @login_required(Permissions.HassleAdmin)
 def new_hassle_confirm():
-  ''' Confirmation page for new room hassle_helpers. '''
+  ''' Confirmation page for new room helpers. '''
 
-  participants = hassle_helpers.get_participants()
-  rooms = hassle_helpers.get_participating_rooms()
+  participants = helpers.get_participants()
+  rooms = helpers.get_participating_rooms()
 
   return render_template('hassle_new_confirm.html', rooms=rooms, \
       participants=participants)

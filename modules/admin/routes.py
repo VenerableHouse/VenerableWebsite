@@ -1,11 +1,9 @@
-from flask import Blueprint, render_template, redirect, flash, url_for, request
+from flask import render_template, redirect, flash, url_for, request
 from decorators import *
 from constants import *
 from common_helpers import *
 
-import helpers as admin_helpers
-
-blueprint = Blueprint('admin', __name__, template_folder='templates')
+from modules.admin import blueprint, helpers
 
 @blueprint.route('/', methods=['GET', 'POST'])
 @login_required(Permissions.Admin)
@@ -38,7 +36,7 @@ def send_reminder_emails():
   an account.
   '''
 
-  data = admin_helpers.get_members_without_accounts()
+  data = helpers.get_members_without_accounts()
 
   state = None
   if request.method == 'POST' and request.form['state']:
@@ -46,7 +44,7 @@ def send_reminder_emails():
 
   if state == 'yes':
     for member in data:
-      admin_helpers.send_reminder_email(member['fname'], \
+      helpers.send_reminder_email(member['fname'], \
           member['lname'], member['email'], member['user_id'], member['uid'])
 
     flash('Sent reminder emails to ' + str(len(data)) + ' member(s).')
@@ -100,7 +98,7 @@ def add_members():
 
   if state == 'preview':
     if mode == 'single':
-      raw_data = admin_helpers.add_members_get_raw_data(field_list)
+      raw_data = helpers.add_members_get_raw_data(field_list)
 
     else:
       if request.files.has_key('new_members_file'):
@@ -110,7 +108,7 @@ def add_members():
         raw_data = False
 
     if raw_data:
-      data = admin_helpers.add_members_process_data(raw_data, field_list)
+      data = helpers.add_members_process_data(raw_data, field_list)
 
       if data:
         return render_template('new_members.html', state='preview', \
@@ -120,10 +118,10 @@ def add_members():
     if request.form.has_key('raw_data'):
       raw_data = request.form['raw_data']
 
-      data = admin_helpers.add_members_process_data(raw_data, field_list)
+      data = helpers.add_members_process_data(raw_data, field_list)
 
       if data:
-        admin_helpers.add_new_members(data)
+        helpers.add_new_members(data)
 
     else:
       flash('Invalid request.')
