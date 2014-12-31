@@ -1,4 +1,9 @@
 <div id="footer">
-  <div id="copyright">Ruddock House, Copyright 2015.</div>
+  <div id="copyright">Ruddock House, Copyright 2011-<div id="year">present</div>.</div>
   <div id="about"><a href="{{ url_for("show_about_us") }}">About Ruddock</a></div>
 </div>
+
+<script>
+  var yearDiv = document.getElementById("year");
+  yearDiv.innerHTML = new Date().getFullYear();
+</script>
