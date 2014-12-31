@@ -212,3 +212,40 @@ tr.link:hover {
   margin-bottom: 15px;
   padding: 10px;
 }
+
+/* Sortable table CSS */
+th.sort-header {
+  cursor: pointer;
+}
+th.sort-header::-moz-selection {
+  background: transparent;
+}
+th.sort-header::selection {
+  background: transparent;
+}
+th.sort-header::-moz-selection,
+th.sort-header::selection {
+  background: transparent;
+}
+table th.sort-header:after {
+  content: '';
+  float: right;
+  margin-top: 7px;
+  border-color: #404040 transparent;
+  border-style: solid;
+  border-width: 0 4px 4px;
+  visibility: hidden;
+}
+table th.sort-header:hover:after {
+  visibility:visible;
+}
+table th.sort-up:after,
+table th.sort-down:after,
+table th.sort-down:hover:after {
+  opacity:0.4;
+  visibility:visible;
+}
+table th.sort-up:after {
+  border-bottom:none;
+  border-width:4px 4px 0;
+}
