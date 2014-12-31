@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block body %}
-  <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
+  <script src="{{ url_for('static', filename='js/tablesort.min.js') }}"></script>
   <h2>House Lists</h2>
   {# Show link to change current/alumni filtering #}
   {% if filterType == 'current' %}
@@ -20,7 +20,7 @@
   Click on the columns to sort.
   <br><br>
 
-  <table class="sortable userlist">
+  <table class="userlist" id="user-table">
   {# First display header #}
     <thead style="cursor: pointer;">
       <tr>
@@ -47,5 +47,9 @@
   </tr>
   {% endfor %}
   </table>
+
+  <script>
+    new Tablesort(document.getElementById('user-table'));
+  </script>
 
 {% endblock body %}

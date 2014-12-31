@@ -4,9 +4,9 @@ from flask import Flask, request, session, g, redirect, url_for, abort, \
 from collections import OrderedDict
 from sqlalchemy import create_engine, MetaData, text
 from time import strftime
+from datetime import datetime
 from email_utils import sendEmail
 from constants import *
-import datetime
 import re
 import config
 import auth
@@ -21,6 +21,9 @@ app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
 # Create database engine object.
 engine = create_engine(config.DB_URI, convert_unicode=True)
+
+# Update jinja global functions
+app.jinja_env.globals.update(current_year=lambda: datetime.now().year)
 
 def fetch_all_results(query_result):
   '''
@@ -247,9 +250,9 @@ def logout():
 def show_users():
   """ Procedure to show a list of all users, with all membership details. """
   # store which columns we want, and their displaynames
-  cols = ["user_id", "lname", "fname", "email", "matriculate_year", \
+  cols = ["user_id", "fname", "lname", "email", "matriculate_year", \
           "grad_year", "major", "membership_desc"]
-  display = [None, "Last", "First", "Email", "Matr.", "Grad.", "Major", "Type"]
+  display = [None, "First", "Last", "Email", "Matr.", "Grad.", "Major", "Type"]
   fieldMap = dict(zip(cols, display))
 
   # check which table to read from
@@ -264,7 +267,8 @@ def show_users():
     filterType = 'all'
 
   # perform query
-  query = text("SELECT * FROM " + tableName + " NATURAL JOIN membership_types")
+  query = text("SELECT * FROM " + tableName + " NATURAL JOIN membership_types" +
+               " ORDER BY fname")
   results = g.db.execute(query)
 
   # put results in a dictionary
@@ -484,7 +488,7 @@ def create_account():
 
     # Check birthday
     try:
-      datetime.datetime.strptime(data['birthday'], '%Y-%m-%d')
+      datetime.strptime(data['birthday'], '%Y-%m-%d')
     except ValueError:
       flash("Invalid birthday.")
       return False
