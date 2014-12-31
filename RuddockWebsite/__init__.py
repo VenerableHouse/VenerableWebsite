@@ -1,7 +1,7 @@
 from flask import Flask, g
 from sqlalchemy import create_engine
-from RuddockWebsite.constants import *
-from RuddockWebsite.config import *
+
+from RuddockWebsite import config, constants
 from RuddockWebsite.modules import admin, hassle, users
 
 app = Flask(__name__)
@@ -9,7 +9,7 @@ app.debug = False
 app.secret_key = config.SECRET_KEY
 
 # Maximum file upload size, in bytes.
-app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+app.config['MAX_CONTENT_LENGTH'] = constants.MAX_CONTENT_LENGTH
 
 # Load blueprint modules
 app.register_blueprint(admin.blueprint, url_prefix='/admin')
@@ -34,4 +34,5 @@ def teardown_request(exception):
   if g.db != None:
     g.db.close()
 
+# After initialization, import the routes.
 from RuddockWebsite import routes
