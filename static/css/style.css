@@ -5,6 +5,9 @@ a {
 a:hover {
   text-decoration: underline;
 }
+a.header-link:hover {
+  text-decoration: none;
+}
 body {
   background: #dddddd;
   font-family: "Roboto", Helvetica, Tahoma, Arial, sans-serif;
