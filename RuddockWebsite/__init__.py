@@ -2,10 +2,7 @@ from flask import Flask, g
 from sqlalchemy import create_engine
 from RuddockWebsite.constants import *
 from RuddockWebsite.config import *
-
-from RuddockWebsite.modules.users import blueprint as users_blueprint
-from RuddockWebsite.modules.hassle import blueprint as hassle_blueprint
-from RuddockWebsite.modules.admin import blueprint as admin_blueprint
+from RuddockWebsite.modules import admin, hassle, users
 
 app = Flask(__name__)
 app.debug = False
@@ -15,9 +12,9 @@ app.secret_key = config.SECRET_KEY
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
 # Load blueprint modules
-app.register_blueprint(users_blueprint, url_prefix='/users')
-app.register_blueprint(hassle_blueprint, url_prefix='/hassle')
-app.register_blueprint(admin_blueprint, url_prefix='/admin')
+app.register_blueprint(admin.blueprint, url_prefix='/admin')
+app.register_blueprint(hassle.blueprint, url_prefix='/hassle')
+app.register_blueprint(users.blueprint, url_prefix='/users')
 
 # Create database engine object.
 engine = create_engine(config.DB_URI, convert_unicode=True)
