@@ -3,7 +3,7 @@
 <h2>Start new hassle</h2>
 Please verify that the participating members and rooms is correct.<br><br>
 
-<form action="{{ url_for('new_hassle_confirm_submit') }}" method="POST">
+<form action="{{ url_for('hassle.new_hassle_confirm_submit') }}" method="POST">
   <div class="table_container">
     <table>
       <thead>
@@ -42,7 +42,7 @@ Please verify that the participating members and rooms is correct.<br><br>
     </table>
   </div><br>
   <button type="button"
-    onclick="location.href='{{ url_for('new_hassle_participants') }}'">
+    onclick="location.href='{{ url_for('hassle.new_hassle_participants') }}'">
     Edit participants/rooms
   </button>
   <button type="submit">Confirm</button>

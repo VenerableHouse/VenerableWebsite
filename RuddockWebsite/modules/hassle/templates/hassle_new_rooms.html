@@ -3,7 +3,7 @@
 <h2>Start new hassle</h2>
 Select all rooms that will be used in this hassle.<br><br>
 
-<form action="{{ url_for('new_hassle_rooms_submit') }}" method="POST">
+<form action="{{ url_for('hassle.new_hassle_rooms_submit') }}" method="POST">
   <table>
     <thead>
       <tr>
@@ -26,7 +26,7 @@ Select all rooms that will be used in this hassle.<br><br>
     </tbody>
   </table><br>
   <button type="button"
-    onclick="location.href='{{ url_for('new_hassle_participants') }}'">
+    onclick="location.href='{{ url_for('hassle.new_hassle_participants') }}'">
     Previous
   </button>
   <button type="submit">Next</button>
