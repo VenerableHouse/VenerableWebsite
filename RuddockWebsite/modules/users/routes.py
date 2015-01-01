@@ -1,10 +1,9 @@
 from flask import Blueprint, render_template, redirect, flash, url_for, request, g
-from RuddockWebsite.decorators import *
-from RuddockWebsite.constants import *
 from sqlalchemy import text
 from time import strftime
 
-from RuddockWebsite import auth
+from RuddockWebsite import auth, constants
+from RuddockWebsite.decorators import login_required
 from RuddockWebsite.modules.users import blueprint, helpers
 
 @blueprint.route('/')
@@ -67,7 +66,7 @@ def show_user_profile(username):
     return redirect(url_for('home'))
 
 @blueprint.route('/edit/<username>', methods=['GET', 'POST'])
-@login_required(Permissions.UserAdmin)
+@login_required(constants.Permissions.UserAdmin)
 def change_user_settings(username):
   """ Procedure to process the login page. Also handles authentication. """
   params = {}

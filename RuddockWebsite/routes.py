@@ -4,11 +4,8 @@ from sqlalchemy import text
 import datetime
 import re
 
-from RuddockWebsite import app, auth
-from RuddockWebsite.constants import *
-from RuddockWebsite.common_helpers import *
-from RuddockWebsite.decorators import *
-from RuddockWebsite.email_utils import sendEmail
+from RuddockWebsite import app, auth, common_helpers, constants, email_utils
+from RuddockWebsite.decorators import login_required
 
 @app.route('/')
 def home():
@@ -28,7 +25,7 @@ def login():
       session['user_id'] = user_id
       session['permissions'] = permissions
       # True if there's any reason to show a link to the admin interface.
-      session['show_admin'] = auth.check_permission(Permissions.Admin)
+      session['show_admin'] = auth.check_permission(constants.Permissions.Admin)
 
       # Update last login time.
       auth.update_last_login(username)
@@ -69,7 +66,7 @@ def forgot_passwd():
               url_for('reset_passwd', u=q_dict['user_id'], r=reset_key,
                   _external=True) + \
               "\n\nThanks,\nThe Ruddock Website"
-        sendEmail(str(email), msg, "Forgotten Password")
+        email_utils.sendEmail(str(email), msg, "Forgotten Password")
         flash("An email has been sent.")
         redirect(url_for('home'))
       else:
@@ -227,7 +224,7 @@ def create_account():
 
     query = text("SELECT COUNT(*) FROM users WHERE username=:username")
     r = g.db.execute(query, username=data['username'])
-    result = fetch_all_results(r)
+    result = common_helpers.fetch_all_results(r)
     count = result[0]['COUNT(*)']
 
     if count != 0:
@@ -262,7 +259,7 @@ def create_account():
     query = text("SELECT fname, lname, uid, matriculate_year, grad_year, \
         email FROM members WHERE user_id=:user_id")
     r = g.db.execute(query, user_id=user_id)
-    result = fetch_all_results(r)
+    result = common_helpers.fetch_all_results(r)
 
     return result[0]
 
@@ -270,7 +267,7 @@ def create_account():
     # Check that the user_id is valid.
     query = text("SELECT COUNT(*) FROM members WHERE user_id=:user_id")
     r = g.db.execute(query, user_id=user_id)
-    result = fetch_all_results(r)
+    result = common_helpers.fetch_all_results(r)
     count = result[0]['COUNT(*)']
 
     if count != 1:
@@ -279,7 +276,7 @@ def create_account():
     # Make sure an account does not already exist for that user_id.
     query = text("SELECT COUNT(*) FROM users WHERE user_id=:user_id")
     r = g.db.execute(query, user_id=user_id)
-    result = fetch_all_results(r)
+    result = common_helpers.fetch_all_results(r)
     count = result[0]['COUNT(*)']
 
     if count != 0:
@@ -287,7 +284,7 @@ def create_account():
 
     # Check the key.
     user_data = get_user_data(user_id)
-    true_hash = create_account_hash(user_id, user_data['uid'], \
+    true_hash = common_helpers.create_account_hash(user_id, user_data['uid'], \
         user_data['fname'], user_data['lname'])
 
     if str(true_hash) != str(key):
@@ -320,7 +317,7 @@ def create_account():
         "Thanks!\n" + \
         "The Ruddock IMSS Team"
     to = email
-    sendEmail(to, msg, subject)
+    email_utils.sendEmail(to, msg, subject)
 
   def update_birthday(user_id, birthday):
     query = text("UPDATE members SET bday=:bday WHERE user_id=:user_id")
@@ -333,7 +330,7 @@ def create_account():
     user_id = request.form['u']
 
     if not key or not user_id or not check_key_id_pair(key, user_id):
-      return display_error_msg()
+      return common_helpers.display_error_msg()
 
     user_data = get_user_data(user_id)
 
@@ -355,7 +352,7 @@ def create_account():
   user_id = request.args.get('u', default=None)
 
   if not key or not user_id or not check_key_id_pair(key, user_id):
-    return display_error_msg()
+    return common_helpers.display_error_msg()
 
   user_data = get_user_data(user_id)
 

@@ -1,12 +1,11 @@
 from flask import render_template, redirect, flash, url_for, request
-from RuddockWebsite.decorators import *
-from RuddockWebsite.constants import *
-from RuddockWebsite.common_helpers import *
 
+from RuddockWebsite import auth, constants
+from RuddockWebsite.decorators import login_required
 from RuddockWebsite.modules.admin import blueprint, helpers
 
 @blueprint.route('/', methods=['GET', 'POST'])
-@login_required(Permissions.Admin)
+@login_required(constants.Permissions.Admin)
 def admin_home():
   '''
   Loads a home page for admins, providing links to various tools.
@@ -14,7 +13,7 @@ def admin_home():
 
   admin_tools = []
 
-  if auth.check_permission(Permissions.UserAdmin):
+  if auth.check_permission(constants.Permissions.UserAdmin):
     admin_tools.append({
       'name': 'Add new members',
       'link': url_for('admin.add_members', _external=True)})
@@ -22,14 +21,14 @@ def admin_home():
       'name': 'Send account creation reminder',
       'link': url_for('admin.send_reminder_emails', _external=True)})
 
-  if auth.check_permission(Permissions.HassleAdmin):
+  if auth.check_permission(constants.Permissions.HassleAdmin):
     admin_tools.append({
       'name': 'Room hassle',
       'link': url_for('hassle.run_hassle', _external=True)})
   return render_template('admin.html', tools=admin_tools)
 
 @blueprint.route('/reminder_email', methods=['GET', 'POST'])
-@login_required(Permissions.UserAdmin)
+@login_required(constants.Permissions.UserAdmin)
 def send_reminder_emails():
   '''
   Sends a reminder email to all members who have not yet created
@@ -55,7 +54,7 @@ def send_reminder_emails():
     return render_template('create_account_reminder.html', data=data)
 
 @blueprint.route('/add_members', methods=['GET', 'POST'])
-@login_required(Permissions.UserAdmin)
+@login_required(constants.Permissions.UserAdmin)
 def add_members():
   '''
   Provides a form to add new members to the website, and then emails the

@@ -2,8 +2,7 @@ from flask import g, url_for, request
 from sqlalchemy import text
 import re
 
-from RuddockWebsite.common_helpers import *
-from RuddockWebsite.email_utils import sendEmail
+from RuddockWebsite import common_helpers, email_utils
 
 def get_members_without_accounts():
   '''
@@ -14,10 +13,10 @@ def get_members_without_accounts():
   query = text("SELECT fname, lname, email, uid, user_id FROM members \
       NATURAL LEFT JOIN users WHERE username IS NULL")
   r = g.db.execute(query)
-  return fetch_all_results(r)
+  return common_helpers.fetch_all_results(r)
 
 def send_reminder_email(fname, lname, email, user_id, uid):
-  user_hash = create_account_hash(user_id, uid, fname, lname)
+  user_hash = common_helpers.create_account_hash(user_id, uid, fname, lname)
   name = fname + ' ' + lname
 
   to = email
@@ -33,7 +32,7 @@ def send_reminder_email(fname, lname, email, user_id, uid):
       "Thanks!\n" + \
       "The Ruddock IMSS Team"
 
-  sendEmail(to, msg, subject)
+  email_utils.sendEmail(to, msg, subject)
 
 def convert_membership_type(membership_desc):
   '''
@@ -169,7 +168,7 @@ def add_new_members(data):
   for entry in data:
     # Check if user is in database already
     r = g.db.execute(check_query, uid=entry['uid'])
-    result = fetch_all_results(r)
+    result = common_helpers.fetch_all_results(r)
     count = result[0]['COUNT(*)']
 
     if count != 0:
@@ -187,11 +186,11 @@ def add_new_members(data):
 
     # Get the id of the inserted row (used to create unique hash).
     r = g.db.execute(last_insert_id_query)
-    result = fetch_all_results(r)
+    result = common_helpers.fetch_all_results(r)
     user_id = result[0]["LAST_INSERT_ID()"]
 
-    user_hash = create_account_hash(user_id, entry['uid'], entry['fname'], \
-        entry['lname'])
+    user_hash = common_helpers.create_account_hash(user_id, entry['uid'], \
+        entry['fname'], entry['lname'])
     entry['name'] = entry['fname'] + ' ' + entry['lname']
 
     # Email the user
@@ -209,11 +208,11 @@ def add_new_members(data):
     to = entry['email']
 
     try:
-      sendEmail(to, msg, subject)
+      email_utils.sendEmail(to, msg, subject)
       members_added_count += 1
 
     except Exception as e:
-      sendEmail("imss@ruddock.caltech.edu",
+      email_utils.sendEmail("imss@ruddock.caltech.edu",
           "Something went wrong when trying to email " + entry['name'] + \
           ". You should look into this.\n\n" + \
           "Exception: " + str(e),
@@ -241,7 +240,7 @@ def add_new_members(data):
       "members.\n\n" + \
       "Thanks!\n" + \
       "The Ruddock Website"
-  sendEmail(to, msg, subject, usePrefix=False)
+  email_utils.sendEmail(to, msg, subject, usePrefix=False)
 
 
 def add_members_get_raw_data(field_list):
