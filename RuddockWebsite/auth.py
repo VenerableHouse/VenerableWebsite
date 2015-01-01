@@ -4,10 +4,10 @@ import string
 import re
 from sqlalchemy import text
 from flask import session, g, url_for, flash
-import constants as const
-import email_utils
-import email_templates
-import misc_utils
+from RuddockWebsite import constants
+from RuddockWebsite import email_utils
+from RuddockWebsite import email_templates
+from RuddockWebsite import misc_utils
 
 class PasswordHashParser:
   '''
@@ -143,8 +143,8 @@ class PasswordHashParser:
   def is_legacy(self):
     ''' Returns true if the hashing algorithm is not the most current version. '''
     return len(self.algorithms) != 1 or \
-        self.algorithms[0] != const.PWD_HASH_ALGORITHM or \
-        self.rounds[0] != const.HASH_ROUNDS
+        self.algorithms[0] != constants.PWD_HASH_ALGORITHM or \
+        self.rounds[0] != constants.HASH_ROUNDS
 
 def hash_password(password, salt, rounds, algorithm):
   '''
@@ -179,7 +179,7 @@ def authenticate(username, password):
   # Make sure the password is not too long (hashing extremely long passwords
   # can be used to attack the site, so we set an upper limit well beyond what
   # people generally use for passwords).
-  if len(password) > const.MAX_PASSWORD_LENGTH:
+  if len(password) > constants.MAX_PASSWORD_LENGTH:
     return None
 
   # Get the correct password hash and user_id from the database.
@@ -205,8 +205,8 @@ def authenticate(username, password):
 
 def set_password(username, password):
   ''' Sets the user's password. Automatically generates a new salt. '''
-  algorithm = const.PWD_HASH_ALGORITHM
-  rounds = const.HASH_ROUNDS
+  algorithm = constants.PWD_HASH_ALGORITHM
+  rounds = constants.HASH_ROUNDS
   salt = generate_salt()
   password_hash = hash_password(password, salt, rounds, algorithm)
 
@@ -226,9 +226,9 @@ def validate_username(username, flash_errors=True):
   username_regex = re.compile(r'^[a-zA-Z0-9\-\_]+$')
   if len(username) == 0:
     error = 'You must provide a username!'
-  elif len(username) > const.MAX_USERNAME_LENGTH:
+  elif len(username) > constants.MAX_USERNAME_LENGTH:
     error = 'Username cannot be more than {0} characters long!'.format(
-        const.MAX_USERNAME_LENGTH)
+        constants.MAX_USERNAME_LENGTH)
   elif re.match(r'^[a-zA-Z0-9\-\_]+$', username) is None:
     error = 'Username contains invalid characters.'
   else:
@@ -261,12 +261,12 @@ def validate_password(password, password2, flash_errors=True):
     error = 'You must confirm your password!'
   elif password != password2:
     error = 'Passwords to not match. Please try again!'
-  elif len(password) < const.MIN_PASSWORD_LENGTH:
+  elif len(password) < constants.MIN_PASSWORD_LENGTH:
     error = 'Your password must be at least {0} characters long!'.format(
-        const.MIN_PASSWORD_LENGTH)
-  elif len(password) > const.MAX_PASSWORD_LENGTH:
+        constants.MIN_PASSWORD_LENGTH)
+  elif len(password) > constants.MAX_PASSWORD_LENGTH:
     error = 'Your password cannot be more than {0} characters long!'.format(
-        const.MAX_PASSWORD_LENGTH)
+        constants.MAX_PASSWORD_LENGTH)
 
   if error is not None:
     if flash_errors:
@@ -301,12 +301,12 @@ def handle_forgotten_password(username, email):
       WHERE username = :u
       """)
     g.db.execute(query, rk=reset_key, \
-        time=const.PWD_RESET_KEY_EXPIRATION, u=username)
+        time=constants.PWD_RESET_KEY_EXPIRATION, u=username)
     # Determine if we want to say "your link expires in _ minutes" or "_ hours".
-    if const.PWD_RESET_KEY_EXPIRATION < 60:
-      expiration_time_str = "{} minutes".format(const.PWD_RESET_KEY_EXPIRATION)
+    if constants.PWD_RESET_KEY_EXPIRATION < 60:
+      expiration_time_str = "{} minutes".format(constants.PWD_RESET_KEY_EXPIRATION)
     else:
-      expiration_time_str = "{} hours".format(const.PWD_RESET_KEY_EXPIRATION / 60)
+      expiration_time_str = "{} hours".format(constants.PWD_RESET_KEY_EXPIRATION / 60)
     # Send email to user.
     msg = email_templates.ResetPasswordEmail.format(name, \
         url_for('reset_password', reset_key=reset_key, _external=True), \
@@ -350,7 +350,7 @@ def generate_salt():
   '''
   Generates a pseudorandom salt.
   '''
-  return misc_utils.generate_random_string(const.SALT_SIZE)
+  return misc_utils.generate_random_string(constants.SALT_SIZE)
 
 def generate_reset_key():
   '''
@@ -360,7 +360,7 @@ def generate_reset_key():
   '''
   chars = string.ascii_lowercase + string.digits
   while True:
-    reset_key = misc_utils.generate_random_string(const.PWD_RESET_KEY_LENGTH,
+    reset_key = misc_utils.generate_random_string(constants.PWD_RESET_KEY_LENGTH,
         chars=chars)
     # Reset keys are random, so is extremely unlikely that they overlap.
     # However, it would be nice to make sure anyway.
@@ -433,7 +433,7 @@ def generate_create_account_key():
   '''
   chars = string.ascii_lowercase + string.digits
   while True:
-    key = misc_utils.generate_random_string(const.CREATE_ACCOUNT_KEY_LENGTH,
+    key = misc_utils.generate_random_string(constants.CREATE_ACCOUNT_KEY_LENGTH,
         chars=chars)
     query = text("SELECT 1 FROM members WHERE create_account_key = :k")
     result = g.db.execute(query, k=key).first()

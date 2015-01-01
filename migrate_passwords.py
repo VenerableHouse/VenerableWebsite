@@ -1,9 +1,9 @@
 ''' Python script to migrate database password hashing algorithms. '''
 
 from sqlalchemy import create_engine, text
-import config
-import auth
-import constants as const
+from RuddockWebsite import config
+from RuddockWebsite import auth
+from RuddockWebsite import constants as const
 import time
 
 if __name__ == '__main__':

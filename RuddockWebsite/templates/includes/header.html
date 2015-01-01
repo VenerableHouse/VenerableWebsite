@@ -13,8 +13,8 @@
       <div class="navbar-link" onclick="location.href='{{ url_for("home") }}'">
         <a href="{{ url_for("home") }}">Home</a>
       </div>
-      <div class="navbar-link" onclick="location.href='{{ url_for("show_users") }}'">
-        <a href="{{ url_for("show_users") }}">House Lists</a>
+      <div class="navbar-link" onclick="location.href='{{ url_for("users.show_users") }}'">
+        <a href="{{ url_for("users.show_users") }}">House Lists</a>
       </div>
       <div class="navbar-link" onclick="location.href='{{ url_for("show_gov") }}'">
         <a href="{{ url_for("show_gov") }}">Government</a>
@@ -35,12 +35,12 @@
           <a href="{{ url_for("login") }}">Login</a>
         </div>
       {% else %}
-        <div class="navbar-link" onclick="location.href='{{ url_for("show_user_profile", username=session["username"]) }}'">
-          <a href="{{ url_for('show_user_profile', username=session['username']) }}">{{session['username']}}</a>
+        <div class="navbar-link" onclick="location.href='{{ url_for("users.show_user_profile", username=session["username"]) }}'">
+          <a href="{{ url_for('users.show_user_profile', username=session['username']) }}">{{session['username']}}</a>
         </div>
         {% if session['show_admin'] %}
-          <div class="navbar-link" onclick="location.href='{{ url_for("admin_home") }}'">
-            <a href="{{ url_for('admin_home') }}">Admin</a>
+          <div class="navbar-link" onclick="location.href='{{ url_for("admin.admin_home") }}'">
+            <a href="{{ url_for('admin.admin_home') }}">Admin</a>
           </div>
         {% endif %}
         <div class="navbar-link" onclick="location.href='{{ url_for("logout") }}'">

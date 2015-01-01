@@ -94,7 +94,7 @@
 
   {% if perm %}
   <br>
-  <a href="{{ url_for('change_user_settings',
+  <a href="{{ url_for('users.change_user_settings',
     username = info["username"])}}">Click here</a> to edit this information!
   {% endif %}
 
