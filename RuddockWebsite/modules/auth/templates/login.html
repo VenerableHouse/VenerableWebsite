@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
   <h2>Log in to Ruddock!</h2>
-  <form action="{{ url_for('attempt_login') }}" method="post">
+  <form action="{{ url_for('auth.attempt_login') }}" method="post">
     <table class="form">
       <tr>
         <td>Username:</td>
@@ -16,5 +16,5 @@
     <button type="submit" tabindex="3">Login</button>
   </form>
   <br>
-  Forgot your password? Reset it <a href="{{ url_for('forgot_password') }}">here</a>!
+  Forgot your password? Reset it <a href="{{ url_for('auth.forgot_password') }}">here</a>!
 {% endblock body %}

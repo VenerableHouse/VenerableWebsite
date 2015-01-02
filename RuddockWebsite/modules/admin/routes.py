@@ -1,6 +1,6 @@
 from flask import render_template, redirect, flash, url_for, request
 
-from RuddockWebsite import auth, constants
+from RuddockWebsite import auth_utils, constants
 from RuddockWebsite.decorators import login_required
 from RuddockWebsite.modules.admin import blueprint, helpers
 
@@ -10,10 +10,8 @@ def admin_home():
   '''
   Loads a home page for admins, providing links to various tools.
   '''
-
   admin_tools = []
-
-  if auth.check_permission(constants.Permissions.UserAdmin):
+  if auth_utils.check_permission(constants.Permissions.UserAdmin):
     admin_tools.append({
       'name': 'Add new members',
       'link': url_for('admin.add_members', _external=True)})
@@ -21,7 +19,7 @@ def admin_home():
       'name': 'Send account creation reminder',
       'link': url_for('admin.send_reminder_emails', _external=True)})
 
-  if auth.check_permission(constants.Permissions.HassleAdmin):
+  if auth_utils.check_permission(constants.Permissions.HassleAdmin):
     admin_tools.append({
       'name': 'Room hassle',
       'link': url_for('hassle.run_hassle', _external=True)})
@@ -34,18 +32,14 @@ def send_reminder_emails():
   Sends a reminder email to all members who have not yet created
   an account.
   '''
-
   data = helpers.get_members_without_accounts()
-
   state = None
   if request.method == 'POST' and request.form['state']:
     state = request.form['state']
-
   if state == 'yes':
     for member in data:
       helpers.send_reminder_email(member['fname'], \
           member['lname'], member['email'], member['user_id'], member['uid'])
-
     flash('Sent reminder emails to ' + str(len(data)) + ' member(s).')
     return redirect(url_for('admin.admin_home'))
   elif state == 'no':

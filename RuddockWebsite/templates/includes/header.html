@@ -31,8 +31,8 @@
     </div>
     <div id="navbar-login">
       {% if not session['username'] %}
-        <div class="navbar-link" onclick="location.href='{{ url_for("login") }}'">
-          <a href="{{ url_for("login") }}">Login</a>
+        <div class="navbar-link" onclick="location.href='{{ url_for("auth.login") }}'">
+          <a href="{{ url_for("auth.login") }}">Login</a>
         </div>
       {% else %}
         <div class="navbar-link" onclick="location.href='{{ url_for("users.show_user_profile", username=session["username"]) }}'">
@@ -43,8 +43,8 @@
             <a href="{{ url_for('admin.admin_home') }}">Admin</a>
           </div>
         {% endif %}
-        <div class="navbar-link" onclick="location.href='{{ url_for("logout") }}'">
-          <a href="{{ url_for('logout') }}">Logout</a>
+        <div class="navbar-link" onclick="location.href='{{ url_for("auth.logout") }}'">
+          <a href="{{ url_for('auth.logout') }}">Logout</a>
         </div>
       {% endif %}
     </div>

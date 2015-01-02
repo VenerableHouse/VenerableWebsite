@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, flash, url_for, request,
 from sqlalchemy import text
 from time import strftime
 
-from RuddockWebsite import auth, constants
+from RuddockWebsite import auth_utils, constants
 from RuddockWebsite.decorators import login_required
 from RuddockWebsite.modules.users import blueprint, helpers
 
@@ -103,7 +103,7 @@ def change_user_settings(username):
 
         query = text("UPDATE members SET %s = :val WHERE user_id = :u" % tag)
         results = g.db.execute(query, \
-            u=auth.get_user_id(username), val=new_val)
+            u=auth_utils.get_user_id(username), val=new_val)
 
         flash("%s was updated!" % tag_names[i])
 

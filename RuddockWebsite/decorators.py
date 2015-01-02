@@ -1,7 +1,7 @@
 from functools import update_wrapper
 from flask import session, redirect, flash, request, url_for
 
-from RuddockWebsite import auth
+from RuddockWebsite import auth_utils
 
 def login_required(permission=None):
   '''
@@ -20,7 +20,7 @@ def login_required(permission=None):
 
       # Check permissions.
       if permission != None:
-        if not auth.check_permission(permission):
+        if not auth_utils.check_permission(permission):
           flash("You do not have permission to access this page.")
           session['next'] = request.url
           return redirect(url_for('login'))

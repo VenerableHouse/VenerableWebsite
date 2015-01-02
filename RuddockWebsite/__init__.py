@@ -2,7 +2,7 @@ from flask import Flask, g
 from sqlalchemy import create_engine
 
 from RuddockWebsite import config, constants
-from RuddockWebsite.modules import admin, hassle, users
+from RuddockWebsite.modules import admin, auth, hassle, users
 
 app = Flask(__name__)
 app.debug = False
@@ -13,6 +13,8 @@ app.config['MAX_CONTENT_LENGTH'] = constants.MAX_CONTENT_LENGTH
 
 # Load blueprint modules
 app.register_blueprint(admin.blueprint, url_prefix='/admin')
+# Auth blueprint has no prefix, since not all endpoints have the same prefix.
+app.register_blueprint(auth.blueprint)
 app.register_blueprint(hassle.blueprint, url_prefix='/hassle')
 app.register_blueprint(users.blueprint, url_prefix='/users')
 
