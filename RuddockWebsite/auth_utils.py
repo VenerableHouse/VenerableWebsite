@@ -226,7 +226,7 @@ def validate_password(password, password2, flash_errors=True):
   elif len(password2) == 0:
     error = 'You must confirm your password!'
   elif password != password2:
-    error = 'Passwords to not match. Please try again!'
+    error = 'Passwords do not match. Please try again!'
   elif len(password) < constants.MIN_PASSWORD_LENGTH:
     error = 'Your password must be at least {0} characters long!'.format(
         constants.MIN_PASSWORD_LENGTH)
@@ -241,9 +241,7 @@ def validate_password(password, password2, flash_errors=True):
   return True
 
 def generate_salt():
-  '''
-  Generates a pseudorandom salt.
-  '''
+  ''' Generates a pseudorandom salt. '''
   return misc_utils.generate_random_string(constants.SALT_SIZE)
 
 def generate_reset_key():
@@ -266,7 +264,7 @@ def generate_reset_key():
   return reset_key
 
 def check_reset_key(reset_key):
-  ''' Returns the username if the reset key is valid. Otherwise returns None. '''
+  ''' Returns the username if the reset key is valid, otherwise None. '''
   query = text("""
     SELECT username
     FROM users
@@ -283,7 +281,6 @@ def get_permissions(username):
   Returns a list with all of the permissions available to the user.
   A list is returned because Python sets cannot be stored in cookie data.
   '''
-
   query = text("""
     (SELECT permission
       FROM users
@@ -304,7 +301,6 @@ def get_user_id(username):
   ''' Takes a username and returns the user's ID. '''
   query = text("SELECT user_id FROM users WHERE username = :u")
   result = g.db.execute(query, u = username).first()
-
   if result is not None:
     return int(result['user_id'])
   return None

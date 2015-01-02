@@ -74,7 +74,7 @@ def reset_password_submit(reset_key):
   new_password2 = request.form.get('password2', '')
   if helpers.handle_password_reset(username, new_password, new_password2):
     flash('Password reset was successful.')
-    return redirect(url_for('home'))
+    return redirect(url_for('auth.login'))
   else:
     # Password reset handler handles error flashes.
     return redirect(url_for('auth.reset_password', reset_key=reset_key))
