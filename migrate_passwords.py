@@ -2,8 +2,8 @@
 
 from sqlalchemy import create_engine, text
 from RuddockWebsite import config
-from RuddockWebsite import auth
-from RuddockWebsite import constants as const
+from RuddockWebsite import auth_utils
+from RuddockWebsite import constants
 import time
 
 if __name__ == '__main__':
@@ -17,7 +17,11 @@ if __name__ == '__main__':
   trans = db.begin()
   try:
     # Get all user's password hashes and salts.
-    query = text("SELECT username, password_hash, salt FROM users")
+    query = text("""
+      SELECT username, password_hash, salt
+      FROM users
+      ORDER BY username
+      """)
     result = db.execute(query)
 
     for row in result:
@@ -27,15 +31,17 @@ if __name__ == '__main__':
       md5_salt = row['salt'] if row['salt'] is not None else ''
 
       # Generate a new salt and compute a new hash.
-      salt = auth.generate_salt()
-      password_hash = auth.hash_password(md5_hash, salt, const.HASH_ROUNDS,
-          const.PWD_HASH_ALGORITHM)
+      salt = auth_utils.generate_salt()
+      password_hash = auth_utils.hash_password(md5_hash, salt,
+          constants.HASH_ROUNDS,
+          constants.PWD_HASH_ALGORITHM)
 
       # Get full hash string.
-      algorithms = ['md5', const.PWD_HASH_ALGORITHM]
-      rounds = [None, const.HASH_ROUNDS]
+      algorithms = ['md5', constants.PWD_HASH_ALGORITHM]
+      rounds = [None, constants.HASH_ROUNDS]
       salts = [md5_salt, salt]
-      parser = auth.PasswordHashParser(algorithms, rounds, salts, password_hash)
+      parser = auth_utils.PasswordHashParser(algorithms, rounds, salts,
+          password_hash)
       full_hash = str(parser)
 
       # Insert into database
@@ -45,7 +51,6 @@ if __name__ == '__main__':
         WHERE username = :u
         """)
       db.execute(query, ph=full_hash, u=username)
-
       print "Updated hash for user: {}".format(username)
     trans.commit()
   except Exception:
