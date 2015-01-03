@@ -4,7 +4,7 @@
 <h2>Create An Account</h2>
 <p style="color: red">All fields are required.</p>
 
-<form action="{{ url_for('create_account_submit', create_account_key=key) }}" method="post">
+<form action="{{ url_for('account.create_account_submit', create_account_key=key) }}" method="post">
   <p>Choose a username and password.</p>
   <table class="form">
     <tr>
@@ -49,5 +49,4 @@
   </table>
   <button type="submit">Submit</button>
 </form>
-
 {% endblock body %}

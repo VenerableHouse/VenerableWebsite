@@ -57,7 +57,7 @@ def reset_password(reset_key):
   ''' Checks the reset key. If successful, displays the password reset prompt. '''
   username = auth_utils.check_reset_key(reset_key)
   if username is None:
-    flash('Invalid request. If your link has expired, then you will need to generate a new one.')
+    flash('Invalid request. If your link has expired, then you will need to generate a new one. If you continue to encounter problems, please find an IMSS rep.')
     return redirect(url_for('auth.forgot_password'))
   return render_template('reset_password.html', username=username,
       reset_key=reset_key)
