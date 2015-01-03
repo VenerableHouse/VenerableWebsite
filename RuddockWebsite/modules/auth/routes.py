@@ -9,7 +9,7 @@ def login():
   return render_template('login.html')
 
 @blueprint.route('/login/submit', methods=['POST'])
-def attempt_login():
+def login_submit():
   ''' Handles authentication. '''
   username = request.form.get('username', None)
   password = request.form.get('password', None)

@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
   <h2>Log in to Ruddock!</h2>
-  <form action="{{ url_for('auth.attempt_login') }}" method="post">
+  <form action="{{ url_for('auth.login_submit') }}" method="post">
     <table class="form">
       <tr>
         <td>Username:</td>
