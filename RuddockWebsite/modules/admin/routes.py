@@ -32,8 +32,8 @@ def add_members():
   return render_template('add_members.html')
 
 @login_required(constants.Permissions.UserAdmin)
-@blueprint.route('/members/add/single/submit', methods=['POST'])
-def add_members_single_submit():
+@blueprint.route('/members/add/single/confirm', methods=['POST'])
+def add_members_single_confirm():
   ''' Submission endpoint for adding a single member. '''
   fname = request.form.get('fname', '')
   lname = request.form.get('lname', '')
@@ -47,17 +47,15 @@ def add_members_single_submit():
   new_member = helpers.NewMember(fname, lname, matriculate_year, grad_year,
       uid, email, membership_desc)
   new_member_list = helpers.NewMemberList([new_member])
-  if not new_member_list.validate_data():
-    return redirect(url_for('admin.add_members'))
-
-  # Pass along request data in the g object, and then redirect to the
-  # confirmation page.
-  g.new_member_list = new_member_list
-  return redirect(url_for('admin.add_members_confirm'))
+  if new_member_list.validate_data():
+    return render_template('add_members_confirm.html',
+        new_member_list=new_member_list,
+        data_string = str(new_member_list))
+  return redirect(url_for('admin.add_members'))
 
 @login_required(constants.Permissions.UserAdmin)
-@blueprint.route('/members/add/multi/submit', methods=['POST'])
-def add_members_multi_submit():
+@blueprint.route('/members/add/multi/confirm', methods=['POST'])
+def add_members_multi_confirm():
   ''' Submission endpoint for adding multiple members at a time. '''
   new_members_file = request.files.get('new_members_file', None)
   if new_members_file is None:
@@ -71,32 +69,10 @@ def add_members_multi_submit():
   new_member_list = helpers.NewMemberList()
   if new_member_list.parse_csv_file(f.name):
     if new_member_list.validate_data():
-      # Pass along request data in the g object and redirect to the
-      # confirmation page.
-      g.new_member_list = new_member_list
-      return redirect(url_for('admin.add_members_confirm'))
-  # Errors were found.
+      return render_template('add_members_confirm.html',
+          new_member_list=new_member_list,
+          data_string = str(new_member_list))
   return redirect(url_for('admin.add_members'))
-
-@login_required(constants.Permissions.UserAdmin)
-@blueprint.route('/members/add/confirm')
-def add_members_confirm():
-  '''
-  Displays a confirmation page for adding new members. This endpoint MUST be
-  called as a redirect from one of the submit endpoints above and cannot be
-  called from the URL alone.
-
-  Expects g.new_member_list to be a NewMemberList object with valid data.
-  '''
-  new_member_list = getattr(g, 'new_member_list', None)
-  print new_member_list
-  if new_member_list is None:
-    # This is the case if someone tries to manually go to the URL for this
-    # endpoint.
-    flash("Invalid request.")
-    return redirect(url_for('home'))
-  return render_template('add_members_confirm.html',
-      new_member_list=new_member_list)
 
 @login_required(constants.Permissions.UserAdmin)
 @blueprint.route('/members/add/confirm/submit', methods=['POST'])

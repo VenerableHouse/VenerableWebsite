@@ -17,7 +17,7 @@ Are you sure you want to add the following members?
       </tr>
     </thead>
     <tbody>
-      {% for new_member in new_member_list %}
+      {% for new_member in new_member_list.new_member_list %}
       <tr>
         <td>{{ new_member.fname }}</td>
         <td>{{ new_member.lname }}</td>
@@ -31,7 +31,7 @@ Are you sure you want to add the following members?
   </table>
   <br>
   {# Pass along the actual data as a string. #}
-  <input type="hidden" name="new_member_data" value="{{ str(new_member_list) }}" />
+  <input type="hidden" name="new_member_data" value="{{ data_string }}" />
   <button type="button"
     onclick="location.href='{{ url_for('admin.add_members') }}'">No</button>
   <button type="submit">Yes</button>
