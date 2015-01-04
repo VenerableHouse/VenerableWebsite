@@ -1,8 +1,9 @@
 from flask import request, session, g, redirect, url_for, abort, \
     render_template, flash
 from sqlalchemy import text
-
-from RuddockWebsite import app, common_helpers, constants, email_utils
+from RuddockWebsite import app
+from RuddockWebsite import constants
+from RuddockWebsite import email_utils
 from RuddockWebsite.decorators import login_required
 
 @app.route('/')
