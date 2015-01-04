@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h2>Add new members</h2>
+Are you sure you want to add the following members?
+<form action="{{ url_for('admin.add_members_confirm_submit') }}" method="post">
+  <table>
+    <thead>
+      <tr>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Matriculation Year</th>
+        <th>Graduation Year</th>
+        <th>UID</th>
+        <th>Email</th>
+        <th>Membership Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for new_member in new_member_list %}
+      <tr>
+        <td>{{ new_member.fname }}</td>
+        <td>{{ new_member.lname }}</td>
+        <td>{{ new_member.matriculate_year }}</td>
+        <td>{{ new_member.grad_year }}</td>
+        <td>{{ new_member.uid }}</td>
+        <td>{{ new_member.email }}</td>
+        <td>{{ new_member.membership_desc }}</td>
+      {% endfor %}
+    </tbody>
+  </table>
+  <br>
+  {# Pass along the actual data as a string. #}
+  <input type="hidden" name="new_member_data" value="{{ str(new_member_list) }}" />
+  <button type="button"
+    onclick="location.href='{{ url_for('admin.add_members') }}'">No</button>
+  <button type="submit">Yes</button>
+</form>
+{% endblock body %}

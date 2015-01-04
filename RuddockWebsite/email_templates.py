@@ -69,6 +69,10 @@ The following members have been added to the Ruddock Website:
 
 {0}
 
+and the following members were already in the database:
+
+{1}
+
 You should run the email update script to add the new members.
 
 Thanks!

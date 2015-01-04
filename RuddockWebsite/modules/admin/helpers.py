@@ -1,8 +1,222 @@
 from flask import g, url_for, request, flash
 from sqlalchemy import text
 import re
+from RuddockWebsite import auth_utils
+from RuddockWebsite import email_templates
+from RuddockWebsite import email_utils
+from RuddockWebsite import validation_utils
 
-from RuddockWebsite import common_helpers, email_utils
+class NewMember:
+  ''' Class containing data for adding a single new member. '''
+  def __init__(self, fname, lname, matriculate_year, grad_year,
+      uid, email, membership_desc):
+    self.fname = fname
+    self.lname = lname
+    self.name = fname + ' ' + lname
+    self.matriculate_year = matriculate_year
+    self.grad_year = grad_year
+    self.uid = uid
+    self.email = email
+    self.membership_desc = membership_desc
+    # Membership type is set from the membership desc.
+    self.membership_type = None
+    self.set_membership_type()
+
+  def __str__(self):
+    ''' Converts to a CSV string. '''
+    return ','.join([self.fname, self.lname, self.matriculate_year, \
+        self.grad_year, self.uid, self.email, self.membership_desc])
+
+  def validate_data(self, flash_errors=True):
+    '''
+    Returns True if all data is valid. Otherwise, flashes error message(s) if
+    requested and returns False.
+    '''
+    # Find all errors, don't just stop at the first one found.
+    is_valid = True
+    if not validation_utils.validate_name(self.fname, flash_errors):
+      is_valid = False
+    if not validation_utils.validate_name(self.lname, flash_errors):
+      is_valid = False
+    if not validation_utils.validate_year(self.matriculate_year, flash_errors):
+      is_valid = False
+    if not validation_utils.validate_year(self.grad_year, flash_errors):
+      is_valid = False
+    if not validation_utils.validate_uid(self.uid, flash_errors):
+      is_valid = False
+    if not validation_utils.validate_email(self.email, flash_errors):
+      is_valid = False
+    if self.membership_type is None:
+      if flash_errors:
+        flash("'{0}' is not a valid membership type. Try 'full', 'social', 'associate', or 'RA'.".format(self.membership_desc))
+      is_valid = False
+    return is_valid
+
+  def add_member(self):
+    '''
+    Adds this member to the database. Assumes data has already been validated.
+    Returns True if successful, otherwise False.
+    '''
+    # If the user is already in the database, skip this user.
+    if validation_utils.check_uid_exists(self.uid):
+      return False
+    # Generate an account creation key.
+    create_account_key = auth_utils.generate_create_account_key()
+    query = text("""
+      INSERT INTO members (fname, lname, matriculate_year, grad_year,
+        uid, email, membership_type, create_account_key)
+      VALUES (:fname, :lname, :matriculate_year, :grad_year,
+        :uid, :email, :membership_type, :create_account_key)
+      """)
+    g.db.execute(query, fname=self.fname,
+        lname=self.lname,
+        matriculate_year=self.matriculate_year,
+        grad_year=self.grad_year,
+        uid=self.uid,
+        email=self.email,
+        membership_type=self.membership_type,
+        create_account_key=create_account_key)
+    # Email the user.
+    subject = "Welcome to the Ruddock House website!"
+    msg = email_templates.AddedToWebsiteEmail.format(self.name,
+        url_for('account.create_account',
+          create_account_key=create_account_key,
+          _external=True))
+    to = self.email
+    email_utils.sendEmail(to, msg, subject)
+    return True
+
+  def set_membership_type(self):
+    '''
+    Takes a membership description (full, social, RA, etc) and sets the
+    membership_type and membership_desc attributes. If not successful, sets
+    membership_type to None.
+    '''
+    query = text("""
+      SELECT membership_type, membership_desc_short
+      FROM membership_types
+      WHERE membership_desc = :d
+        OR membership_desc_short = :d
+      """)
+    result = g.db.execute(query, d=self.membership_desc).first()
+    if result is not None:
+      self.membership_type = result['membership_type']
+      self.membership_desc = result['membership_desc_short']
+    else:
+      self.membership_type = None
+      # Don't set self.membership_desc, so we can print what the error was later.
+
+class NewMemberList:
+  '''
+  Class containing all data for adding one or more new members. This class is a
+  wrapper for a list of NewMember objects and associated methods.
+  '''
+  def __init__(self, new_member_list=[]):
+    self.new_member_list = new_member_list
+
+  def __str__(self):
+    ''' Returns data formatted as a CSV string. '''
+    return '\n'.join([str(new_member) for new_member in self.new_member_list])
+
+  def validate_data(self, flash_errors=True):
+    '''
+    Returns True if all data is valid. Otherwise, flashes error message(s) if
+    requested and returns False.
+    '''
+    # Check every set of new member data, don't stop at the first error.
+    is_valid = True
+    for new_member in self.new_member_list:
+      if not new_member.validate_data(flash_errors):
+        is_valid = False
+    return is_valid
+
+  def add_members(self):
+    ''' Adds all members to the database. Assumes data to be valid. '''
+    # Keep track of which members were added and which were skipped.
+    members_added = []
+    members_skipped = []
+    for new_member in self.new_member_list:
+      if new_member.add_member():
+        members_added.append(new_member.name)
+      else:
+        members_skipped.append(new_member.name)
+    flash("{0} member(s) were successfully added and {1} member(s) were skipped.".format(len(members_added), len(members_skipped)))
+    # Email admins about added members.
+    to = "imss@ruddock.caltech.edu, secretary@ruddock.caltech.edu"
+    msg = email_templates.MembersAddedEmail.format(
+        '\n'.join(members_added),
+        '\n'.join(members_skipped))
+    subject = 'Members were added to the Ruddock Website'
+    # Don't use prefix since this is being sent to IMSS/Secretary, which have
+    # their own prefixes.
+    email_utils.sendEmail(to, msg, subject, usePrefix=False)
+
+  def parse_csv_file(self, filename):
+    '''
+    Parses a CSV file located at filename. Returns True if successful.
+    This function does NOT validate the data.
+
+    A good way to use this for user submitted data would be to save the data in
+    a tempfile and then pass the tempfile's name here.
+    '''
+    try:
+      # Use universal newlines so all newlines are \n regardless of if the file
+      # was originally made on a Unix or Windows system.
+      f = open(filename, 'rU')
+      contents = f.read()
+      f.close()
+    except IOError:
+      flash("An unexpected error occurred when trying to open the file.")
+      return False
+    return self.parse_csv_string(contents)
+
+  def parse_csv_string(self, csv_string):
+    '''
+    Parses a CSV string. Returns True if successful.
+    This function does NOT validate the data.
+
+    Expects newlines to be the standard Unix \n. Use universal newlines support
+    if reading from a file.
+    '''
+    # Get the template file's first line so we can skip it if encountered.
+    template_filename = 'RuddockWebsite/static/admin/add_members_template.csv'
+    try:
+      template_file = open(template_filename, 'rU')
+      template_header = template_file.readlines()[0].strip()
+      template_file.close()
+    except IOError, IndexError:
+      # Something weird happened, but this shouldn't be fatal.
+      template_header = ''
+
+    # List of NewMember objects parsed.
+    new_member_list = []
+    for line in csv_string.split('\n'):
+      # If this is the template's header, then we can safely skip it.
+      # Also skip if the line is empty (newlines at the end, most likely).
+      if line == template_header or line == '':
+        continue
+      # Split each line by commas, and then strip leading/trailing whitespace.
+      data = [s.strip() for s in line.split(',')]
+      try:
+        fname = data[0]
+        lname = data[1]
+        matriculate_year = data[2]
+        grad_year = data[3]
+        uid = data[4]
+        email = data[5]
+        membership_desc = data[6]
+        # Ignore any additional columns. This is possible if Excel (or other
+        # program) thought more columns were used than were actually touched,
+        # and inserts extra commas at the end of the line.
+      except IndexError:
+        # Not enough columns.
+        flash("File does not seem to be in the same format as the template.")
+        return False
+      new_member = NewMember(fname, lname, matriculate_year, grad_year, \
+          uid, email, membership_desc)
+      new_member_list.append(new_member)
+    self.new_member_list = new_member_list
+    return True
 
 def get_members_without_accounts():
   '''
@@ -33,192 +247,3 @@ def send_reminder_email(fname, lname, email, user_id, uid):
       "The Ruddock IMSS Team"
 
   email_utils.sendEmail(to, msg, subject)
-
-def convert_membership_type(membership_desc):
-  '''
-  This takes a membership description (full member, social member, etc)
-  and converts it to the corresponding type. Expects input to be valid
-  and one of (full, social, associate).
-  '''
-
-  full_regex = re.compile(r'^full(| member)$', re.I)
-  social_regex = re.compile(r'^social(| member)$', re.I)
-  assoc_regex = re.compile(r'^associate(| member)$', re.I)
-
-  if full_regex.match(membership_desc):
-    return 1
-  elif social_regex.match(membership_desc):
-    return 2
-  elif assoc_regex.match(membership_desc):
-    return 3
-  else:
-    return False
-
-def add_members_validate_data(data):
-  '''
-  Expects data to be a dict mapping fields to values.
-  '''
-
-  # Keeps track of what errors have been found.
-  errors = set()
-
-  name_regex = re.compile(r"^[a-z][a-z '-]{0,14}[a-z]$", re.I)
-  uid_regex = re.compile(r'^[0-9]{7}$')
-  year_regex = re.compile(r'^(19[0-9]{2}|2(0[0-9]{2}|1[0-5][0-9]))$')
-  email_regex = re.compile(r'^[a-z0-9\.\_\%\+\-]+@[a-z0-9\.\-]+\.[a-z]{2,4}$', re.I)
-
-  try:
-    # Check that all fields are valid.
-    if not name_regex.match(data['fname']):
-      errors.add('First Name')
-
-    if not name_regex.match(data['lname']):
-      errors.add('Last Name')
-
-    if not uid_regex.match(data['uid']):
-      errors.add('UID')
-
-    if not year_regex.match(data['matriculate_year']):
-      errors.add('Matriculation Year')
-
-    if not year_regex.match(data['grad_year']):
-      errors.add('Graduation Year')
-
-    if not email_regex.match(data['email']):
-      errors.add('Email')
-
-    if not convert_membership_type(data['membership_type']):
-      errors.add('Membership Type')
-
-  except KeyError:
-    flash("Invalid data submitted.")
-    return False
-
-  if len(errors) > 0:
-    # So the errors appear in the same order every time.
-    errors = list(errors)
-    errors.sort()
-
-    for field_name in errors:
-      flash("Invalid " + field_name + "(s) submitted.")
-    return False
-
-  return True
-
-def add_members_process_data(new_members_data, field_list):
-  '''
-  Expects data to be a single string (with the contents of a csv file) and
-  field_list to be a list of dicts describing each field. Validates the
-  data before returning it as a list of dicts mapping each field to its
-  value. Returns false if unsuccessful.
-  '''
-
-  # Microsoft Excel has a habit of saving csv files using just \r as
-  # the newline character, not even \r\n.
-  if '\r' in new_members_data and '\n' in new_members_data:
-    delim = '\r\n'
-  elif '\r' in new_members_data:
-    delim = '\r'
-  else:
-    delim = '\n'
-
-  data = []
-  for line in new_members_data.split(delim):
-    if line == "":
-      continue
-
-    values = line.split(',')
-    if len(values) != len(field_list):
-      flash("Invalid data submitted.")
-      return False
-
-    # Skip title line if present
-    if values[0] == field_list[0]['name']:
-      continue
-
-    entry = {}
-    for i in range(len(field_list)):
-      field = field_list[i]
-      entry[field['field']] = values[i]
-    data.append(entry)
-
-  for entry in data:
-    if not add_members_validate_data(entry):
-      return False
-
-  return data
-
-def add_new_members(data):
-    '''
-    This adds the members to the database and them emails them with
-    account creation information. Assumes data has already been validated.
-    '''
-    insert_query = text("""
-      INSERT INTO members (fname, lname, uid, matriculate_year,
-        grad_year, email, membership_type, create_account_key)
-      VALUES (:fname, :lname, :uid, :matriculate_year, :grad_year,
-        :email, :membership_type, :key)
-        """)
-    check_query = text("SELECT 1 FROM members WHERE uid=:uid")
-
-    members_added_count = 0
-    members_skipped_count = 0
-
-    for entry in data:
-      # Check if user is in database already
-      result = g.db.execute(check_query, uid=entry['uid']).first()
-      if result is not None:
-        members_skipped_count += 1
-        continue
-
-      membership_type = convert_membership_type(entry['membership_type'])
-      create_account_key = auth.generate_create_account_key()
-      # Add the user to the database.
-      result = g.db.execute(insert_query, fname=entry['fname'],
-          lname=entry['lname'], uid=entry['uid'],
-          matriculate_year=entry['matriculate_year'],
-          grad_year=entry['grad_year'], email=entry['email'],
-          membership_type=membership_type,
-          key=create_account_key)
-
-      entry['name'] = entry['fname'] + ' ' + entry['lname']
-
-      # Email the user
-      subject = "Welcome to the Ruddock House Website!"
-      msg = email_templates.AddedToWebsiteEmail.format(entry['name'],
-          url_for('create_account', create_account_key=create_account_key,
-            _external=True))
-      to = entry['email']
-      email_utils.sendEmail(to, msg, subject)
-      members_added_count += 1
-
-    flash(str(members_added_count) + " members were successfully added, and " +
-        str(members_skipped_count) + " members were skipped.")
-
-    # Remind admin to add users to mailing lists.
-    flash("IMPORTANT: Don't forget to add the new members to manual email lists, like spam@ruddock!")
-
-    # Send an email to IMSS to alert them that users have been added.
-    to = "imss@ruddock.caltech.edu"
-    subject = "Members were added to the Ruddock Website"
-    entries = '\n'.join([entry['fname'] + ' ' + entry['lname'] for entry in data])
-    msg = email_templates.MembersAddedEmail.format(entries)
-    email_utils.sendEmail(to, msg, subject, usePrefix=False)
-
-def add_members_get_raw_data(field_list):
-  '''
-  For processing data in add single member mode, this converts
-  request data to a csv string. Returns false if unsuccessful.
-  '''
-  values = []
-  for field in field_list:
-    if request.form.has_key(field['field']):
-      value = request.form[field['field']]
-      if value == '':
-        flash("All fields are required.")
-        return False
-      values.append(value)
-    else:
-      flash('Invalid request.')
-      return False
-  return ','.join(values)

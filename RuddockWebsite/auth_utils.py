@@ -1,7 +1,6 @@
 import hashlib
 import passlib.hash
 import string
-import re
 from sqlalchemy import text
 from flask import session, g, url_for, flash
 from RuddockWebsite import constants
@@ -182,63 +181,6 @@ def set_password(username, password):
   query = text("UPDATE users SET password_hash=:ph WHERE username=:u")
   g.db.execute(query, ph=full_hash, u=username)
   return
-
-def validate_username(username, flash_errors=True):
-  '''
-  Checks to make sure username is valid. If flash_errors is True, then the
-  errors will be displayed as flashes. Returns True if valid, else False.
-  '''
-  error = None
-  username_regex = re.compile(r'^[a-zA-Z0-9\-\_]+$')
-  if len(username) == 0:
-    error = 'You must provide a username!'
-  elif len(username) > constants.MAX_USERNAME_LENGTH:
-    error = 'Username cannot be more than {0} characters long!'.format(
-        constants.MAX_USERNAME_LENGTH)
-  elif re.match(r'^[a-zA-Z0-9\-\_]+$', username) is None:
-    error = 'Username contains invalid characters.'
-  else:
-    # Check if username is already in use.
-    query = text("SELECT 1 FROM users WHERE username = :u")
-    result = g.db.execute(query, u=username).first()
-    if result is not None:
-      error = 'Username is already in use!'
-
-  if error is not None:
-    if flash_errors:
-      flash(error)
-    return False
-  return True
-
-def validate_password(password, password2, flash_errors=True):
-  '''
-  Checks to make sure a password is valid. password and password2 should be the
-  values from both times the user enters a password. If you need to check a
-  password outside of the context of a user setting/changing a password, then
-  use the same value for both inputs. If flash_errors is set to True, then the
-  errors will be displayed as flashes.
-
-  Returns True if valid, else False.
-  '''
-  error = None
-  if len(password) == 0:
-    error = 'You must provide a password!'
-  elif len(password2) == 0:
-    error = 'You must confirm your password!'
-  elif password != password2:
-    error = 'Passwords do not match. Please try again!'
-  elif len(password) < constants.MIN_PASSWORD_LENGTH:
-    error = 'Your password must be at least {0} characters long!'.format(
-        constants.MIN_PASSWORD_LENGTH)
-  elif len(password) > constants.MAX_PASSWORD_LENGTH:
-    error = 'Your password cannot be more than {0} characters long!'.format(
-        constants.MAX_PASSWORD_LENGTH)
-
-  if error is not None:
-    if flash_errors:
-      flash(error)
-    return False
-  return True
 
 def generate_salt():
   ''' Generates a pseudorandom salt. '''

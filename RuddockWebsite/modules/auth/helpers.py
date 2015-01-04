@@ -86,7 +86,7 @@ def handle_password_reset(username, new_password, new_password2):
   Handles the submitted password reset request. Returns True if successful,
   False otherwise. Also handles all messages displayed to the user.
   '''
-  if auth_utils.validate_password(new_password, new_password2, flash_errors=True):
+  if validation_utils.validate_password(new_password, new_password2):
     auth_utils.set_password(username, new_password)
     # Clean up the password reset key, so that it cannot be used again.
     query = text("""

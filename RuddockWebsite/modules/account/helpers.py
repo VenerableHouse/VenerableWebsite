@@ -20,9 +20,9 @@ def handle_create_account(user_id, username, password, password2, birthday):
   occurs, otherwise returns True.
   '''
   # Validate username and password. The validate_* functions will flash errors.
-  if auth_utils.validate_username(username) \
-      and auth_utils.validate_password(password, password2) \
-      and misc_utils.validate_birthday(birthday):
+  if validation_utils.validate_username(username) \
+      and validation_utils.validate_password(password, password2) \
+      and validation_utils.validate_birthday(birthday):
     # Insert new values into the database. Because the password is updated in a
     # separate step, we must use a transaction to execute this query.
     trans = g.db.begin()

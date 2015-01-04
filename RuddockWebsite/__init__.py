@@ -34,8 +34,9 @@ def teardown_request(exception):
   ''' Logic executed after every request is finished. '''
 
   # Close database connection.
-  if g.db != None:
-    g.db.close()
+  db = getattr(g, 'db', None)
+  if db is not None:
+    db.close()
 
 # After initialization, import the routes.
 from RuddockWebsite import routes

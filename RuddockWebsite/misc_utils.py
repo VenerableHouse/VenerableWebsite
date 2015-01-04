@@ -1,7 +1,5 @@
-from flask import flash
 import string
 import random
-import datetime
 
 def generate_random_string(length, chars=None):
   '''
@@ -12,12 +10,3 @@ def generate_random_string(length, chars=None):
   if chars is None:
     chars = string.ascii_letters + string.digits
   return "".join(random.choice(chars) for i in xrange(length))
-
-def validate_birthday(birthday):
-  ''' Validates birthday string. Format should be YYYY-MM-DD. '''
-  try:
-    datetime.datetime.strptime(birthday, '%Y-%m-%d')
-  except ValueError:
-    flash('Birthday must be in YYYY-MM-DD format.')
-    return False
-  return True
