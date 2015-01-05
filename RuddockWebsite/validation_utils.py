@@ -1,4 +1,5 @@
 import re
+import datetime
 from flask import flash, g
 from sqlalchemy import text
 from RuddockWebsite import constants
@@ -84,7 +85,7 @@ def check_uid_exists(uid):
   ''' Returns True if the UID exists in the database. '''
   query = text("SELECT 1 FROM members WHERE uid = :uid")
   result = g.db.execute(query, uid=uid).first()
-  if result is not None:
+  if result is None:
     return False
   return True
 

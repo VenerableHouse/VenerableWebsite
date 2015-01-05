@@ -1,9 +1,10 @@
-from flask import g
+from flask import g, flash
 from sqlalchemy import text
 from RuddockWebsite import auth_utils
 from RuddockWebsite import email_templates
 from RuddockWebsite import email_utils
 from RuddockWebsite import misc_utils
+from RuddockWebsite import validation_utils
 
 def get_user_data(user_id):
   ''' Helper funciton to get user data. '''
@@ -20,9 +21,16 @@ def handle_create_account(user_id, username, password, password2, birthday):
   occurs, otherwise returns True.
   '''
   # Validate username and password. The validate_* functions will flash errors.
-  if validation_utils.validate_username(username) \
-      and validation_utils.validate_password(password, password2) \
-      and validation_utils.validate_birthday(birthday):
+  # We want to check all fields and not just stop at the first error.
+  is_valid = True
+  if not validation_utils.validate_username(username):
+    is_valid = False
+  if not validation_utils.validate_password(password, password2):
+    is_valid = False
+  if not validation_utils.validate_birthday(birthday):
+    is_valid = False
+
+  if is_valid:
     # Insert new values into the database. Because the password is updated in a
     # separate step, we must use a transaction to execute this query.
     trans = g.db.begin()
@@ -38,7 +46,7 @@ def handle_create_account(user_id, username, password, password2, birthday):
       # Set the birthday.
       query = text("""
         UPDATE members
-        SET birthday = :b
+        SET bday = :b
         WHERE user_id = :u
         """)
       g.db.execute(query, b=birthday, u=user_id)

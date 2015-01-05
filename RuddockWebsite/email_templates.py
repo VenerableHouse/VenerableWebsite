@@ -69,7 +69,7 @@ The following members have been added to the Ruddock Website:
 
 {0}
 
-and the following members were already in the database:
+and the following members were skipped (they were already in the database):
 
 {1}
 

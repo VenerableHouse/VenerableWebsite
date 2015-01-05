@@ -105,6 +105,7 @@ class NewMember:
     else:
       self.membership_type = None
       # Don't set self.membership_desc, so we can print what the error was later.
+    return
 
 class NewMemberList:
   '''
@@ -142,10 +143,11 @@ class NewMemberList:
         members_skipped.append(new_member.name)
     flash("{0} member(s) were successfully added and {1} member(s) were skipped.".format(len(members_added), len(members_skipped)))
     # Email admins about added members.
+
     to = "imss@ruddock.caltech.edu, secretary@ruddock.caltech.edu"
     msg = email_templates.MembersAddedEmail.format(
-        '\n'.join(members_added),
-        '\n'.join(members_skipped))
+        '\n'.join(members_added) if len(members_added) > 0 else '(none)',
+        '\n'.join(members_skipped) if len(members_skipped) > 0 else '(none)')
     subject = 'Members were added to the Ruddock Website'
     # Don't use prefix since this is being sent to IMSS/Secretary, which have
     # their own prefixes.
