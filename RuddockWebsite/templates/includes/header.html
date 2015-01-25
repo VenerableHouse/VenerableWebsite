@@ -25,8 +25,8 @@
       <div class="navbar-link" onclick="location.href='/forum/'">
         <a href="/forum/">Forum</a>
       </div>
-      <div class="navbar-link" onclick="location.href='{{ url_for("show_about_us") }}'">
-        <a href="{{ url_for("show_about_us") }}">About Us</a>
+      <div class="navbar-link" onclick="location.href='{{ url_for("show_contact") }}'">
+        <a href="{{ url_for("show_contact") }}">Contact</a>
       </div>
     </div>
     <div id="navbar-login">
@@ -50,11 +50,3 @@
     </div>
   </div>
 </div>
-
-{#
-<div class="sub_navbar">
- <a class="sub_navbar" href="{{ url_for("home") }}">Home</a>
- <a class="sub_navbar" href="{{ url_for("show_news") }}">News</a>
- <a class="sub_navbar" href="{{ url_for("show_calendar") }}">Calendar</a>
-</div>
-#}

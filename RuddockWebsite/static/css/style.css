@@ -148,13 +148,13 @@ ul {
 }
 
 /* Footer */
-#about {
+#contact {
   color: white;
   display: table-cell;
   float: right;
   padding: 15px;
 }
-#about a {
+#contact a {
   color: white;
   text-decoration: underline;
 }
@@ -211,4 +211,16 @@ tr.link:hover {
   border-bottom: 2px solid #eeeeee;
   margin-bottom: 15px;
   padding: 10px;
+}
+
+div.scaled_container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+div#flickr_container {
+  position: relative;
+  padding-bottom: 59%;
+  height: 0;
+  overflow: hidden;
 }
