@@ -25,9 +25,6 @@
       <div class="navbar-link" onclick="location.href='/forum/'">
         <a href="/forum/">Forum</a>
       </div>
-      <div class="navbar-link" onclick="location.href='{{ url_for("show_about_us") }}'">
-        <a href="{{ url_for("show_about_us") }}">About Us</a>
-      </div>
     </div>
     <div id="navbar-login">
       {% if not session['username'] %}
@@ -50,11 +47,3 @@
     </div>
   </div>
 </div>
-
-{#
-<div class="sub_navbar">
- <a class="sub_navbar" href="{{ url_for("home") }}">Home</a>
- <a class="sub_navbar" href="{{ url_for("show_news") }}">News</a>
- <a class="sub_navbar" href="{{ url_for("show_calendar") }}">Calendar</a>
-</div>
-#}

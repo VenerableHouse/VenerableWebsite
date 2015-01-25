@@ -148,15 +148,14 @@ ul {
 }
 
 /* Footer */
-#about {
+#contact {
   color: white;
   display: table-cell;
   float: right;
   padding: 15px;
 }
-#about a {
+#contact a {
   color: white;
-  text-decoration: underline;
 }
 #copyright {
   color: white;
