@@ -212,3 +212,14 @@ tr.link:hover {
   margin-bottom: 15px;
   padding: 10px;
 }
+div.scaled_container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+div#flickr_container {
+  position: relative;
+  padding-bottom: 59%;
+  height: 0;
+  overflow: hidden;
+}
