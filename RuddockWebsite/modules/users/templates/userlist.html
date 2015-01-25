@@ -6,16 +6,16 @@
   {# Show link to change current/alumni filtering #}
   {% if filterType == 'current' %}
     Currently showing only current students. View
-    <a href="{{ url_for('show_users', filterType='all') }}">all Rudds</a> or
-    <a href="{{ url_for('show_users', filterType='alumni') }}">only alumni</a>.
+    <a href="{{ url_for('users.show_users', filterType='all') }}">all Rudds</a> or
+    <a href="{{ url_for('users.show_users', filterType='alumni') }}">only alumni</a>.
   {% elif filterType == 'alumni' %}
     Currently showing only alumni. View
-    <a href="{{ url_for('show_users', filterType='all') }}">all Rudds</a> or
-    <a href="{{ url_for('show_users', filterType='current') }}">only current students</a>.
+    <a href="{{ url_for('users.show_users', filterType='all') }}">all Rudds</a> or
+    <a href="{{ url_for('users.show_users', filterType='current') }}">only current students</a>.
   {% else %}
     Currently showing all Rudds. View only
-    <a href="{{ url_for('show_users', filterType='current') }}">current students</a> or
-    <a href="{{ url_for('show_users', filterType='alumni') }}">alumni</a>.
+    <a href="{{ url_for('users.show_users', filterType='current') }}">current students</a> or
+    <a href="{{ url_for('users.show_users', filterType='alumni') }}">alumni</a>.
   {% endif %}
   Click on the columns to sort.
   <br><br>
@@ -34,7 +34,7 @@
   {# Now, display each row #}
   {% for result in data %}
   {% if idMap[result['user_id']] %}
-  <tr class="link" onclick="location.href='{{ url_for('show_user_profile', 
+  <tr class="link" onclick="location.href='{{ url_for('users.show_user_profile', 
     username=idMap[result['user_id']]) }}'">
   {% else %}
   <tr>

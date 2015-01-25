@@ -1,9 +1,6 @@
-# for querying the db
 from sqlalchemy import create_engine, text
-import config
-# for updating mailman
+from RuddockWebsite import config, email_utils
 from subprocess import check_call
-from email_utils import sendEmail
 import tempfile
 
 def updateFromList(results, lst):
@@ -11,7 +8,7 @@ def updateFromList(results, lst):
 
   # write emails to flat file
   if len(results) <= 0:
-     sendEmail('imss@ruddock.caltech.edu', 'Email list has no subscribers: ' + \
+     email_utils.sendEmail('imss@ruddock.caltech.edu', 'Email list has no subscribers: ' + \
         query + '\n\nFor list: ' + lst, '[RuddWeb] THE EMAIL SCRIPT IS BROKEN')
   else:
     try:
@@ -28,7 +25,7 @@ def updateFromList(results, lst):
 
       f.close() # this also deletes the tempfile
     except Exception as e:
-      sendEmail('imss@ruddock.caltech.edu', 'Exception: ' + str(e) + \
+      email_utils.sendEmail('imss@ruddock.caltech.edu', 'Exception: ' + str(e) + \
           '\n\nFor list: ' + lst, '[RuddWeb] THE EMAIL SCRIPT IS BROKEN')
 
 def getAdditionalEmails(lst):

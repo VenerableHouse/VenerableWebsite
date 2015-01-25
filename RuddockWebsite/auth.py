@@ -1,6 +1,8 @@
-from email_utils import sendEmail
 from sqlalchemy import text
 from flask import session, g
+
+from RuddockWebsite import email_utils
+
 SALT_SIZE = 8
 
 def get_user_id(username):
@@ -58,9 +60,9 @@ def passwd_reset(user, newpasswd, salt=True, email=None):
               "If you did not request a password change, please" + \
               " email imss@ruddock.caltech.edu immediately.\n" + \
               "\n\nThanks,\nThe Ruddock Website"
-        sendEmail(str(email), msg, "[RuddWeb] Changed Password")
+        email_utils.sendEmail(str(email), msg, "[RuddWeb] Changed Password")
       except Exception as e:
-        sendEmail("imss@ruddock.caltech.edu",
+        email_utils.sendEmail("imss@ruddock.caltech.edu",
                   "Something went wrong when trying to email user " + user + \
                   " after changing their password. You should look into this." + \
                   "\n\nException: " + str(e), "[RuddWeb] EMAIL ERROR")
