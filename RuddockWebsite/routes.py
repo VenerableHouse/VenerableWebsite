@@ -199,9 +199,9 @@ def show_gov():
 
   return render_template('government.html', all_types = all_types)
 
-@app.route('/about_us')
-def show_about_us():
-  return render_template('about_us.html')
+@app.route('/contact')
+def show_contact():
+  return render_template('contact.html')
 
 @app.route('/create_account', methods=['GET', 'POST'])
 def create_account():
