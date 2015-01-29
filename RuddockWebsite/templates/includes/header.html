@@ -10,39 +10,41 @@
 
   <div id="navbar">
     <div id="navbar-links">
-      <div class="navbar-link" onclick="location.href='{{ url_for("home") }}'">
-        <a href="{{ url_for("home") }}">Home</a>
-      </div>
-      <div class="navbar-link" onclick="location.href='{{ url_for("users.show_users") }}'">
-        <a href="{{ url_for("users.show_users") }}">House Lists</a>
-      </div>
-      <div class="navbar-link" onclick="location.href='{{ url_for("show_gov") }}'">
-        <a href="{{ url_for("show_gov") }}">Government</a>
-      </div>
-      <div class="navbar-link" onclick="location.href='{{ url_for("static", filename="constitution/constitution.pdf") }}'">
-        <a href="{{ url_for("static", filename="constitution/constitution.pdf") }}">Constitution</a>
-      </div>
-      <div class="navbar-link" onclick="location.href='/forum/'">
-        <a href="/forum/">Forum</a>
-      </div>
+      <a class="header-link" href="{{ url_for("home") }}">
+        <div class="navbar-link" onclick="location.href='{{ url_for("home") }}'">Home</div>
+      </a>
+      <a class="header-link" href="{{ url_for("users.show_users") }}">
+        <div class="navbar-link" onclick="location.href='{{ url_for("users.show_users") }}'">House Lists</div>
+      </a>
+      <a class="header-link" href="{{ url_for("show_gov") }}">
+        <div class="navbar-link" onclick="location.href='{{ url_for("show_gov") }}'">Government</div>
+      </a>
+      <a class="header-link" href="{{ url_for("static", filename="constitution/constitution.pdf") }}">
+        <div class="navbar-link" onclick="location.href='{{ url_for("static", filename="constitution/constitution.pdf") }}'">
+          Constitution
+        </div>
+      </a>
+      <a class="header-link" href="/forum/"><div class="navbar-link" onclick="location.href='/forum/'">Forum</div></a>
     </div>
     <div id="navbar-login">
       {% if not session['username'] %}
-        <div class="navbar-link" onclick="location.href='{{ url_for("login") }}'">
-          <a href="{{ url_for("login") }}">Login</a>
-        </div>
+        <a class="header-link" href="{{ url_for("login") }}">
+          <div class="navbar-link" onclick="location.href='{{ url_for("login") }}'">Login</div>
+        </a>
       {% else %}
-        <div class="navbar-link" onclick="location.href='{{ url_for("users.show_user_profile", username=session["username"]) }}'">
-          <a href="{{ url_for('users.show_user_profile', username=session['username']) }}">{{session['username']}}</a>
-        </div>
+        <a class="header-link" href="{{ url_for('users.show_user_profile', username=session['username']) }}">
+          <div class="navbar-link" onclick="location.href='{{ url_for("users.show_user_profile", username=session["username"]) }}'">
+            {{session['username']}}
+           </div>
+        </a>
         {% if session['show_admin'] %}
-          <div class="navbar-link" onclick="location.href='{{ url_for("admin.admin_home") }}'">
-            <a href="{{ url_for('admin.admin_home') }}">Admin</a>
-          </div>
+          <a class="header-link" href="{{ url_for('admin.admin_home') }}">
+            <div class="navbar-link" onclick="location.href='{{ url_for("admin.admin_home") }}'">Admin</div>
+          </a>
         {% endif %}
-        <div class="navbar-link" onclick="location.href='{{ url_for("logout") }}'">
-          <a href="{{ url_for('logout') }}">Logout</a>
-        </div>
+        <a class="header-link" href="{{ url_for('logout') }}">
+          <div class="navbar-link" onclick="location.href='{{ url_for("logout") }}'">Logout</div>
+        </a>
       {% endif %}
     </div>
   </div>

@@ -11,9 +11,9 @@ from RuddockWebsite.modules.users import blueprint, helpers
 def show_users():
   """ Procedure to show a list of all users, with all membership details. """
   # store which columns we want, and their displaynames
-  cols = ["user_id", "lname", "fname", "email", "matriculate_year", \
+  cols = ["user_id", "fname", "lname", "email", "matriculate_year", \
           "grad_year", "major", "membership_desc"]
-  display = [None, "Last", "First", "Email", "Matr.", "Grad.", "Major", "Type"]
+  display = [None, "First", "Last", "Email", "Matr.", "Grad.", "Major", "Type"]
   fieldMap = dict(zip(cols, display))
 
   # check which table to read from
@@ -28,7 +28,8 @@ def show_users():
     filterType = 'all'
 
   # perform query
-  query = text("SELECT * FROM " + tableName + " NATURAL JOIN membership_types")
+  query = text("SELECT * FROM " + tableName + " NATURAL JOIN membership_types" +
+               " ORDER BY fname")
   results = g.db.execute(query)
 
   # put results in a dictionary

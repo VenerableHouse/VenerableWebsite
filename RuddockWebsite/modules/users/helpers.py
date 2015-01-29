@@ -2,8 +2,6 @@ from flask import g, session
 from sqlalchemy import text
 from collections import OrderedDict
 
-from RuddockWebsite import auth, constants
-
 def get_user_info(username):
   """ Procedure to get a user's info from the database. """
   cols = [["username"], ["fname", "lname"], ["nickname"], ["bday"], \
