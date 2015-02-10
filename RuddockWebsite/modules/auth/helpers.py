@@ -4,6 +4,7 @@ from RuddockWebsite import auth_utils
 from RuddockWebsite import constants
 from RuddockWebsite import email_templates
 from RuddockWebsite import email_utils
+from RuddockWebsite import validation_utils
 
 def authenticate(username, password):
   '''

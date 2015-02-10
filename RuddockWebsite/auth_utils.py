@@ -4,8 +4,6 @@ import string
 from sqlalchemy import text
 from flask import session, g, url_for, flash
 from RuddockWebsite import constants
-from RuddockWebsite import email_utils
-from RuddockWebsite import email_templates
 from RuddockWebsite import misc_utils
 
 class PasswordHashParser:
@@ -215,22 +213,13 @@ def generate_salt():
 
 def generate_reset_key():
   '''
-  Generates a pseudorandom reset key. Guaranteed to be unique in the database.
-  We use only digits and lowercase letters since the database string comparison
-  is case insensitive (we already have more than enough entropy anyway).
+  Generates a random reset key. We use only digits and lowercase letters since
+  the database string comparison is case insensitive (if more entropy is
+  needed, just make the string longer).
   '''
   chars = string.ascii_lowercase + string.digits
-  while True:
-    reset_key = misc_utils.generate_random_string(constants.PWD_RESET_KEY_LENGTH,
-        chars=chars)
-    # Reset keys are random, so is extremely unlikely that they overlap.
-    # However, it would be nice to make sure anyway.
-    query = text("SELECT 1 FROM users WHERE password_reset_key = :rk")
-    result = g.db.execute(query, rk=reset_key).first()
-    # If a result is returned, then the key already exists.
-    if result is None:
-      break
-  return reset_key
+  return misc_utils.generate_random_string(constants.PWD_RESET_KEY_LENGTH,
+      chars=chars)
 
 def check_reset_key(reset_key):
   ''' Returns the username if the reset key is valid, otherwise None. '''
@@ -287,18 +276,12 @@ def update_last_login(username):
 
 def generate_create_account_key():
   '''
-  Generates a pseudorandom account creation key. Guaranteed to be unique in the
-  database. Implementation is very similar to generate_reset_key().
+  Generates a random account creation key. Implementation is very similar to
+  generate_reset_key().
   '''
   chars = string.ascii_lowercase + string.digits
-  while True:
-    key = misc_utils.generate_random_string(constants.CREATE_ACCOUNT_KEY_LENGTH,
-        chars=chars)
-    query = text("SELECT 1 FROM members WHERE create_account_key = :k")
-    result = g.db.execute(query, k=key).first()
-    if result is None:
-      break
-  return key
+  return misc_utils.generate_random_string(constants.CREATE_ACCOUNT_KEY_LENGTH,
+      chars=chars)
 
 def check_create_account_key(key):
   '''
