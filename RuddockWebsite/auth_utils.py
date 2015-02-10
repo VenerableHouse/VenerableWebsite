@@ -137,7 +137,8 @@ class PasswordHashParser:
       rounds = self.rounds[i]
       salt = self.salts[i]
       test_hash = hash_password(test_hash, salt, rounds, algorithm)
-    return test_hash == self.password_hash
+    true_hash = self.password_hash
+    return compare_secure_strings(test_hash, true_hash)
 
   def is_legacy(self):
     ''' Returns true if the hashing algorithm is not the most current version. '''
@@ -289,3 +290,15 @@ def check_create_account_key(key):
     return result['user_id']
   else:
     return None
+
+def compare_secure_strings(string1, string2):
+  '''
+  String comparison function where the time complexity depends only on the
+  length of the string and not the characters themselves. This function must be
+  used for comparing cryptographic strings to prevent side-channel timing
+  attacks.
+  '''
+  result = len(string1) ^ len(string2)
+  for x, y in zip(string1, string2):
+    result |= ord(x) ^ ord(y)
+  return result == 0
