@@ -54,22 +54,30 @@ class PasswordHashParser:
     # which is the same as the order in which they are stored. So if we want
     # sha256(md5(password)), then we have $md5|sha256$ which becomes
     # ['md5', 'sha256'].
-    if len(algorithms) != len(rounds) or len(algorithms) != len(salts):
-      raise ValueError
-    self.algorithms = algorithms
-    self.rounds = rounds
-    self.salts = salts
-    self.password_hash = password_hash
+    if password_hash is not None:
+      self.algorithms = algorithms
+      self.rounds = rounds
+      self.salts = salts
+      self.password_hash = password_hash
+      # Check given values.
+      if not self.check_self():
+        raise ValueError
+    else:
+      self.algorithms = []
+      self.rounds = []
+      self.salts = []
+      self.password_hash = None
 
   def __str__(self):
     '''
-    Method to convert object into string. This method is overridden to conver
+    Method to convert object into string. This method is overridden to convert
     the object into the full hash string it was generated from. Can also be
     used to generate a full hash string.
     '''
-    # Cannot be used if not initialized.
-    if self.password_hash is None:
+    # Must be initialized to some valid state.
+    if not self.check_self():
       return None
+
     algorithms = self.algorithms
     rounds = map(lambda x: str(x) if x is not None else '', self.rounds)
     salts = self.salts
@@ -80,12 +88,29 @@ class PasswordHashParser:
     return "${0}${1}${2}${3}".format(algorithm_str, rounds_str, salt_str, \
         self.password_hash)
 
+  def check_self(self):
+    '''
+    This helper checks if this object is currently in a state that is valid for
+    checking passwords.  Returns True if successful.
+    '''
+    # Check that each list is nonempty and of the same length.
+    if len(self.algorithms) == 0 \
+        or len(self.algorithms) != len(self.rounds) \
+        or len(self.algorithms) != len(self.salts):
+      return False
+    # Check that a password hash is actually set.
+    if self.password_hash is None:
+      return False
+
+    # Check that each algorithm is supported.
+    if any(x not in PasswordHashParser.valid_algorithms for x in self.algorithms):
+      return False
+    return True
+
   def parse(self, full_hash):
     '''
     Parses a hash in the format:
-
       $algorithm1|...|algorithmN$rounds1|...|roundsN$salt1|...|saltN$hash
-
     Returns True if successful, False if something unexpected happens.
     '''
     hash_components = full_hash.split('$')
@@ -99,20 +124,15 @@ class PasswordHashParser:
     password_hash = hash_components[4]
 
     # Algorithms must be valid.
-    if any(map(lambda x: x not in PasswordHashParser.valid_algorithms, algorithms)):
+    if any(x not in PasswordHashParser.valid_algorithms for x in algorithms):
       return False
 
     # Rounds must be integers. If empty string, set to None (not all algorithms
     # supported use key stretching).
     try:
-      rounds = map(lambda x: int(x) if len(x) != 0 else None, rounds)
+      rounds = [int(x) if len(x) != 0 else None for x in rounds]
     except ValueError:
       # Something wasn't an integer.
-      return False
-
-    # At least one algorithm must be given and all lists must be the same length.
-    if len(algorithms) == 0 or \
-        len(algorithms) != len(rounds) or len(algorithms) != len(salts):
       return False
 
     # Update with parsed values.
@@ -120,28 +140,31 @@ class PasswordHashParser:
     self.rounds = rounds
     self.salts = salts
     self.password_hash = password_hash
-    return True
+    # Sanity check
+    return self.check_self()
 
   def verify_password(self, password):
     '''
     Verifies a password by applying each algorithm in turn to the password.
     Returns True if successful, else False.
     '''
-    if self.password_hash is None:
-      # Not initialized properly.
+    # Check that we're in a state to check a password.
+    if not self.check_self():
       return False
 
     test_hash = password
+    true_hash = self.password_hash
     for i in xrange(len(self.algorithms)):
       algorithm = self.algorithms[i]
       rounds = self.rounds[i]
       salt = self.salts[i]
       test_hash = hash_password(test_hash, salt, rounds, algorithm)
-    true_hash = self.password_hash
     return compare_secure_strings(test_hash, true_hash)
 
   def is_legacy(self):
-    ''' Returns true if the hashing algorithm is not the most current version. '''
+    '''
+    Returns true if the hashing algorithm is not the most current version.
+    '''
     return len(self.algorithms) != 1 or \
         self.algorithms[0] != constants.PWD_HASH_ALGORITHM or \
         self.rounds[0] != constants.HASH_ROUNDS
@@ -179,6 +202,9 @@ def set_password(username, password):
   # Create new password hash string.
   parser = PasswordHashParser([algorithm], [rounds], [salt], password_hash)
   full_hash = str(parser)
+  # Sanity check
+  if full_hash is None:
+    raise ValueError
   query = text("UPDATE users SET password_hash=:ph WHERE username=:u")
   g.db.execute(query, ph=full_hash, u=username)
   return
