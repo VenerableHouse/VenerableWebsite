@@ -117,7 +117,7 @@ class NewMemberList:
 
   def __str__(self):
     ''' Returns data formatted as a CSV string. '''
-    return '\n'.join([str(new_member) for new_member in self.new_member_list])
+    return '\n'.join(str(new_member) for new_member in self.new_member_list)
 
   def validate_data(self, flash_errors=True):
     '''

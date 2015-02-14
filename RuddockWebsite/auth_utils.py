@@ -101,9 +101,7 @@ class PasswordHashParser:
       return False
 
     # Check that each algorithm is supported.
-    if any(x not in PasswordHashParser.valid_algorithms for x in self.algorithms):
-      return False
-    return True
+    return all(x in PasswordHashParser.valid_algorithms for x in self.algorithms)
 
   def parse(self, full_hash):
     '''

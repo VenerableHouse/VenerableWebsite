@@ -4,20 +4,28 @@ from flask import flash, g
 from sqlalchemy import text
 from RuddockWebsite import constants
 
+username_regex = re.compile(r'^[a-z][a-z0-9_-]*$', re.I)
+name_regex = re.compile(r"^[a-z][a-z '-]{0,30}[a-z]$", re.I)
+uid_regex = re.compile(r'^[0-9]{7}$')
+year_regex = re.compile(r'^[0-9]{4}$')
+email_regex = re.compile(r'^[a-z0-9\.\_\%\+\-]+@[a-z0-9\.\-]+\.[a-z]+$', re.I)
+
 def validate_username(username, flash_errors=True):
   '''
   Checks to make sure username is valid. If flash_errors is True, then the
   errors will be displayed as flashes. Returns True if valid, else False.
   '''
   error = None
-  username_regex = re.compile(r'^[a-zA-Z0-9\-\_]+$')
   if len(username) == 0:
     error = 'You must provide a username!'
+  elif len(username) < constants.MIN_USERNAME_LENGTH:
+    error = 'Username must be at least {0} characters long!'.format(
+        constants.MIN_USERNAME_LENGTH)
   elif len(username) > constants.MAX_USERNAME_LENGTH:
     error = 'Username cannot be more than {0} characters long!'.format(
         constants.MAX_USERNAME_LENGTH)
-  elif re.match(r'^[a-zA-Z0-9\-\_]+$', username) is None:
-    error = 'Username contains invalid characters.'
+  elif username_regex.match(username) is None:
+    error = 'Username may contain only alphanumeric characters, hyphens, or underscores and must begin with a letter.'
   else:
     # Check if username is already in use.
     query = text("SELECT 1 FROM users WHERE username = :u")
@@ -65,7 +73,6 @@ def validate_name(name, flash_errors=True):
   ''' Validates a name. Flashes errors if flash_errors is True. '''
   # Allow letters, spaces, hyphens, and apostrophes.
   # First and last characters must be letters.
-  name_regex = re.compile(r"^[a-z][a-z '-]{0,30}[a-z]$", re.I)
   if not name_regex.match(name):
     if flash_errors:
       flash("'{0}' is not a valid name.".format(name))
@@ -74,7 +81,6 @@ def validate_name(name, flash_errors=True):
 
 def validate_uid(uid, flash_errors=True):
   ''' Validates a UID. Flashes errors if flash_errors is True. '''
-  uid_regex = re.compile(r'^[0-9]{7}$')
   if not uid_regex.match(uid):
     if flash_errors:
       flash("'{0}' is not a valid UID.".format(uid))
@@ -83,15 +89,15 @@ def validate_uid(uid, flash_errors=True):
 
 def check_uid_exists(uid):
   ''' Returns True if the UID exists in the database. '''
+  if not validate_uid(uid, flash_errors=False):
+    return False
+
   query = text("SELECT 1 FROM members WHERE uid = :uid")
   result = g.db.execute(query, uid=uid).first()
-  if result is None:
-    return False
-  return True
+  return result is not None
 
 def validate_year(year, flash_errors=True):
   ''' Validates a year. Flashes errors if flash_errors is True. '''
-  year_regex = re.compile(r'^[0-9]{4}$')
   # Also check that the year is in the range supported by MySQL's year type.
   if year_regex.match(year) \
       and int(year) >= 1901 \
@@ -103,7 +109,6 @@ def validate_year(year, flash_errors=True):
 
 def validate_email(email, flash_errors=True):
   ''' Validates an email. Flashes errrors if flash_errors is True. '''
-  email_regex = re.compile(r'^[a-z0-9\.\_\%\+\-]+@[a-z0-9\.\-]+\.[a-z]{2,4}$', re.I)
   if not email_regex.match(email):
     if flash_errors:
       flash("'{0}' is not a valid email.".format(email))

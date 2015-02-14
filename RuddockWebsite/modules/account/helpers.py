@@ -7,7 +7,7 @@ from RuddockWebsite import misc_utils
 from RuddockWebsite import validation_utils
 
 def get_user_data(user_id):
-  ''' Helper funciton to get user data. '''
+  ''' Helper function to get user data. '''
   query = text("""
     SELECT fname, lname, uid, matriculate_year, grad_year, email
     FROM members
@@ -30,50 +30,45 @@ def handle_create_account(user_id, username, password, password2, birthday):
   if not validation_utils.validate_birthday(birthday):
     is_valid = False
 
-  if is_valid:
-    # Insert new values into the database. Because the password is updated in a
-    # separate step, we must use a transaction to execute this query.
-    trans = g.db.begin()
-    try:
-      # Insert the new row into users.
-      query = text("""
-        INSERT INTO users (user_id, username, password_hash)
-        VALUES (:uid, :u, :ph)
-        """)
-      g.db.execute(query, uid=user_id, u=username, ph='')
-      # Set the password.
-      auth_utils.set_password(username, password)
-      # Set the birthday.
-      query = text("""
-        UPDATE members
-        SET bday = :b
-        WHERE user_id = :u
-        """)
-      g.db.execute(query, b=birthday, u=user_id)
-      # Invalidate the account creation key.
-      query = text("""
-        UPDATE members
-        SET create_account_key = NULL
-        WHERE user_id = :u
-        """)
-      g.db.execute(query, u=user_id)
-      trans.commit()
-    except Exception:
-      trans.rollback()
-      flash("An unexpected error occurred. Please find an IMSS rep.")
-      return False
-    # Email the user.
+  if not is_valid:
+    return False
+
+  # Insert new values into the database. Because the password is updated in a
+  # separate step, we must use a transaction to execute this query.
+  trans = g.db.begin()
+  try:
+    # Insert the new row into users.
     query = text("""
-      SELECT CONCAT(fname, ' ', lname) AS name, email
-      FROM members NATURAL JOIN users
-      WHERE username=:u
+      INSERT INTO users (user_id, username, password_hash)
+      VALUES (:uid, :u, :ph)
       """)
-    result = g.db.execute(query, u=username).first()
-    # Send confirmation email to user.
-    email = result['email']
-    name = result['name']
-    msg = email_templates.CreateAccountSuccessfulEmail.format(name, username)
-    subject = "Thanks for creating an account!"
-    email_utils.sendEmail(email, msg, subject)
-    return True
-  return False
+    g.db.execute(query, uid=user_id, u=username, ph='')
+    # Set the password.
+    auth_utils.set_password(username, password)
+    # Set the birthday and invalidate the account creation key.
+    query = text("""
+      UPDATE members
+      SET bday = :b,
+        create_account_key = NULL
+      WHERE user_id = :u
+      """)
+    g.db.execute(query, b=birthday, u=user_id)
+    trans.commit()
+  except Exception:
+    trans.rollback()
+    flash("An unexpected error occurred. Please find an IMSS rep.")
+    return False
+  # Email the user.
+  query = text("""
+    SELECT CONCAT(fname, ' ', lname) AS name, email
+    FROM members NATURAL JOIN users
+    WHERE username=:u
+    """)
+  result = g.db.execute(query, u=username).first()
+  # Send confirmation email to user.
+  email = result['email']
+  name = result['name']
+  msg = email_templates.CreateAccountSuccessfulEmail.format(name, username)
+  subject = "Thanks for creating an account!"
+  email_utils.sendEmail(email, msg, subject)
+  return True

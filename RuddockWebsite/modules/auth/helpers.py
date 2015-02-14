@@ -72,7 +72,7 @@ def handle_forgotten_password(username, email):
     if constants.PWD_RESET_KEY_EXPIRATION < 60:
       expiration_time_str = "{} minutes".format(constants.PWD_RESET_KEY_EXPIRATION)
     else:
-      expiration_time_str = "{} hours".format(constants.PWD_RESET_KEY_EXPIRATION / 60)
+      expiration_time_str = "{} hours".format(constants.PWD_RESET_KEY_EXPIRATION // 60)
     # Send email to user.
     msg = email_templates.ResetPasswordEmail.format(name,
         url_for('auth.reset_password', reset_key=reset_key, _external=True),
@@ -87,27 +87,28 @@ def handle_password_reset(username, new_password, new_password2):
   Handles the submitted password reset request. Returns True if successful,
   False otherwise. Also handles all messages displayed to the user.
   '''
-  if validation_utils.validate_password(new_password, new_password2):
-    auth_utils.set_password(username, new_password)
-    # Clean up the password reset key, so that it cannot be used again.
-    query = text("""
-      UPDATE users
-      SET password_reset_key = NULL, password_reset_expiration = NULL
-      WHERE username = :u
-      """)
-    g.db.execute(query, u=username)
-    # Get the user's email.
-    query = text("""
-      SELECT CONCAT(fname, ' ', lname) AS name, email
-      FROM members NATURAL JOIN users
-      WHERE username=:u
-      """)
-    result = g.db.execute(query, u=username).first()
-    # Send confirmation email to user.
-    email = result['email']
-    name = result['name']
-    msg = email_templates.ResetPasswordSuccessfulEmail.format(name)
-    subject = "Password reset successful"
-    email_utils.sendEmail(email, msg, subject)
-    return True
-  return False
+  if not validation_utils.validate_password(new_password, new_password2):
+    return False
+
+  auth_utils.set_password(username, new_password)
+  # Clean up the password reset key, so that it cannot be used again.
+  query = text("""
+    UPDATE users
+    SET password_reset_key = NULL, password_reset_expiration = NULL
+    WHERE username = :u
+    """)
+  g.db.execute(query, u=username)
+  # Get the user's email.
+  query = text("""
+    SELECT CONCAT(fname, ' ', lname) AS name, email
+    FROM members NATURAL JOIN users
+    WHERE username=:u
+    """)
+  result = g.db.execute(query, u=username).first()
+  # Send confirmation email to user.
+  email = result['email']
+  name = result['name']
+  msg = email_templates.ResetPasswordSuccessfulEmail.format(name)
+  subject = "Password reset successful"
+  email_utils.sendEmail(email, msg, subject)
+  return True
