@@ -1,4 +1,5 @@
 import hashlib
+import binascii
 import string
 from sqlalchemy import text
 from flask import session, g, url_for, flash
@@ -182,7 +183,8 @@ def hash_password(password, salt, rounds, algorithm):
     # Rounds must be set.
     if rounds is None:
       return None
-    return hashlib.pbkdf2_hmac('sha256', password, salt, rounds).hexdigest()
+    result = hashlib.pbkdf2_hmac('sha256', password, salt, rounds)
+    return binascii.hexlify(result)
   elif algorithm == 'md5':
     # Rounds is ignored.
     return hashlib.md5(salt + password).hexdigest()
