@@ -39,3 +39,7 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# OS X generated files
+.DS_Store
+._*
