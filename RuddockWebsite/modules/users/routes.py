@@ -10,44 +10,32 @@ from RuddockWebsite.modules.users import blueprint, helpers
 @login_required()
 def show_users():
   """ Procedure to show a list of all users, with all membership details. """
-  # store which columns we want, and their displaynames
+  # store which columns we want, and their display names
   cols = ["user_id", "fname", "lname", "email", "matriculate_year", \
-          "grad_year", "major", "membership_desc"]
-  display = [None, "First", "Last", "Email", "Matr.", "Grad.", "Major", "Type"]
+          "grad_year", "membership_desc"]
+  display = [None, "First", "Last", "Email", "Matr.", "Grad.", "Membership"]
   fieldMap = dict(zip(cols, display))
 
   # check which table to read from
-  if 'filterType' in request.args and request.args['filterType'] == 'current':
+  filterType = request.args.get('filterType', None)
+  if filterType == 'current':
     tableName = 'members_current'
-    filterType = 'current'
-  elif 'filterType' in request.args and request.args['filterType'] == 'alumni':
+  elif filterType == 'alumni':
     tableName = 'members_alumni'
-    filterType = 'alumni'
   else:
     tableName = 'members'
-    filterType = 'all'
 
   # perform query
   query = text("SELECT * FROM " + tableName + " NATURAL JOIN membership_types" +
                " ORDER BY fname")
-  results = g.db.execute(query)
-
-  # put results in a dictionary
-  result_cols = results.keys()
-  res = []
-  for result in results:
-    temp_dict = {}
-    for i, key in enumerate(result_cols):
-      if key in cols and result[i]:
-        temp_dict[key] = result[i]
-    res.append(temp_dict)
+  membership_data = g.db.execute(query).fetchall()
 
   # we also want to map ids to usernames so we can link to individual pages
   query = text("SELECT user_id, username FROM users")
   results = g.db.execute(query)
-  idMap = dict(list(results)) # key is id, value is username
+  idMap = dict(list(results)) # key is user_id, value is username
 
-  return render_template('userlist.html', data = res, fields = cols, \
+  return render_template('userlist.html', data=membership_data, fields=cols, \
       displays=display, idMap=idMap, fieldMap=fieldMap, filterType=filterType)
 
 @blueprint.route('/view/<username>')
