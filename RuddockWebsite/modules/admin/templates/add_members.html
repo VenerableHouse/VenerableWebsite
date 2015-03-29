@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h2>Add new members</h2>
+Use this to add a single member to the website. All fields are required.<br><br>
+<form action="{{ url_for('admin.add_members_single_confirm') }}" method="post">
+  <table class="form">
+    <tr>
+      <td>First Name</td>
+      <td><input type="text" name="fname" autofocus /></td>
+      <td>Last Name</td>
+      <td><input type="text" name="lname" /></td>
+    </tr>
+    <tr>
+      <td>Matriculation Year</td>
+      <td><input type="text" name="matriculate_year" /></td>
+      <td>Graduation Year</td>
+      <td><input type="text" name="grad_year" /></td>
+    </tr>
+    <tr>
+      <td>UID</td>
+      <td><input type="text" name="uid" /></td>
+      <td>Email</td>
+      <td><input type="text" name="email" /></td>
+    </tr>
+    <tr>
+      <td>Membership Type</td>
+      <td><select name="membership_desc">
+        <option value="full">Full</option>
+        <option value="social">Social</option>
+        <option value="associate">Associate</option>
+        <option value="ra">RA</option>
+      </td>
+    </tr>
+  </table>
+  <button type="submit">Submit</button>
+</form>
+<br>
+<br>
+Alternatively, if you need to add many users at once, download and fill out the template provided below.
+<br>
+<br>
+<a href="{{ url_for('static', filename='admin/add_members_template.csv') }}">add_members_template.csv</a>
+<br>
+<br>
+Please upload the completed csv file here.
+<form action="{{ url_for('admin.add_members_multi_confirm') }}" method="post" enctype="multipart/form-data">
+  <input type="file" name="new_members_file" />
+  <br>
+  <br>
+  <button type="submit">Submit</button>
+</form>
+{% endblock body %}

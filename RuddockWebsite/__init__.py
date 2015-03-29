@@ -3,7 +3,7 @@ from flask import Flask, g
 from sqlalchemy import create_engine
 
 from RuddockWebsite import config, constants
-from RuddockWebsite.modules import admin, hassle, users
+from RuddockWebsite.modules import account, admin, auth, hassle, users
 
 app = Flask(__name__)
 app.debug = False
@@ -16,7 +16,10 @@ app.config['MAX_CONTENT_LENGTH'] = constants.MAX_CONTENT_LENGTH
 app.jinja_env.globals.update(current_year=lambda: datetime.now().year)
 
 # Load blueprint modules
+app.register_blueprint(account.blueprint, url_prefix='/account')
 app.register_blueprint(admin.blueprint, url_prefix='/admin')
+# Auth blueprint has no prefix, since not all endpoints have the same prefix.
+app.register_blueprint(auth.blueprint)
 app.register_blueprint(hassle.blueprint, url_prefix='/hassle')
 app.register_blueprint(users.blueprint, url_prefix='/users')
 
@@ -35,8 +38,9 @@ def teardown_request(exception):
   ''' Logic executed after every request is finished. '''
 
   # Close database connection.
-  if g.db != None:
-    g.db.close()
+  db = getattr(g, 'db', None)
+  if db is not None:
+    db.close()
 
 # After initialization, import the routes.
 from RuddockWebsite import routes

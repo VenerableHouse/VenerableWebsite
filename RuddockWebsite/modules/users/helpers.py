@@ -2,7 +2,7 @@ from flask import g, session
 from sqlalchemy import text
 from collections import OrderedDict
 
-from RuddockWebsite import auth, constants
+from RuddockWebsite import auth_utils, constants
 
 def get_user_info(username):
   """ Procedure to get a user's info from the database. """
@@ -44,6 +44,5 @@ def can_edit(username):
   if 'username' not in session:
     return False
   return session['username'] == username or \
-      auth.check_permission(constants.Permissions.UserAdmin)
-
+      auth_utils.check_permission(constants.Permissions.UserAdmin)
 

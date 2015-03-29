@@ -26,7 +26,7 @@
     </div>
     <div id="navbar-login">
       {% if not session['username'] %}
-        <a class="header-link" href="{{ url_for("login") }}">
+        <a class="header-link" href="{{ url_for("auth.login") }}">
           <div class="navbar-link">Login</div>
         </a>
       {% else %}
@@ -38,7 +38,7 @@
             <div class="navbar-link">Admin</div>
           </a>
         {% endif %}
-        <a class="header-link" href="{{ url_for('logout') }}">
+        <a class="header-link" href="{{ url_for('auth.logout') }}">
           <div class="navbar-link">Logout</div>
         </a>
       {% endif %}
