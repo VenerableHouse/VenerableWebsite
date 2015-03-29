@@ -1,6 +1,6 @@
 # RuddockWebsite
 
-The Ruddock House Website. Written using Python/Flask and powered by MariaDB. Live version can be found at: http://ruddock.caltech.edu
+The Ruddock House Website, written using Python/Flask and powered by MariaDB. The live version can be found at: http://ruddock.caltech.edu
 
 # Setting up your environment
 - You should already have SSH access to the development server.
@@ -35,7 +35,9 @@ python run_server.py
 ```
 You can visit the test site by going to [localhost:9001](http://localhost:9001) (or whichever port you decided to forward) in your local browser.
 
-# How to sync the constitution PDF?
+# Other things
+
+### How to sync the constitution PDF?
 
 We are using [submodules](http://git-scm.com/docs/git-submodule) to serve the constitution (via the [external repository](https://github.com/RuddockHouse/RuddockConstitution)). We did this to ensure all constitution changes are within the constitution repository.
 
