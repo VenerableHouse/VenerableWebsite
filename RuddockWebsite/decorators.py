@@ -16,14 +16,14 @@ def login_required(permission=None):
         flash("This page requires you to be logged in.")
         # Store page to be loaded after login in session.
         session['next'] = request.url
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login'))
 
       # Check permissions.
       if permission != None:
         if not auth_utils.check_permission(permission):
           flash("You do not have permission to access this page.")
           session['next'] = request.url
-          return redirect(url_for('login'))
+          return redirect(url_for('auth.login'))
       return fn(*args, **kwargs)
     return update_wrapper(wrapped_function, fn)
   return decorator
