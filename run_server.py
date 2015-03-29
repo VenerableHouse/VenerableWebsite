@@ -3,5 +3,5 @@
 # settings enabled.
 from RuddockWebsite import app, config
 
-port = getattr(config, 'PORT', 5000)
-app.run(debug=True, port=port)
+test_port = getattr(config, 'TEST_PORT', 5000)
+app.run(debug=True, port=test_port)

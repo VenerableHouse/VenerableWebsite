@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask, g
 from sqlalchemy import create_engine
 
@@ -10,6 +11,9 @@ app.secret_key = config.SECRET_KEY
 
 # Maximum file upload size, in bytes.
 app.config['MAX_CONTENT_LENGTH'] = constants.MAX_CONTENT_LENGTH
+
+# Update jinja global functions
+app.jinja_env.globals.update(current_year=lambda: datetime.now().year)
 
 # Load blueprint modules
 app.register_blueprint(account.blueprint, url_prefix='/account')
