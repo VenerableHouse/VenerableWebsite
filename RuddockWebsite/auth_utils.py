@@ -1,5 +1,5 @@
 import hashlib
-import passlib.hash
+import binascii
 import string
 from sqlalchemy import text
 from flask import session, g, url_for, flash
@@ -155,6 +155,9 @@ class PasswordHashParser:
       rounds = self.rounds[i]
       salt = self.salts[i]
       test_hash = hash_password(test_hash, salt, rounds, algorithm)
+      # In case an error occurs.
+      if test_hash is None:
+        return False
     return compare_secure_strings(test_hash, true_hash)
 
   def is_legacy(self):
@@ -180,9 +183,8 @@ def hash_password(password, salt, rounds, algorithm):
     # Rounds must be set.
     if rounds is None:
       return None
-    result = passlib.hash.pbkdf2_sha256.encrypt(password, salt=salt, rounds=rounds)
-    # Return just the hash.
-    return result.split('$')[-1]
+    result = hashlib.pbkdf2_hmac('sha256', password, salt, rounds)
+    return binascii.hexlify(result)
   elif algorithm == 'md5':
     # Rounds is ignored.
     return hashlib.md5(salt + password).hexdigest()
@@ -194,6 +196,8 @@ def set_password(username, password):
   rounds = constants.HASH_ROUNDS
   salt = generate_salt()
   password_hash = hash_password(password, salt, rounds, algorithm)
+  if password_hash is None:
+    raise ValueError
 
   # Create new password hash string.
   parser = PasswordHashParser([algorithm], [rounds], [salt], password_hash)
