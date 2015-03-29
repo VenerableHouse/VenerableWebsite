@@ -1,12 +1,12 @@
 {% extends "layout.html" %}
 {% block body %}
-  <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
+  <script src="{{url_for('static', filename='js/tablesort.min.js')}}"></script>
   {% for name, email, positions in all_types %}
     {# Display name and email of group #}
     <h2>{{ name }}</h2>
     <h3>{{ "[" + email + " at ruddock.caltech.edu" + "]" if email }}</h3>
     <br>
-    <table class="userlist sortable">
+    <table class="userlist" id="sort-{{ name }}">
     {# First display header #}
       <thead><tr style="cursor: pointer;">
         <th width='25%'>Office</th>
@@ -24,5 +24,9 @@
       {% endfor %}
     </table>
     <br>
+
+    <script>
+      new Tablesort(document.getElementById('sort-{{ name }}'));
+    </script>
   {% endfor %}
 {% endblock body %}
