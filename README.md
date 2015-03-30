@@ -23,6 +23,8 @@ pip install -r requirements.txt
 - You will also need a separate config file that we will give you in order to access the database.
 
 # Testing
+
+### Test site
 The easiest way to set up a test site is to use SSH port forwarding, so that requests to your local computer are forwarded to the development server. For example:
 ```
 ssh -L 9001:localhost:5000 <host>
@@ -35,10 +37,16 @@ python run_server.py
 ```
 You can visit the test site by going to [localhost:9001](http://localhost:9001) (or whichever port you decided to forward) in your local browser.
 
+### Automated testing
+We use [pytest](http://pytest.org/latest/index.html) for automated testing. Tests are located in the `RuddockWebsite.tests` module. To run all tests, execute this on the command line:
+```
+py.test
+```
+Which will automatically find all test scripts (test scripts look like `test_*.py`) inside the current directory/subdirectories and execute functions or methods that look like `test_*()`.
+
 # Other things
 
 ### How to sync the constitution PDF?
-
 We are using [submodules](http://git-scm.com/docs/git-submodule) to serve the constitution (via the [external repository](https://github.com/RuddockHouse/RuddockConstitution)). We did this to ensure all constitution changes are within the constitution repository.
 
 When you first clone this repository, you must load the submodule. Fortunately, Git makes this easy. Simply run `git submodule init; git submodule update` from the project parent directory (`../RuddockWebsite/`).
