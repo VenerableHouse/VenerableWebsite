@@ -47,6 +47,11 @@ def page_not_found(error):
   ''' Handles a 404 page not found error. '''
   return render_template("404.html"), 404
 
+@app.errorhandler(403)
+def access_forbidden(error):
+  ''' Handles a 403 access forbidden error. '''
+  return render_template("403.html"), 403
+
 @app.errorhandler(500)
 def internal_server_error(error):
   '''

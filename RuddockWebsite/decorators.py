@@ -1,5 +1,5 @@
 from functools import update_wrapper
-from flask import session, redirect, flash, request, url_for
+from flask import session, redirect, flash, request, url_for, abort
 
 from RuddockWebsite import auth_utils
 
@@ -19,13 +19,10 @@ def login_required(permission=None):
         return redirect(url_for('auth.login'))
 
       # Check permissions.
-      if permission != None:
+      if permission is not None:
         if not auth_utils.check_permission(permission):
-          flash("You do not have permission to access this page.")
-          session['next'] = request.url
-          return redirect(url_for('auth.login'))
+          # Abort with an access forbidden HTTP code.
+          abort(403)
       return fn(*args, **kwargs)
     return update_wrapper(wrapped_function, fn)
   return decorator
-
-
