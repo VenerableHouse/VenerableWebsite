@@ -15,9 +15,6 @@ def admin_home():
     admin_tools.append({
       'name': 'Add new members',
       'link': url_for('admin.add_members', _external=True)})
-    admin_tools.append({
-      'name': 'Send account creation reminder',
-      'link': url_for('admin.send_reminder_emails', _external=True)})
 
   if auth_utils.check_permission(constants.Permissions.HassleAdmin):
     admin_tools.append({
@@ -90,25 +87,3 @@ def add_members_confirm_submit():
   # An error happened somewhere.
   flash("An unexpected error was encountered. Please find an IMSS rep.")
   return redirect(url_for('admin.add_members'))
-
-@blueprint.route('/reminder_email', methods=['GET', 'POST'])
-@login_required(constants.Permissions.UserAdmin)
-def send_reminder_emails():
-  '''
-  Sends a reminder email to all members who have not yet created
-  an account.
-  '''
-  data = helpers.get_members_without_accounts()
-  state = None
-  if request.method == 'POST' and request.form['state']:
-    state = request.form['state']
-  if state == 'yes':
-    for member in data:
-      helpers.send_reminder_email(member['fname'], \
-          member['lname'], member['email'], member['user_id'], member['uid'])
-    flash('Sent reminder emails to ' + str(len(data)) + ' member(s).')
-    return redirect(url_for('admin.admin_home'))
-  elif state == 'no':
-    return redirect(url_for('admin.admin_home'))
-  else:
-    return render_template('create_account_reminder.html', data=data)
