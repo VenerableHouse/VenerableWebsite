@@ -25,7 +25,10 @@ app.register_blueprint(hassle.blueprint, url_prefix='/hassle')
 app.register_blueprint(users.blueprint, url_prefix='/users')
 
 # Create database engine object.
-engine = create_engine(config.DB_URI, convert_unicode=True)
+engine = create_engine(
+    config.DB_URI,
+    convert_unicode=True,
+    pool_recycle=constants.POOL_RECYCLE_TIME)
 
 @app.before_request
 def before_request():

@@ -1,5 +1,8 @@
 # Store various constants here
 
+# Our MySQL wait_timeout is set to 28800, so set pool timeout to something less.
+POOL_RECYCLE_TIME = 25000
+
 # Maximum file upload size (in bytes).
 MAX_CONTENT_LENGTH = 1 * 1024 * 1024 * 1024
 
