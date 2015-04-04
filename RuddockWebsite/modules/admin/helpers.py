@@ -219,33 +219,3 @@ class NewMemberList:
       new_member_list.append(new_member)
     self.new_member_list = new_member_list
     return True
-
-def get_members_without_accounts():
-  '''
-  Returns a list of dicts with the first name, last name, email, and
-  user ID for everyone who hasn't made an account yet.
-  '''
-
-  query = text("SELECT fname, lname, email, uid, user_id FROM members \
-      NATURAL LEFT JOIN users WHERE username IS NULL")
-  r = g.db.execute(query)
-  return common_helpers.fetch_all_results(r)
-
-def send_reminder_email(fname, lname, email, user_id, uid):
-  user_hash = common_helpers.create_account_hash(user_id, uid, fname, lname)
-  name = fname + ' ' + lname
-
-  to = email
-  subject = "Please create an account"
-  msg = "Hey " + name + ",\n\n" + \
-      "This is a reminder to create an account on the " + \
-      "Ruddock House Website. You can do this by following this link:\n" + \
-      url_for('create_account', k=user_hash, u=user_id, _external=True) + \
-      "\n\n" + \
-      "If you think this is an error or if you have any other " + \
-      "questions, please contact us at imss@ruddock.caltech.edu" + \
-      "\n\n" + \
-      "Thanks!\n" + \
-      "The Ruddock IMSS Team"
-
-  email_utils.sendEmail(to, msg, subject)
