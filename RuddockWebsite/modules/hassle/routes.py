@@ -5,21 +5,21 @@ from RuddockWebsite import constants
 from RuddockWebsite.decorators import login_required
 from RuddockWebsite.modules.hassle import blueprint, helpers
 
-alleys = [1, 2, 3, 4, 5, 6]
-
 @blueprint.route('/')
 @login_required(constants.Permissions.HassleAdmin)
 def run_hassle():
   ''' Logic for room hassles. '''
   available_participants = helpers.get_available_participants()
   available_rooms = helpers.get_available_rooms()
+  rooms_remaining = helpers.get_rooms_remaining()
   events = helpers.get_events_with_roommates()
 
   return render_template('hassle.html',
       available_participants=available_participants,
       available_rooms=available_rooms,
       events=events,
-      alleys=alleys)
+      alleys=helpers.alleys,
+      rooms_remaining=rooms_remaining)
 
 @blueprint.route('/event', methods=['POST'])
 @login_required(constants.Permissions.HassleAdmin)
@@ -84,7 +84,8 @@ def new_hassle_rooms():
   ''' Select rooms available for the room helpers. '''
   # Get a list of all rooms.
   rooms = helpers.get_all_rooms()
-  return render_template('hassle_new_rooms.html', rooms=rooms, alleys=alleys)
+  return render_template('hassle_new_rooms.html',
+      rooms=rooms, alleys=helpers.alleys)
 
 @blueprint.route('/new/rooms/submit', methods=['POST'])
 @login_required(constants.Permissions.HassleAdmin)

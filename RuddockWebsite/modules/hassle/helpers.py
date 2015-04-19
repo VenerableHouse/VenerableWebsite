@@ -1,6 +1,8 @@
 from sqlalchemy import text
 from flask import g
 
+alleys = [1, 2, 3, 4, 5, 6]
+
 def get_all_members():
   ''' Gets all current members (potential hassle participants). '''
   query = text("""
@@ -84,7 +86,7 @@ def get_participating_rooms():
   ''' Gets all rooms participating in the hassle. '''
   query = text("""
     SELECT room_number, alley
-    FROM rooms NATURAL JOIN hassle_rooms
+    FROM hassle_rooms NATURAL JOIN rooms
     ORDER BY room_number
     """)
   return g.db.execute(query).fetchall()
@@ -100,6 +102,17 @@ def get_available_rooms():
     ORDER BY room_number
     """)
   return g.db.execute(query).fetchall()
+
+def get_rooms_remaining():
+  '''
+  Gets the number of rooms remaining for each alley.
+  Returns a dict mapping alley to number of remaining rooms.
+  '''
+  alley_counts = dict(zip(alleys, [0] * len(alleys)))
+  available_rooms = get_available_rooms()
+  for room in available_rooms:
+    alley_counts[room['alley']] += 1
+  return alley_counts
 
 def set_rooms(rooms):
   ''' Sets rooms available for hassle. '''

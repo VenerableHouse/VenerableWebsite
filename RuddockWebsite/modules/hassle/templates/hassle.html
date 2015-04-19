@@ -60,6 +60,7 @@
         {% endfor %}
       </tr>
     </thead>
+    {# People picked into each alley #}
     <tr>
       {% for alley in alleys %}
       <td>
@@ -71,6 +72,12 @@
           {% endfor %}
         </ul>
       </td>
+      {% endfor %}
+    </tr>
+    {# Rooms remaining in each alley #}
+    <tr>
+      {% for alley in alleys %}
+      <td>Rooms remaining: {{ rooms_remaining[alley] }}</td>
       {% endfor %}
     </tr>
   </table>
