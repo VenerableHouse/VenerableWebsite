@@ -24,12 +24,11 @@ app.register_blueprint(auth.blueprint)
 app.register_blueprint(hassle.blueprint, url_prefix='/hassle')
 app.register_blueprint(users.blueprint, url_prefix='/users')
 
-# Create database engine object.
-engine = create_engine(config.DB_URI, convert_unicode=True)
-
 @app.before_request
 def before_request():
   ''' Logic executed before request is processed. '''
+  # Create database engine object.
+  engine = create_engine(config.DB_URI, convert_unicode=True)
   # Connect to the database and publish it in flask.g
   g.db = engine.connect()
 
