@@ -2,14 +2,10 @@
 
 {% block body %}
 <h2>Admin tools</h2>
-
   {% for tool in tools %}
   <p><a href="{{ tool["link"] }}">{{ tool["name"] }}</a></p>
   {% endfor %}
 
   {# Other hard-coded links #}
-  <p><a href="http://ruddock.caltech.edu/mailman/admin">
-    Mailing Lists
-  </a></p>
-
+  <p><a href="https://ruddock.caltech.edu/mailman/admin">Mailing Lists</a></p>
 {% endblock body %}
