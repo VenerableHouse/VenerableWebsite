@@ -1,10 +1,16 @@
 {% extends "layout.html" %}
+{% block head %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('hassle.static', filename='css/hassle.css') }}" />
+{% endblock head %}
+
 {% block body %}
 <h2>Start new hassle</h2>
 Please verify that the participating members and rooms is correct.<br><br>
 
 <form action="{{ url_for('hassle.new_hassle_confirm_submit') }}" method="POST">
   <div class="table_container">
+    {# Members #}
     <table>
       <thead>
         <tr>
@@ -24,27 +30,33 @@ Please verify that the participating members and rooms is correct.<br><br>
       </tbody>
     </table>
     <br>
-    <table>
-      <thead>
-        <tr>
-          <th>Room</th>
-          <th>Alley</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for room in rooms %}
-        <tr>
-          <td>{{ room['room_number'] }}</td>
-          <td>{{ room['alley'] }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div><br>
+    {# Rooms #}
+    {% for alley in alleys %}
+      <table class="rooms_table">
+        <thead>
+          <tr>
+            <th>Room</th>
+            <th>Alley</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for room in rooms %}
+            {% if room['alley'] == alley %}
+            <tr>
+              <td>{{ room['room_number'] }}</td>
+              <td>{{ room['alley'] }}</td>
+            </tr>
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endfor %}
+  </div>
+  <br>
   <button type="button"
     onclick="location.href='{{ url_for('hassle.new_hassle_participants') }}'">
     Edit participants/rooms
   </button>
   <button type="submit">Confirm</button>
 </form>
-{% endblock %}
+{% endblock body %}
