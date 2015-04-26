@@ -12,12 +12,8 @@ def login_required(permission=None):
   def decorator(fn):
     def wrapped_function(*args, **kwargs):
       # User must be logged in.
-      if 'username' not in session:
-        flash("This page requires you to be logged in.")
-        # Store page to be loaded after login in session.
-        session['next'] = request.url
-        return redirect(url_for('auth.login'))
-
+      if not auth_utils.check_login():
+        return auth_utils.login_redirect()
       # Check permissions.
       if permission is not None:
         if not auth_utils.check_permission(permission):

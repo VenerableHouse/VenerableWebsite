@@ -1,4 +1,4 @@
-# Store various constants here
+import enum
 
 # Maximum file upload size (in bytes).
 MAX_CONTENT_LENGTH = 1 * 1024 * 1024 * 1024
@@ -16,16 +16,13 @@ PWD_RESET_KEY_LENGTH = 32
 PWD_RESET_KEY_EXPIRATION = 1 * 24 * 60
 CREATE_ACCOUNT_KEY_LENGTH = 32
 
-class Permissions:
-  '''
-  Enumerates administrator permissions. These values are independent of
-  each other, but must be unique. Permissions should be stored in the session
-  '''
-  # Access to the admin page
-  Admin = 0
-  # Website admins.
-  SiteAdmin = 1
-  # Allowed to add and manage users.
-  UserAdmin = 2
-  # Allowed to run the room hassle.
-  HassleAdmin = 3
+# Enum for permissions available to users.
+class Permissions(enum.IntEnum):
+  # Site admins: always has access to everything.
+  Admin = 1
+  # Add or edit users
+  ModifyUsers = 2
+  # Run the room hassle
+  RunHassle = 3
+  # Manage mailman
+  EmailAdmin = 4

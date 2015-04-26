@@ -1,9 +1,16 @@
+'''
+This module provides library classes and functions for everything concerning
+authentication and authorization, including logins and permissions.
+'''
+
 import hashlib
 import binascii
 import string
 from sqlalchemy import text
-from flask import session, g, url_for, flash
+from flask import session, g, url_for, flash, request, redirect
+
 from RuddockWebsite import constants
+from RuddockWebsite.constants import Permissions
 from RuddockWebsite import misc_utils
 
 class PasswordHashParser:
@@ -236,27 +243,6 @@ def check_reset_key(reset_key):
   else:
     return None
 
-def get_permissions(username):
-  '''
-  Returns a list with all of the permissions available to the user.
-  A list is returned because Python sets cannot be stored in cookie data.
-  '''
-  query = text("""
-    (SELECT permission
-      FROM users
-        NATURAL JOIN offices
-        NATURAL JOIN office_members_current
-        NATURAL JOIN office_permissions
-      WHERE username=:u)
-    UNION
-    (SELECT permission
-      FROM users
-        NATURAL JOIN user_permissions
-      WHERE username=:u)
-    """)
-  result = g.db.execute(query, u=username)
-  return [row['permission'] for row in result]
-
 def get_user_id(username):
   ''' Takes a username and returns the user's ID. '''
   query = text("SELECT user_id FROM users WHERE username = :u")
@@ -264,12 +250,6 @@ def get_user_id(username):
   if result is not None:
     return int(result['user_id'])
   return None
-
-def check_permission(permission):
-  ''' Returns true if the user has the input permission. '''
-  if 'permissions' in session:
-    return permission in session['permissions']
-  return False
 
 def update_last_login(username):
   ''' Updates the last login time for the user. '''
@@ -313,3 +293,51 @@ def compare_secure_strings(string1, string2):
   for x, y in zip(string1, string2):
     result |= ord(x) ^ ord(y)
   return result == 0
+
+def check_login():
+  ''' Returns true if the user is logged in. '''
+  return 'username' in session
+
+def login_redirect():
+  '''
+  Redirects the user to the login page, saving the intended destination in the
+  sesson variable. This function returns a redirect, so it must be called like this:
+
+  return login_redirect()
+
+  In order for it to work properly.
+  '''
+  session['next'] = request.url
+  flash("You must be logged in to visit this page.")
+  return redirect(url_for('auth.login'))
+
+def get_permissions(username):
+  '''
+  Returns a list with all of the permissions available to the user.
+  A list is returned because Python sets cannot be stored in cookie data.
+  '''
+  query = text("""
+    (SELECT permission
+      FROM users
+        NATURAL JOIN offices
+        NATURAL JOIN office_members_current
+        NATURAL JOIN office_permissions
+      WHERE username=:u)
+    UNION
+    (SELECT permission
+      FROM users
+        NATURAL JOIN user_permissions
+      WHERE username=:u)
+    """)
+  result = g.db.execute(query, u=username)
+  return [row['permission'] for row in result]
+
+def check_permission(permission):
+  ''' Returns true if the user has the given permission. '''
+  if 'permissions' not in session:
+    return False
+  # Admins always have access to everything.
+  if Permissions.Admin in session['permissions']:
+    return True
+  # Otherwise check if the permission is present in their permission list.
+  return permission in session['permissions']
