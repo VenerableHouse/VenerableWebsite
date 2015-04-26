@@ -104,7 +104,7 @@ def new_hassle_confirm():
   participants = helpers.get_participants()
   rooms = helpers.get_participating_rooms()
   return render_template('hassle_new_confirm.html', rooms=rooms, \
-      participants=participants)
+      participants=participants, alleys=helpers.alleys)
 
 @blueprint.route('/new/confirm/submit', methods=['POST'])
 @login_required(constants.Permissions.HassleAdmin)

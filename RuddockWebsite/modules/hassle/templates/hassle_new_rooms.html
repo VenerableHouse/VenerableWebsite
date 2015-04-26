@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
 {% block head %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('hassle.static', filename='css/hassle.css') }}" />
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script>
 function clear_selected() {
@@ -14,13 +16,6 @@ function select_all() {
   });
 }
 </script>
-<style>
-table.rooms_table {
-  display: inline-table;
-  width: 30%;
-  margin: 5px;
-}
-</style>
 {% endblock head %}
 {% block body %}
 <h2>Start new hassle</h2>
