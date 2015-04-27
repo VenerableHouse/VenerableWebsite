@@ -8,6 +8,10 @@ def login_required(permission=None):
   Login required decorator. Requires user to be logged in. If a permission
   is provided, then user must also have the appropriate permissions to
   access the page.
+
+  Note that this function does not necessarily cover every scenario, so if you
+  need something specific that is not implemented here, you may need to handle
+  it manually instead of relying on this function.
   '''
   def decorator(fn):
     def wrapped_function(*args, **kwargs):

@@ -1,35 +1,31 @@
 import tempfile
-from flask import render_template, redirect, flash, url_for, request, g
-from RuddockWebsite import auth_utils, constants
+from flask import render_template, redirect, flash, url_for, request, g, abort
+from RuddockWebsite import auth_utils
+from RuddockWebsite.constants import Permissions
 from RuddockWebsite.decorators import login_required
 from RuddockWebsite.modules.admin import blueprint, helpers
 
-@blueprint.route('/', methods=['GET', 'POST'])
-@login_required(constants.Permissions.Admin)
+@blueprint.route('/')
+@login_required()
 def admin_home():
   '''
   Loads a home page for admins, providing links to various tools.
   '''
-  admin_tools = []
-  if auth_utils.check_permission(constants.Permissions.UserAdmin):
-    admin_tools.append({
-      'name': 'Add new members',
-      'link': url_for('admin.add_members', _external=True)})
+  links = auth_utils.generate_admin_links()
+  # If there are no links, they have no business being here so we return an
+  # access denied error.
+  if len(links) == 0:
+    abort(403)
+  return render_template('admin.html', links=links)
 
-  if auth_utils.check_permission(constants.Permissions.HassleAdmin):
-    admin_tools.append({
-      'name': 'Room hassle',
-      'link': url_for('hassle.run_hassle', _external=True)})
-  return render_template('admin.html', tools=admin_tools)
-
-@login_required(constants.Permissions.UserAdmin)
 @blueprint.route('/members/add')
+@login_required(Permissions.ModifyUsers)
 def add_members():
   ''' Displays a form to add new members. '''
   return render_template('add_members.html')
 
-@login_required(constants.Permissions.UserAdmin)
 @blueprint.route('/members/add/single/confirm', methods=['POST'])
+@login_required(Permissions.ModifyUsers)
 def add_members_single_confirm():
   ''' Submission endpoint for adding a single member. '''
   fname = request.form.get('fname', '')
@@ -50,8 +46,8 @@ def add_members_single_confirm():
         data_string = str(new_member_list))
   return redirect(url_for('admin.add_members'))
 
-@login_required(constants.Permissions.UserAdmin)
 @blueprint.route('/members/add/multi/confirm', methods=['POST'])
+@login_required(Permissions.ModifyUsers)
 def add_members_multi_confirm():
   ''' Submission endpoint for adding multiple members at a time. '''
   new_members_file = request.files.get('new_members_file', None)
@@ -71,8 +67,8 @@ def add_members_multi_confirm():
           data_string = str(new_member_list))
   return redirect(url_for('admin.add_members'))
 
-@login_required(constants.Permissions.UserAdmin)
 @blueprint.route('/members/add/confirm/submit', methods=['POST'])
+@login_required(Permissions.ModifyUsers)
 def add_members_confirm_submit():
   ''' Handles new member creation. '''
   # Expects new member data to be passed as a CSV string.

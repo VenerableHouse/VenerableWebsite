@@ -341,3 +341,24 @@ def check_permission(permission):
     return True
   # Otherwise check if the permission is present in their permission list.
   return permission in session['permissions']
+
+class AdminLink:
+  ''' Simple class to hold link information. '''
+  def __init__(self, name, link):
+    self.name = name
+    self.link = link
+
+def generate_admin_links():
+  ''' Generates a list of links for the admin page. '''
+  links = []
+  if check_permission(Permissions.ModifyUsers):
+    links.append(AdminLink('Add members',
+      url_for('admin.add_members', _external=True)))
+  if check_permission(Permissions.RunHassle):
+    links.append(AdminLink('Room hassle',
+      url_for('hassle.run_hassle', _external=True)))
+  if check_permission(Permissions.EmailAdmin):
+    links.append(AdminLink('Mailing lists',
+      # This one needs to be hard coded.
+      "https://ruddock.caltech.edu/mailman/admin"))
+  return links
