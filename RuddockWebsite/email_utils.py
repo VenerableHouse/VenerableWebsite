@@ -4,7 +4,7 @@ from email.mime.text import MIMEText
 
 def sendEmail(to, msg, subject='A message from the Ruddock Website', \
     usePrefix=True):
-  """ Sends an email to a user. """
+  ''' Sends an email to a user. '''
   msg = MIMEText(msg)
 
   if usePrefix and '[RuddWeb]' not in subject:

@@ -35,7 +35,7 @@
     $("#name_select").prop("selectedIndex", -1);
   });
 </script>
-{% endblock %}
+{% endblock head %}
 
 {% block body %}
 <h2>Room Hassle</h2>
@@ -60,6 +60,7 @@
         {% endfor %}
       </tr>
     </thead>
+    {# People picked into each alley #}
     <tr>
       {% for alley in alleys %}
       <td>
@@ -71,6 +72,12 @@
           {% endfor %}
         </ul>
       </td>
+      {% endfor %}
+    </tr>
+    {# Rooms remaining in each alley #}
+    <tr>
+      {% for alley in alleys %}
+      <td>Rooms remaining: {{ rooms_remaining[alley] }}</td>
       {% endfor %}
     </tr>
   </table>
@@ -148,4 +155,4 @@
   <li>{{ event['occupants'] }} picked room {{ event['room_number'] }}. <button onclick="restart({{ event['hassle_event_id'] }})">Restart</button></li>
   {% endfor %}
 </ul>
-{% endblock %}
+{% endblock body %}

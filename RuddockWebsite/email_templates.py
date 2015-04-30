@@ -78,3 +78,10 @@ You should run the email update script to add the new members.
 Thanks!
 The Ruddock Website
 '''
+
+ErrorCaughtEmail = \
+'''
+An exception was caught by the website. This is probably a result of a bad server configuration or bugs in the code, so you should look into this. This was the exception:
+
+{}
+'''

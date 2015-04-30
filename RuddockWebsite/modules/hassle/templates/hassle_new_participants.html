@@ -1,8 +1,59 @@
 {% extends "layout.html" %}
+{% block head %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script>
+function clear_selected() {
+  $(".participant_checkbox").each(function() {
+      this.checked = false;
+  });
+}
+
+// Helper that selects rows that have values that appear in the data.
+function select_rows(data) {
+  $(".participant_checkbox").each(function() {
+    if (data.indexOf(parseInt(this.value)) >= 0) {
+      this.checked = true;
+    }
+  });
+}
+
+function select_rising() {
+  clear_selected();
+  $.ajax({
+    type: "GET",
+    url: "{{ url_for('hassle.ajax_get_rising_members') }}",
+    dataType: "json",
+    success: select_rows
+  });
+}
+
+function select_frosh() {
+  clear_selected();
+  $.ajax({
+    type: "GET",
+    url: "{{ url_for('hassle.ajax_get_frosh') }}",
+    dataType: "json",
+    success: select_rows
+  });
+}
+</script>
+{% endblock head %}
+
 {% block body %}
 <h2>Start new hassle</h2>
 Select everyone who will be participating in this room hassle.<br><br>
-
+<div>
+  <button type="button" onclick="select_rising()">
+    Select all rising members
+  </button>
+  <button type="button" onclick="select_frosh()">
+    Select all frosh
+  </button>
+  <button type="button" onclick="clear_selected()">
+    Clear selection
+  </button>
+</div>
+<br>
 <form action="{{ url_for('hassle.new_hassle_participants_submit') }}" method="POST">
   <table>
     <thead>
@@ -17,7 +68,7 @@ Select everyone who will be participating in this room hassle.<br><br>
       {% for member in members %}
       <tr>
         <td>
-          <input type="checkbox" name="participants"
+          <input class="participant_checkbox" type="checkbox" name="participants"
             value="{{ member['user_id'] }}"
             {{ 'checked' if member['participating'] }} />
         </td>
@@ -31,4 +82,4 @@ Select everyone who will be participating in this room hassle.<br><br>
   <br>
   <button type="submit">Next</button>
 </form>
-{% endblock %}
+{% endblock body %}

@@ -56,7 +56,8 @@
   {% if params["username"] == session["username"] %}
   <br>
   <h2>Edit Your Settings</h2>
-  <a href="{{ url_for('change_passwd') }}">Click here</a> to change your password!
+  <br>
+  <a href="{{ url_for('auth.forgot_password') }}">Click here</a> to change your password!
   {% endif %}
 
 {% endblock body %}

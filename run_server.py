@@ -4,4 +4,5 @@
 from RuddockWebsite import app, config
 
 test_port = getattr(config, 'TEST_PORT', 5000)
-app.run(debug=True, port=test_port)
+debug = getattr(config, 'DEBUG', True)
+app.run(debug=debug, port=test_port)

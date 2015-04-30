@@ -1,12 +1,13 @@
 from sqlalchemy import text
 from flask import g
 
+alleys = [1, 2, 3, 4, 5, 6]
+
 def get_all_members():
   ''' Gets all current members (potential hassle participants). '''
-
   query = text("""
     SELECT user_id, CONCAT(fname, ' ', lname) AS name, grad_year,
-      membership_desc, user_id IN (
+      membership_type, membership_desc, user_id IN (
         SELECT user_id FROM hassle_participants
       ) AS participating
     FROM members_current NATURAL JOIN membership_types
@@ -14,12 +15,31 @@ def get_all_members():
     """)
   return g.db.execute(query).fetchall()
 
+def get_rising_members():
+  ''' Gets IDs for all current frosh, sophomores, and juniors. '''
+  query = text("""
+    SELECT user_id
+    FROM members_current
+    WHERE membership_type = 1
+      AND CONCAT(grad_year, '-07-01') > NOW() + INTERVAL 1 YEAR
+    """)
+  return g.db.execute(query).fetchall()
+
+def get_frosh():
+  ''' Gets IDs for all current frosh. '''
+  query = text("""
+    SELECT user_id
+    FROM members_current
+    WHERE membership_type = 1
+      AND CONCAT(grad_year, '-07-01') > NOW() + INTERVAL 3 YEAR
+    """)
+  return g.db.execute(query).fetchall()
+
 def get_participants():
   ''' Gets all members participating in the hassle. '''
-
   query = text("""
     SELECT user_id, CONCAT(fname, ' ', lname) AS name, grad_year,
-      membership_desc
+      membership_type, membership_desc
     FROM members NATURAL JOIN hassle_participants NATURAL JOIN membership_types
     ORDER BY membership_type, grad_year, name
     """)
@@ -27,7 +47,6 @@ def get_participants():
 
 def get_available_participants():
   ''' Gets all participants who have not yet picked a room. '''
-
   query = text("""
     SELECT user_id, CONCAT(fname, ' ', lname) AS name
     FROM members NATURAL JOIN hassle_participants
@@ -42,7 +61,6 @@ def get_available_participants():
 
 def set_participants(participants):
   ''' Sets hassle participants. '''
-
   # Delete old participants.
   delete_query = text("DELETE FROM hassle_participants")
   g.db.execute(delete_query)
@@ -54,7 +72,6 @@ def set_participants(participants):
 
 def get_all_rooms():
   ''' Gets all rooms in the house. '''
-
   query = text("""
     SELECT room_number, alley,
       room_number IN (
@@ -67,17 +84,15 @@ def get_all_rooms():
 
 def get_participating_rooms():
   ''' Gets all rooms participating in the hassle. '''
-
   query = text("""
     SELECT room_number, alley
-    FROM rooms NATURAL JOIN hassle_rooms
+    FROM hassle_rooms NATURAL JOIN rooms
     ORDER BY room_number
     """)
   return g.db.execute(query).fetchall()
 
 def get_available_rooms():
   ''' Gets all rooms that have not been picked. '''
-
   query = text("""
     SELECT room_number, alley
     FROM hassle_rooms NATURAL JOIN rooms
@@ -88,9 +103,19 @@ def get_available_rooms():
     """)
   return g.db.execute(query).fetchall()
 
+def get_rooms_remaining():
+  '''
+  Gets the number of rooms remaining for each alley.
+  Returns a dict mapping alley to number of remaining rooms.
+  '''
+  alley_counts = dict(zip(alleys, [0] * len(alleys)))
+  available_rooms = get_available_rooms()
+  for room in available_rooms:
+    alley_counts[room['alley']] += 1
+  return alley_counts
+
 def set_rooms(rooms):
   ''' Sets rooms available for hassle. '''
-
   # Delete old rooms.
   delete_query = text("DELETE FROM hassle_rooms")
   g.db.execute(delete_query)
@@ -102,7 +127,6 @@ def set_rooms(rooms):
 
 def get_events():
   ''' Returns events in the hassle. '''
-
   query = text("""
     SELECT hassle_event_id, user_id, CONCAT(fname, ' ', lname) AS name,
       room_number, alley
@@ -113,7 +137,6 @@ def get_events():
 
 def get_events_with_roommates():
   ''' Returns events with additional roommate information. '''
-
   events = get_events()
   results = []
 
@@ -130,7 +153,6 @@ def get_events_with_roommates():
 
 def new_event(user_id, room_number, roommates):
   ''' Inserts a new event into the database. '''
-
   # Insert event.
   query = text("""
     INSERT INTO hassle_events (user_id, room_number) VALUES (:u, :r)
@@ -150,7 +172,6 @@ def clear_events(event_id=None):
   including) the provided event are cleared. Otherwise, everything is
   cleared.
   '''
-
   if event_id:
     query = text("""
       DELETE FROM hassle_roommates
@@ -168,7 +189,6 @@ def clear_events(event_id=None):
 
 def get_roommates(user_id):
   ''' Gets all roommates for the provided user. '''
-
   query = text("""
     SELECT roommate_id, CONCAT(fname, ' ', lname) AS name
     FROM hassle_roommates
@@ -180,7 +200,6 @@ def get_roommates(user_id):
 
 def clear_all():
   ''' Clears all current hassle data. '''
-
   g.db.execute(text("DELETE FROM hassle_roommates"))
   g.db.execute(text("DELETE FROM hassle_events"))
   g.db.execute(text("DELETE FROM hassle_participants"))
