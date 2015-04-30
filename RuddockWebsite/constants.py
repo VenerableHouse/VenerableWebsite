@@ -17,10 +17,12 @@ PWD_RESET_KEY_EXPIRATION = 1 * 24 * 60
 CREATE_ACCOUNT_KEY_LENGTH = 32
 
 # Enum for permissions available to users.
+# This enum mirrors the 'permissions' table in the database. If you add or
+# change a value here, you must reflect the change in the database as well!
 class Permissions(enum.IntEnum):
   # Site admins: always has access to everything.
   Admin = 1
-  # Add or edit users
+  # Add, edit, or delete users
   ModifyUsers = 2
   # Run the room hassle
   RunHassle = 3

@@ -317,20 +317,20 @@ def get_permissions(username):
   A list is returned because Python sets cannot be stored in cookie data.
   '''
   query = text("""
-    (SELECT permission
+    (SELECT permission_id
       FROM users
         NATURAL JOIN offices
         NATURAL JOIN office_members_current
         NATURAL JOIN office_permissions
       WHERE username=:u)
     UNION
-    (SELECT permission
+    (SELECT permission_id
       FROM users
         NATURAL JOIN user_permissions
       WHERE username=:u)
     """)
   result = g.db.execute(query, u=username)
-  return [row['permission'] for row in result]
+  return list(row['permission_id'] for row in result)
 
 def check_permission(permission):
   ''' Returns true if the user has the given permission. '''
