@@ -1,6 +1,8 @@
 import pytest
+import sqlalchemy
 
 from RuddockWebsite import app
+from RuddockWebsite import config
 
 @pytest.fixture
 def client():
@@ -14,5 +16,10 @@ def client():
   # Establish application context before running tests.
   ctx = app.app_context()
   ctx.push()
-
   return app.test_client()
+
+@pytest.fixture
+def db():
+  """ Provides a database connection for testing. """
+  engine = sqlalchemy.create_engine(config.DB_URI, convert_unicode=True)
+  return engine.connect()
