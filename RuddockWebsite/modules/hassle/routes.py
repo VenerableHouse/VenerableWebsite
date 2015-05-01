@@ -32,7 +32,7 @@ def hassle_event():
   if user_id == None or room_number == None:
     flash("Invalid request - try again?")
   else:
-    roommates = [r for r in roommates if r != "none"]
+    roommates = list(r for r in roommates if r != "none")
 
     # Check for invalid roommate selection.
     if user_id in roommates or len(roommates) != len(set(roommates)):
