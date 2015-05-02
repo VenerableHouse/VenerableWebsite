@@ -2,10 +2,11 @@ from flask import g, session
 from sqlalchemy import text
 from collections import OrderedDict
 
-from RuddockWebsite import auth_utils, constants
+from RuddockWebsite import auth_utils
+from RuddockWebsite.constants import Permissions
 
 def get_user_info(username):
-  """ Procedure to get a user's info from the database. """
+  ''' Procedure to get a user's info from the database. '''
   cols = [["username"], ["fname", "lname"], ["nickname"], ["bday"], \
           ["email"], ["email2"], ["status"], ["matriculate_year"], \
           ["grad_year"], ["msc"], ["phone"], ["building", "room_num"], \
@@ -29,7 +30,7 @@ def get_user_info(username):
   return (d_dict, values)
 
 def get_office_info(username):
-  """ Procedure to get a user's officer info. """
+  ''' Procedure to get a user's officer info. '''
   cols = ["office_name", "elected", "expired"]
   query = text("""
     SELECT office_name, elected, expired
@@ -39,10 +40,9 @@ def get_office_info(username):
   """)
   return g.db.execute(query, u=str(username))
 
-def can_edit(username):
-  """ Returns true if user has permission to edit page. """
-  if 'username' not in session:
+def check_edit_permission(username):
+  ''' Returns true if user has permission to edit page. '''
+  if not auth_utils.check_login():
     return False
-  return session['username'] == username or \
-      auth_utils.check_permission(constants.Permissions.UserAdmin)
-
+  return session['username'] == username \
+      or auth_utils.check_permission(Permissions.ModifyUsers)

@@ -21,7 +21,7 @@ def login_submit():
       session['username'] = username
       session['permissions'] = permissions
       # True if there's any reason to show a link to the admin interface.
-      session['show_admin'] = auth_utils.check_permission(constants.Permissions.Admin)
+      session['show_admin'] = len(auth_utils.generate_admin_links()) > 0
       # Update last login time
       auth_utils.update_last_login(username)
 

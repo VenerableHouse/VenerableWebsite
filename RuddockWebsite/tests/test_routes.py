@@ -1,0 +1,23 @@
+"""
+Tests routes that are not in a module.
+"""
+
+import flask
+import httplib
+
+from RuddockWebsite.tests.fixtures import client
+
+def test_home(client):
+  """ Tests the / route. """
+  response = client.get(flask.url_for('home'))
+  assert response.status_code == httplib.OK
+
+def test_government(client):
+  """ Tests the /government route. """
+  response = client.get(flask.url_for('show_gov'))
+  assert response.status_code == httplib.OK
+
+def test_contact(client):
+  """ Tests the /contact route. """
+  response = client.get(flask.url_for('show_contact'))
+  assert response.status_code == httplib.OK

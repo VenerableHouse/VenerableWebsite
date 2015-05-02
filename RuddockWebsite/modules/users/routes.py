@@ -1,15 +1,16 @@
-from flask import Blueprint, render_template, redirect, flash, url_for, request, g
+from flask import render_template, redirect, flash, url_for, request, g, abort
 from sqlalchemy import text
 from time import strftime
 
-from RuddockWebsite import auth_utils, constants
+from RuddockWebsite import auth_utils
+from RuddockWebsite.constants import Permissions
 from RuddockWebsite.decorators import login_required
 from RuddockWebsite.modules.users import blueprint, helpers
 
 @blueprint.route('/')
 @login_required()
 def show_users():
-  """ Procedure to show a list of all users, with all membership details. """
+  ''' Procedure to show a list of all users, with all membership details. '''
   # store which columns we want, and their display names
   cols = ["user_id", "fname", "lname", "email", "matriculate_year", \
           "grad_year", "membership_desc"]
@@ -41,23 +42,27 @@ def show_users():
 @blueprint.route('/view/<username>')
 @login_required()
 def show_user_profile(username):
-  """ Procedure to show a user's profile and membership details. """
+  ''' Procedure to show a user's profile and membership details. '''
   d_dict_user, q_dict_user = helpers.get_user_info(username)
   offices = helpers.get_office_info(username)
-  editable = helpers.can_edit(username)
+  editable = helpers.check_edit_permission(username)
 
   if d_dict_user != None and q_dict_user != None:
-    return render_template('view_user.html', display = d_dict_user, \
-        info = q_dict_user, offices = list(offices), strftime = strftime,
-        perm = editable)
+    return render_template('view_user.html', display=d_dict_user, \
+        info=q_dict_user, offices=list(offices), strftime=strftime,
+        perm=editable)
   else:
-    flash("User does not exist!")
-    return redirect(url_for('home'))
+    abort(404)
 
 @blueprint.route('/edit/<username>', methods=['GET', 'POST'])
-@login_required(constants.Permissions.UserAdmin)
+@login_required()
 def change_user_settings(username):
-  """ Procedure to process the login page. Also handles authentication. """
+  ''' Show a page for users to edit their information. '''
+  # To visit this page, they must be either modifying their own page or be an
+  # admin with appropriate permissions.
+  if not helpers.check_edit_permission(username):
+    abort(403)
+
   params = {}
   tags = ['nickname', 'usenickname', 'bday', 'email', 'email2', 'msc', 'phone', \
       'building', 'room_num', 'major', 'isabroad']
@@ -75,7 +80,6 @@ def change_user_settings(username):
 
   # Update if needed
   if request.method == 'POST':
-
     for (i, tag) in enumerate(tags):
       params[tag] = request.form[tag]
       if params[tag] and tag in ['usenickname', 'msc', 'room_num', 'isabroad']:
@@ -87,18 +91,11 @@ def change_user_settings(username):
 
     for (i, tag) in enumerate(tags):
       if str(params[tag]) != str(stored_params[tag]):
-
         new_val = str(params[tag])
-
         query = text("UPDATE members SET %s = :val WHERE user_id = :u" % tag)
         results = g.db.execute(query, \
             u=auth_utils.get_user_id(username), val=new_val)
-
         flash("%s was updated!" % tag_names[i])
-
-
   if not params:
     params = stored_params
-
-  return render_template('edit_user.html', params = params)
-
+  return render_template('edit_user.html', params=params)
