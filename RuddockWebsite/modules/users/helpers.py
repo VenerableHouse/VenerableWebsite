@@ -1,5 +1,5 @@
-from flask import g, session
-from sqlalchemy import text
+import flask
+import sqlalchemy
 from collections import OrderedDict
 
 from RuddockWebsite import auth_utils
@@ -17,8 +17,13 @@ def get_user_info(username):
              "Membership", "Major", "UID", "Is Abroad"]
   # Defines the order and mapping of displayed attributes to sql columns
   d_dict = OrderedDict(zip(display, cols))
-  query = text("SELECT * FROM users NATURAL JOIN members NATURAL JOIN membership_types WHERE username=:u")
-  result = g.db.execute(query, u=str(username))
+  query = sqlalchemy.text("""
+    SELECT * FROM users
+      NATURAL JOIN members
+      NATURAL JOIN membership_types
+    WHERE username=:u
+    """)
+  result = flask.g.db.execute(query, u=username)
 
   values = result.first()
   if not values:
@@ -32,7 +37,7 @@ def get_user_info(username):
 def get_office_info(username):
   ''' Procedure to get a user's officer info. '''
   cols = ["office_name", "elected", "expired"]
-  query = text("""
+  query = sqlalchemy.text("""
     SELECT office_name, elected, expired
     FROM office_members NATURAL JOIN users NATURAL JOIN offices
     WHERE username = :u

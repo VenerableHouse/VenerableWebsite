@@ -1,13 +1,14 @@
-from flask import g, url_for, request, flash
-from sqlalchemy import text
 import re
+import flask
+import sqlalchemy
+
 from RuddockWebsite import auth_utils
 from RuddockWebsite import email_templates
 from RuddockWebsite import email_utils
 from RuddockWebsite import validation_utils
 
 class NewMember:
-  ''' Class containing data for adding a single new member. '''
+  """ Class containing data for adding a single new member. """
   def __init__(self, fname, lname, matriculate_year, grad_year,
       uid, email, membership_desc):
     self.fname = fname
@@ -23,15 +24,15 @@ class NewMember:
     self.set_membership_type()
 
   def __str__(self):
-    ''' Converts to a CSV string. '''
+    """ Converts to a CSV string. """
     return ','.join([self.fname, self.lname, self.matriculate_year, \
         self.grad_year, self.uid, self.email, self.membership_desc])
 
   def validate_data(self, flash_errors=True):
-    '''
+    """
     Returns True if all data is valid. Otherwise, flashes error message(s) if
     requested and returns False.
-    '''
+    """
     # Find all errors, don't just stop at the first one found.
     is_valid = True
     if not validation_utils.validate_name(self.fname, flash_errors):
@@ -48,27 +49,27 @@ class NewMember:
       is_valid = False
     if self.membership_type is None:
       if flash_errors:
-        flash("'{0}' is not a valid membership type. Try 'full', 'social', 'associate', or 'RA'.".format(self.membership_desc))
+        flask.flash("'{0}' is not a valid membership type. Try 'full', 'social', 'associate', or 'RA'.".format(self.membership_desc))
       is_valid = False
     return is_valid
 
   def add_member(self):
-    '''
+    """
     Adds this member to the database. Assumes data has already been validated.
     Returns True if successful, otherwise False.
-    '''
+    """
     # If the user is already in the database, skip this user.
     if validation_utils.check_uid_exists(self.uid):
       return False
     # Generate an account creation key.
     create_account_key = auth_utils.generate_create_account_key()
-    query = text("""
+    query = sqlalchemy.text("""
       INSERT INTO members (fname, lname, matriculate_year, grad_year,
         uid, email, membership_type, create_account_key)
       VALUES (:fname, :lname, :matriculate_year, :grad_year,
         :uid, :email, :membership_type, :create_account_key)
       """)
-    g.db.execute(query, fname=self.fname,
+    flask.g.db.execute(query, fname=self.fname,
         lname=self.lname,
         matriculate_year=self.matriculate_year,
         grad_year=self.grad_year,
@@ -79,7 +80,7 @@ class NewMember:
     # Email the user.
     subject = "Welcome to the Ruddock House website!"
     msg = email_templates.AddedToWebsiteEmail.format(self.name,
-        url_for('account.create_account',
+        flask.url_for('account.create_account',
           create_account_key=create_account_key,
           _external=True))
     to = self.email
@@ -87,18 +88,18 @@ class NewMember:
     return True
 
   def set_membership_type(self):
-    '''
+    """
     Takes a membership description (full, social, RA, etc) and sets the
     membership_type and membership_desc attributes. If not successful, sets
     membership_type to None.
-    '''
-    query = text("""
+    """
+    query = sqlalchemy.text("""
       SELECT membership_type, membership_desc_short
       FROM membership_types
       WHERE membership_desc = :d
         OR membership_desc_short = :d
       """)
-    result = g.db.execute(query, d=self.membership_desc).first()
+    result = flask.g.db.execute(query, d=self.membership_desc).first()
     if result is not None:
       self.membership_type = result['membership_type']
       self.membership_desc = result['membership_desc_short']
@@ -108,22 +109,22 @@ class NewMember:
     return
 
 class NewMemberList:
-  '''
+  """
   Class containing all data for adding one or more new members. This class is a
   wrapper for a list of NewMember objects and associated methods.
-  '''
+  """
   def __init__(self, new_member_list=[]):
     self.new_member_list = new_member_list
 
   def __str__(self):
-    ''' Returns data formatted as a CSV string. '''
+    """ Returns data formatted as a CSV string. """
     return '\n'.join(str(new_member) for new_member in self.new_member_list)
 
   def validate_data(self, flash_errors=True):
-    '''
+    """
     Returns True if all data is valid. Otherwise, flashes error message(s) if
     requested and returns False.
-    '''
+    """
     # Check every set of new member data, don't stop at the first error.
     is_valid = True
     for new_member in self.new_member_list:
@@ -132,7 +133,7 @@ class NewMemberList:
     return is_valid
 
   def add_members(self):
-    ''' Adds all members to the database. Assumes data to be valid. '''
+    """ Adds all members to the database. Assumes data to be valid. """
     # Keep track of which members were added and which were skipped.
     members_added = []
     members_skipped = []
@@ -141,7 +142,7 @@ class NewMemberList:
         members_added.append(new_member.name)
       else:
         members_skipped.append(new_member.name)
-    flash("{0} member(s) were successfully added and {1} member(s) were skipped.".format(len(members_added), len(members_skipped)))
+    flask.flash("{0} member(s) were successfully added and {1} member(s) were skipped.".format(len(members_added), len(members_skipped)))
     # Email admins about added members.
 
     to = "imss@ruddock.caltech.edu, secretary@ruddock.caltech.edu"
@@ -151,16 +152,16 @@ class NewMemberList:
     subject = 'Members were added to the Ruddock Website'
     # Don't use prefix since this is being sent to IMSS/Secretary, which have
     # their own prefixes.
-    email_utils.send_email(to, msg, subject, usePrefix=False)
+    email_utils.send_email(to, msg, subject, use_prefix=False)
 
   def parse_csv_file(self, filename):
-    '''
+    """
     Parses a CSV file located at filename. Returns True if successful.
     This function does NOT validate the data.
 
     A good way to use this for user submitted data would be to save the data in
     a tempfile and then pass the tempfile's name here.
-    '''
+    """
     try:
       # Use universal newlines so all newlines are \n regardless of if the file
       # was originally made on a Unix or Windows system.
@@ -168,18 +169,18 @@ class NewMemberList:
       contents = f.read()
       f.close()
     except IOError:
-      flash("An unexpected error occurred when trying to open the file.")
+      flask.flash("An unexpected error occurred when trying to open the file.")
       return False
     return self.parse_csv_string(contents)
 
   def parse_csv_string(self, csv_string):
-    '''
+    """
     Parses a CSV string. Returns True if successful.
     This function does NOT validate the data.
 
     Expects newlines to be the standard Unix \n. Use universal newlines support
     if reading from a file.
-    '''
+    """
     # Get the template file's first line so we can skip it if encountered.
     template_filename = 'RuddockWebsite/static/admin/add_members_template.csv'
     try:
@@ -212,7 +213,7 @@ class NewMemberList:
         # and inserts extra commas at the end of the line.
       except IndexError:
         # Not enough columns.
-        flash("File does not seem to be in the same format as the template.")
+        flask.flash("File does not seem to be in the same format as the template.")
         return False
       new_member = NewMember(fname, lname, matriculate_year, grad_year, \
           uid, email, membership_desc)
