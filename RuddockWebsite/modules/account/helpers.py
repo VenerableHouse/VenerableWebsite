@@ -70,5 +70,5 @@ def handle_create_account(user_id, username, password, password2, birthday):
   name = result['name']
   msg = email_templates.CreateAccountSuccessfulEmail.format(name, username)
   subject = "Thanks for creating an account!"
-  email_utils.sendEmail(email, msg, subject)
+  email_utils.send_email(email, msg, subject)
   return True

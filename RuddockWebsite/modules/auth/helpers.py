@@ -78,7 +78,7 @@ def handle_forgotten_password(username, email):
         url_for('auth.reset_password', reset_key=reset_key, _external=True),
         expiration_time_str)
     subject = "Password reset request"
-    email_utils.sendEmail(email, msg, subject)
+    email_utils.send_email(email, msg, subject)
     return True
   return False
 
@@ -110,5 +110,5 @@ def handle_password_reset(username, new_password, new_password2):
   name = result['name']
   msg = email_templates.ResetPasswordSuccessfulEmail.format(name)
   subject = "Password reset successful"
-  email_utils.sendEmail(email, msg, subject)
+  email_utils.send_email(email, msg, subject)
   return True

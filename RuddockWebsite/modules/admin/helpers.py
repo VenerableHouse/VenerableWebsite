@@ -83,7 +83,7 @@ class NewMember:
           create_account_key=create_account_key,
           _external=True))
     to = self.email
-    email_utils.sendEmail(to, msg, subject)
+    email_utils.send_email(to, msg, subject)
     return True
 
   def set_membership_type(self):
@@ -151,7 +151,7 @@ class NewMemberList:
     subject = 'Members were added to the Ruddock Website'
     # Don't use prefix since this is being sent to IMSS/Secretary, which have
     # their own prefixes.
-    email_utils.sendEmail(to, msg, subject, usePrefix=False)
+    email_utils.send_email(to, msg, subject, usePrefix=False)
 
   def parse_csv_file(self, filename):
     '''

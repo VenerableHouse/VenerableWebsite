@@ -1,6 +1,6 @@
-from flask import request, session, g, redirect, url_for, abort, \
-    render_template, flash
-from sqlalchemy import text
+import flask
+import sqlalchemy
+
 from RuddockWebsite import app
 from RuddockWebsite import constants
 from RuddockWebsite import email_utils
@@ -8,12 +8,12 @@ from RuddockWebsite.decorators import login_required
 
 @app.route('/')
 def home():
-  return render_template('index.html')
+  return flask.render_template('index.html')
 
 @app.route('/government')
 def show_gov():
   # Get current officers
-  query = text("""
+  query = sqlalchemy.text("""
     SELECT CONCAT(fname, ' ', lname) AS name, username, office_name,
       office_email, office_id, is_excomm, is_ucc
     FROM office_members_current
@@ -21,7 +21,7 @@ def show_gov():
       NATURAL JOIN members_current
       NATURAL JOIN users
       """)
-  results = g.db.execute(query)
+  results = flask.g.db.execute(query)
 
   # Organize by type (excomm and ucc are special)
   excomm = []
@@ -45,9 +45,8 @@ def show_gov():
     ('Upperclass Counselors', 'uccs', ucc),
     ('Other Offices', None, other)
   ]
-
-  return render_template('government.html', all_types = all_types)
+  return flask.render_template('government.html', all_types = all_types)
 
 @app.route('/contact')
 def show_contact():
-  return render_template('contact.html')
+  return flask.render_template('contact.html')
