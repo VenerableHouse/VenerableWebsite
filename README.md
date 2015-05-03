@@ -1,6 +1,6 @@
 # RuddockWebsite
 
-The Ruddock House Website, written using Python/Flask and powered by MariaDB. The live version can be found at: http://ruddock.caltech.edu
+The Ruddock House Website, written using Python/Flask and powered by MariaDB. The live version can be found at: https://ruddock.caltech.edu
 
 # Setting up your environment
 - You should already have SSH access to the development server.
