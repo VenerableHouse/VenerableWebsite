@@ -1,6 +1,6 @@
 import traceback
 import httplib
-from datetime import datetime
+import datetime
 import flask
 import sqlalchemy
 
@@ -15,7 +15,7 @@ app.secret_key = config.SECRET_KEY
 app.config['MAX_CONTENT_LENGTH'] = constants.MAX_CONTENT_LENGTH
 
 # Update jinja global functions
-app.jinja_env.globals.update(current_year=lambda: datetime.now().year)
+app.jinja_env.globals.update(current_year=lambda: datetime.datetime.now().year)
 
 # Load blueprint modules
 app.register_blueprint(account.blueprint, url_prefix='/account')

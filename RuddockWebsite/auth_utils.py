@@ -218,7 +218,7 @@ def set_password(username, password):
     SET password_hash=:ph
     WHERE username=:u
     """)
-  g.db.execute(query, ph=full_hash, u=username)
+  flask.g.db.execute(query, ph=full_hash, u=username)
   return
 
 def generate_salt():
@@ -242,7 +242,7 @@ def check_reset_key(reset_key):
     FROM users
     WHERE password_reset_key = :rk AND NOW() < password_reset_expiration
     """)
-  result = g.db.execute(query, rk=reset_key).first()
+  result = flask.g.db.execute(query, rk=reset_key).first()
   if result is not None:
     return result['username']
   else:
@@ -251,7 +251,7 @@ def check_reset_key(reset_key):
 def get_user_id(username):
   """ Takes a username and returns the user's ID. """
   query = sqlalchemy.text("SELECT user_id FROM users WHERE username = :u")
-  result = g.db.execute(query, u = username).first()
+  result = flask.g.db.execute(query, u = username).first()
   if result is not None:
     return int(result['user_id'])
   return None
@@ -263,7 +263,7 @@ def update_last_login(username):
     SET lastlogin=NOW()
     WHERE username=:u
     """)
-  g.db.execute(query, u=username)
+  flask.g.db.execute(query, u=username)
 
 def generate_create_account_key():
   """
@@ -285,7 +285,7 @@ def check_create_account_key(key):
     WHERE create_account_key = :k
       AND user_id NOT IN (SELECT user_id FROM users)
     """)
-  result = g.db.execute(query, k=key).first()
+  result = flask.g.db.execute(query, k=key).first()
   if result is not None:
     return result['user_id']
   else:
@@ -295,13 +295,13 @@ def check_login():
   """ Returns true if the user is logged in. """
   return 'username' in flask.session
 
-def login_flask_redirect():
+def login_redirect():
   """
   Redirects the user to the login page, saving the intended destination in the
   sesson variable. This function returns a redirect, so it must be called like
   this:
 
-  return login_flask.redirect()
+  return login_redirect()
 
   In order for it to work properly.
   """
@@ -327,7 +327,7 @@ def get_permissions(username):
         NATURAL JOIN user_permissions
       WHERE username=:u)
     """)
-  result = g.db.execute(query, u=username)
+  result = flask.g.db.execute(query, u=username)
   return list(row['permission_id'] for row in result)
 
 def check_permission(permission):
