@@ -1,12 +1,12 @@
-from flask import g, session
-from sqlalchemy import text
+import flask
+import sqlalchemy
 from collections import OrderedDict
 
 from RuddockWebsite import auth_utils
 from RuddockWebsite.constants import Permissions
 
 def get_user_info(username):
-  ''' Procedure to get a user's info from the database. '''
+  """ Procedure to get a user's info from the database. """
   cols = [["username"], ["fname", "lname"], ["nickname"], ["bday"], \
           ["email"], ["email2"], ["status"], ["matriculate_year"], \
           ["grad_year"], ["msc"], ["phone"], ["building", "room_num"], \
@@ -17,8 +17,13 @@ def get_user_info(username):
              "Membership", "Major", "UID", "Is Abroad"]
   # Defines the order and mapping of displayed attributes to sql columns
   d_dict = OrderedDict(zip(display, cols))
-  query = text("SELECT * FROM users NATURAL JOIN members NATURAL JOIN membership_types WHERE username=:u")
-  result = g.db.execute(query, u=str(username))
+  query = sqlalchemy.text("""
+    SELECT * FROM users
+      NATURAL JOIN members
+      NATURAL JOIN membership_types
+    WHERE username=:u
+    """)
+  result = flask.g.db.execute(query, u=username)
 
   values = result.first()
   if not values:
@@ -30,19 +35,19 @@ def get_user_info(username):
   return (d_dict, values)
 
 def get_office_info(username):
-  ''' Procedure to get a user's officer info. '''
+  """ Procedure to get a user's officer info. """
   cols = ["office_name", "elected", "expired"]
-  query = text("""
+  query = sqlalchemy.text("""
     SELECT office_name, elected, expired
     FROM office_members NATURAL JOIN users NATURAL JOIN offices
     WHERE username = :u
     ORDER BY elected, expired, office_name
   """)
-  return g.db.execute(query, u=str(username))
+  return flask.g.db.execute(query, u=username)
 
 def check_edit_permission(username):
-  ''' Returns true if user has permission to edit page. '''
+  """ Returns true if user has permission to edit page. """
   if not auth_utils.check_login():
     return False
-  return session['username'] == username \
+  return flask.session['username'] == username \
       or auth_utils.check_permission(Permissions.ModifyUsers)

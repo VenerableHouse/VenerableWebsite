@@ -1,4 +1,6 @@
-"""Tests RuddockWebsite/auth_utils.py."""
+"""
+Tests RuddockWebsite/auth_utils.py.
+"""
 import random
 import pytest
 import binascii
@@ -71,5 +73,5 @@ def test_compare_secure_strings():
   assert string1 != string2
 
   # Make sure compare_secure_strings returns True and False when expected.
-  assert auth_utils.compare_secure_strings(string1, string1) == True
-  assert auth_utils.compare_secure_strings(string1, string2) == False
+  assert misc_utils.compare_secure_strings(string1, string1) == True
+  assert misc_utils.compare_secure_strings(string1, string2) == False
