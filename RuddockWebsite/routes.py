@@ -16,9 +16,10 @@ def show_gov():
   query = sqlalchemy.text("""
     SELECT CONCAT(fname, ' ', lname) AS name, username, office_name,
       office_email, office_id, is_excomm, is_ucc
-    FROM office_members_current
+    FROM office_assignments_current
+      NATURAL JOIN office_assignments
       NATURAL JOIN offices
-      NATURAL JOIN members_current
+      NATURAL JOIN members
       NATURAL JOIN users
       """)
   results = flask.g.db.execute(query)
@@ -36,16 +37,16 @@ def show_gov():
     else:
       other.append(result)
 
-  ucc.sort(key=lambda d: d['office_name'])
-  other.sort(key=lambda d: d['office_name'])
+  ucc.sort(key=lambda x: x['office_name'])
+  other.sort(key=lambda x: x['office_name'])
 
-  # tuple with name, email, and users, so that template can parse efficiently
-  all_types = [
+  # Tuple with name, email, and users, so that template can parse efficiently
+  all_offices = [
     ('Executive Committee', 'excomm', excomm),
     ('Upperclass Counselors', 'uccs', ucc),
     ('Other Offices', None, other)
   ]
-  return flask.render_template('government.html', all_types = all_types)
+  return flask.render_template('government.html', all_offices = all_offices)
 
 @app.route('/contact')
 def show_contact():

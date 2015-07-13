@@ -56,9 +56,9 @@
         <td>Offices</td>
         <td><ul>
           {% for office in offices %}
-            <li>{{ office['office_name'] }}: {{ office['elected'].strftime('%b \'%y') }} to
-            {% if office['expired'] %}
-              {{ office['expired'].strftime('%b \'%y') }}
+            <li>{{ office['office_name'] }}: {{ office['start_date'].strftime('%b \'%y') }} to
+            {% if office['end_date'] %}
+              {{ office['end_date'].strftime('%b \'%y') }}
             {% else %}
               Present
             {% endif %}

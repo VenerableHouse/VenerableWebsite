@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
   <script src="{{url_for('static', filename='js/tablesort.min.js')}}"></script>
-  {% for name, email, positions in all_types %}
+  {% for name, email, positions in all_offices %}
     {# Display name and email of group #}
     <h2>{{ name }}</h2>
     <h3>{{ "[" + email + " at ruddock.caltech.edu" + "]" if email }}</h3>
@@ -19,7 +19,7 @@
           username=position['username']) }}'">
           <td>{{ position['office_name'] }}</td>
           <td>{{ position['name'] }}</td>
-          <td>{{ position['office_email'] if position['office_email'] else '[Click Here]' }}</td>
+          <td>{{ position['office_email'] if position['office_email'] else '[None]' }}</td>
         </tr>
       {% endfor %}
     </table>

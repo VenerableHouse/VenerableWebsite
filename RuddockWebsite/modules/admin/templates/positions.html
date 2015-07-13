@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h2>Manage Positions</h2>
+
+<h3>Current Assignments</h3>
+{% if current_assignments %}
+  <table>
+    <thead>
+      <tr>
+        <th>Office</th>
+        <th>Name</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for assignment in current_assignments %}
+      <tr>
+        <td>{{ assignment['office_name'] }}</td>
+        <td>{{ assignment['name'] }}</td>
+        <td>{{ assignment['start_date'] }}</td>
+        <td>{{ assignment['end_date'] }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+<p>No current assignments</p>
+{% endif %}
+
+<h3>Future Assignments</h3>
+{% if future_assignments %}
+  <table>
+    <thead>
+      <tr>
+        <th>Office</th>
+        <th>Name</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for assignment in future_assignments %}
+      <tr>
+        <td>{{ assignment['office_name'] }}</td>
+        <td>{{ assignment['name'] }}</td>
+        <td>{{ assignment['start_date'] }}</td>
+        <td>{{ assignment['end_date'] }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+<p>No future assignments</p>
+{% endif %}
+
+<h3>Past Assignments</h3>
+{% if past_assignments %}
+  <table>
+    <thead>
+      <tr>
+        <th>Office</th>
+        <th>Name</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for assignment in past_assignments %}
+      <tr>
+        <td>{{ assignment['office_name'] }}</td>
+        <td>{{ assignment['name'] }}</td>
+        <td>{{ assignment['start_date'] }}</td>
+        <td>{{ assignment['end_date'] }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+<p>No past assignments</p>
+{% endif %}
+{% endblock body %}

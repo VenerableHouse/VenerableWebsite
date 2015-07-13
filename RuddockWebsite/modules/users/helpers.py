@@ -36,12 +36,12 @@ def get_user_info(username):
 
 def get_office_info(username):
   """ Procedure to get a user's officer info. """
-  cols = ["office_name", "elected", "expired"]
+  cols = ["office_name", "start_date", "end_date"]
   query = sqlalchemy.text("""
-    SELECT office_name, elected, expired
-    FROM office_members NATURAL JOIN users NATURAL JOIN offices
+    SELECT office_name, start_date, end_date
+    FROM office_assignments NATURAL JOIN users NATURAL JOIN offices
     WHERE username = :u
-    ORDER BY elected, expired, office_name
+    ORDER BY start_date, end_date, office_name
   """)
   return flask.g.db.execute(query, u=username)
 

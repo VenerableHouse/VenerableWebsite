@@ -3,6 +3,7 @@ import httplib
 import flask
 
 from RuddockWebsite import auth_utils
+from RuddockWebsite import office_utils
 from RuddockWebsite.constants import Permissions
 from RuddockWebsite.decorators import login_required
 from RuddockWebsite.modules.admin import blueprint, helpers
@@ -85,3 +86,12 @@ def add_members_confirm_submit():
   # An error happened somewhere.
   flask.flash("An unexpected error was encountered. Please find an IMSS rep.")
   return flask.redirect(flask.url_for('admin.add_members'))
+
+@blueprint.route('/positions')
+@login_required(Permissions.ModifyUsers)
+def manage_positions():
+  """ Provides an interface for managing office assignments. """
+  return flask.render_template('positions.html',
+      current_assignments = office_utils.get_current_assignments(),
+      future_assignments = office_utils.get_future_assignments(),
+      past_assignments = office_utils.get_past_assignments())
