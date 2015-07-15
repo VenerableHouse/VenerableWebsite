@@ -87,11 +87,30 @@ def add_members_confirm_submit():
   flask.flash("An unexpected error was encountered. Please find an IMSS rep.")
   return flask.redirect(flask.url_for('admin.add_members'))
 
-@blueprint.route('/positions')
+@blueprint.route('/positions/assignments')
 @login_required(Permissions.ModifyUsers)
 def manage_positions():
   """ Provides an interface for managing office assignments. """
   return flask.render_template('positions.html',
       current_assignments = office_utils.get_current_assignments(),
-      future_assignments = office_utils.get_future_assignments(),
+      future_assignments = office_utils.get_future_assignments())
+
+@blueprint.route('/positions/assignments/new')
+@login_required(Permissions.ModifyUsers)
+def new_assignment():
+  """ Provides an interface for adding new assignments. """
+  return flask.render_template('new_assignment.html',
+      offices = office_utils.get_all_offices())
+
+@blueprint.route('/positions/assignments/new/submit', methods=['POST'])
+@login_required(Permissions.ModifyUsers)
+def new_assignment_submit():
+  """ Submission endpoint for new assignment. """
+  return
+
+@blueprint.route('/positions/assignments/past')
+@login_required(Permissions.ModifyUsers)
+def past_assignments():
+  """ Shows past assignments. """
+  return flask.render_template('past_positions.html',
       past_assignments = office_utils.get_past_assignments())

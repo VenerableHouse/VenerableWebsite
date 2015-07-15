@@ -14,7 +14,7 @@ def get_current_assignments():
       NATURAL JOIN offices
       NATURAL JOIN members
       NATURAL JOIN users
-    ORDER BY office_order
+    ORDER BY office_order, start_date
     """)
   return flask.g.db.execute(query).fetchall()
 
@@ -31,7 +31,7 @@ def get_past_assignments():
       NATURAL JOIN offices
       NATURAL JOIN members
       NATURAL JOIN users
-    ORDER BY office_order
+    ORDER BY office_order, start_date
     """)
   return flask.g.db.execute(query).fetchall()
 
@@ -48,7 +48,7 @@ def get_future_assignments():
       NATURAL JOIN offices
       NATURAL JOIN members
       NATURAL JOIN users
-    ORDER BY office_order
+    ORDER BY office_order, start_date
     """)
   return flask.g.db.execute(query).fetchall()
 
@@ -64,6 +64,19 @@ def get_all_assignments():
       NATURAL JOIN offices
       NATURAL JOIN members
       NATURAL JOIN users
+    ORDER BY office_order, start_date
+    """)
+  return flask.g.db.execute(query).fetchall()
+
+def get_all_offices():
+  """
+  Gets all available offices.
+  """
+  query = sqlalchemy.text("""
+    SELECT office_id, office_name, is_excomm, is_ucc,
+      office_email, office_order
+    FROM offices
+    WHERE is_active
     ORDER BY office_order
     """)
   return flask.g.db.execute(query).fetchall()

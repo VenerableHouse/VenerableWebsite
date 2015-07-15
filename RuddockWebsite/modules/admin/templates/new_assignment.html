@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% import "positionslib.html" as lib %}
+
+{% block head %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+{# CSS and JS for overlays #}
+<script src="{{ url_for('static', filename='js/overlay.js') }}"></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/overlay.css') }}" />
+
+<script>
+// Makes the select menu blank initially, without providing a blank option.
+$(document).ready(function() {
+    $("#office_select").prop("selectedIndex", -1);
+});
+</script>
+{% endblock head %}
+
+{% block body %}
+<h2>Manage Positions</h2>
+Add a new assignment to a position. Start/end dates should default to Feb 1 for elected positions and July 1 for appointed positions.
+<br><br>
+<form action="{{ url_for('admin.new_assignment_submit') }}" method="POST">
+  <table>
+    <tr>
+      <td>Office:</td>
+      <td>
+        <select id="office_select" name="office_id">
+          {% for office in offices %}
+          <option value="{{ office['office_id'] }}">
+            {{ office['office_name'] }}
+          </option>
+          {% endfor %}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Name:</td>
+      <td>
+        <input type="hidden" name="user_id" value="-1" />
+        Buford Frink
+      </td>
+      <td>
+      </td>
+    </tr>
+    <tr>
+      <td>Start date:</td>
+      <td>1969-12-31</td>
+    </tr>
+    <tr>
+      <td>End date:</td>
+      <td>1970-01-01</td>
+    </tr>
+  </table>
+</form>
+{% endblock body %}
