@@ -108,6 +108,7 @@ def new_assignment():
 @login_required(Permissions.ModifyUsers)
 def new_assignment_submit():
   """ Submission endpoint for new assignment. """
+  # TODO
   return
 
 @blueprint.route('/positions/assignments/past')
