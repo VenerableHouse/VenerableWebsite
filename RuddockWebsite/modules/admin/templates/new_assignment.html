@@ -38,14 +38,9 @@ function showSelectMemberUI() {
   $.ajax({
     url: "{{ url_for('admin.ajax_load_members') }}",
     method: "GET",
-    data: {
-      query: $(searchInput).val(),
-    },
     dataType: "json",
     success: function(response) {
-      console.log(response);
-      var i;
-      for (i = 0; i < response.length; i++) {
+      for (var i = 0; i < response.length; i++) {
         var member = response[i];
         var row = document.createElement("tr");
         $(row).prop("data-user-id", member.user_id);
@@ -62,6 +57,9 @@ function showSelectMemberUI() {
     },
   });
 
+  // Set event handler for search input.
+  $(searchInput).on("input", filterMembers);
+
   $(ui).css({
     "padding": "20px",
   });
@@ -71,6 +69,37 @@ function showSelectMemberUI() {
   });
   $("#overlayWindow").append(ui);
   centerOverlay();
+}
+
+/* Filters the list of members using the search query. */
+function filterMembers() {
+  var query = $("#memberSearchInput").val();
+
+  // If the query is cleared, everything should be shown.
+  if (query.length === 0) {
+    $("#memberSearchResults tr").show();
+    return;
+  }
+
+  // Perform the search using an AJAX request.
+  $.ajax({
+    url: "{{ url_for('admin.ajax_search_members') }}",
+    method: "GET",
+    data: {
+      query: query,
+    },
+    dataType: "json",
+    success: function(response) {
+      $("#memberSearchResults tr").each(function() {
+        var user_id = $(this).prop("data-user-id");
+        if ($.inArray(user_id, response) > -1) {
+          $(this).show();
+        } else {
+          $(this).hide();
+        }
+      });
+    },
+  });
 }
 
 /* Executes the logic when a member is actually selected. */
