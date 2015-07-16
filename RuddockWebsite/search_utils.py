@@ -5,7 +5,7 @@ def parse_keywords(query):
   """
   return set(query.lower().split())
 
-def count_matches(data_keywords, query_keywords, partial_keywords=None):
+def count_matches(data_keywords, query_keywords, partial_keywords=[]):
   """
   Counts the number of matches between the provided data keywords (a parsed
   data point in the data set you're searching through) and the query's
@@ -16,15 +16,24 @@ def count_matches(data_keywords, query_keywords, partial_keywords=None):
   sets are guaranteed to not contain duplicates and therefore may have more
   accurate results).
   """
+  # Partial keywords should be matched starting with the longest partials
+  # (least ambiguous) to the shortest partials (most ambiguous). Once a partial
+  # is used to match a word, it should not be used again.
+  partial_keyword_list = sorted(list(partial_keywords), key=len, reverse=True)
+  used_partial_keywords = set()
+
   matches = 0
   for data_keyword in data_keywords:
     # Exact matches
     if data_keyword in query_keywords:
       matches += 1
-    elif partial_keywords is not None:
+    else:
       # Check if each partial keyword is a prefix of the current keyword.
-      for partial_keyword in partial_keywords:
+      for partial_keyword in partial_keyword_list:
+        if partial_keyword in used_partial_keywords:
+          continue
         if data_keyword[:len(partial_keyword)] == partial_keyword:
           matches += 1
+          used_partial_keywords.add(partial_keyword)
           break
   return matches
