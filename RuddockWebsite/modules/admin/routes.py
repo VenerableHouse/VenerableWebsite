@@ -1,9 +1,11 @@
 import tempfile
 import httplib
 import flask
+import json
 
 from RuddockWebsite import auth_utils
 from RuddockWebsite import office_utils
+from RuddockWebsite import member_utils
 from RuddockWebsite.constants import Permissions
 from RuddockWebsite.decorators import login_required
 from RuddockWebsite.modules.admin import blueprint, helpers
@@ -114,3 +116,20 @@ def past_assignments():
   """ Shows past assignments. """
   return flask.render_template('past_positions.html',
       past_assignments = office_utils.get_past_assignments())
+
+@blueprint.route('/ajax/members/load')
+@login_required(Permissions.ModifyUsers)
+def ajax_load_members():
+  """ Loads a list of all members. """
+  members = member_utils.load_all_members()
+  # Need to manually convert into list of dicts so it can be converted to json.
+  results = list(dict(member) for member in members)
+  return json.dumps(results)
+
+@blueprint.route('/ajax/members/search')
+@login_required(Permissions.ModifyUsers)
+def ajax_search_members():
+  """ Returns a list of user IDs for members who match the search query. """
+  query = flask.request.args.get('query', '')
+  results = member_utils.search_members_by_name(query)
+  return json.dumps(results)
