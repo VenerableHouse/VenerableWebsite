@@ -143,12 +143,17 @@ Add a new assignment to a position. Start/end dates should default to Feb 1 for 
     </tr>
     <tr>
       <td>Start date:</td>
-      <td>1969-12-31</td>
+      <td><input type="text" name="start_date" placeholder="YYYY-MM-DD" /></td>
     </tr>
     <tr>
       <td>End date:</td>
-      <td>1970-01-01</td>
+      <td><input type="text" name="end_date" placeholder="YYYY-MM-DD" /></td>
     </tr>
   </table>
+  <br>
+  <button type="button" onclick="location.href='{{ url_for('admin.manage_positions') }}'">
+    Back
+  </button>
+  <button type="submit">Submit</button>
 </form>
 {% endblock body %}

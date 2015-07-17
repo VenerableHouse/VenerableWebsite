@@ -116,15 +116,15 @@ def validate_email(email, flash_errors=True):
     return False
   return True
 
-def validate_birthday(birthday, flash_errors=True):
+def validate_date(date, flash_errors=True):
   """
-  Validates birthday string. Format should be YYYY-MM-DD. Flashes errors if
+  Validates date string. Format should be YYYY-MM-DD. Flashes errors if
   flash_errors is True.
   """
   try:
-    datetime.datetime.strptime(birthday, '%Y-%m-%d')
+    datetime.datetime.strptime(date, '%Y-%m-%d')
   except ValueError:
     if flash_errors:
-      flask.flash('Birthday must be in YYYY-MM-DD format.')
+      flask.flash('Invalid date provided. Make sure dates are in YYYY-MM-DD format.')
     return False
   return True

@@ -8,7 +8,9 @@ from RuddockWebsite import office_utils
 from RuddockWebsite import member_utils
 from RuddockWebsite.constants import Permissions
 from RuddockWebsite.decorators import login_required
-from RuddockWebsite.modules.admin import blueprint, helpers
+from RuddockWebsite.modules.admin import blueprint
+from RuddockWebsite.modules.admin import member_helpers
+from RuddockWebsite.modules.admin import position_helpers
 
 @blueprint.route('/')
 @login_required()
@@ -42,9 +44,9 @@ def add_members_single_confirm():
   membership_desc = flask.request.form.get('membership_desc', '')
 
   # Check that data was valid.
-  new_member = helpers.NewMember(fname, lname, matriculate_year, grad_year,
+  new_member = member_helpers.NewMember(fname, lname, matriculate_year, grad_year,
       uid, email, membership_desc)
-  new_member_list = helpers.NewMemberList([new_member])
+  new_member_list = member_helpers.NewMemberList([new_member])
   if new_member_list.validate_data():
     return flask.render_template('add_members_confirm.html',
         new_member_list=new_member_list,
@@ -64,7 +66,7 @@ def add_members_multi_confirm():
   f.write(new_members_file.read())
   f.flush()
   # Parse and validate the data.
-  new_member_list = helpers.NewMemberList()
+  new_member_list = member_helpers.NewMemberList()
   if new_member_list.parse_csv_file(f.name):
     if new_member_list.validate_data():
       return flask.render_template('add_members_confirm.html',
@@ -80,7 +82,7 @@ def add_members_confirm_submit():
   new_member_data = flask.request.form.get('new_member_data', None)
   # Silently verify data. There shouldn't be any errors if everything is being
   # used as intended.
-  new_member_list = helpers.NewMemberList()
+  new_member_list = member_helpers.NewMemberList()
   if new_member_list.parse_csv_string(new_member_data):
     if new_member_list.validate_data(flash_errors=False):
       new_member_list.add_members()
@@ -108,8 +110,16 @@ def new_assignment():
 @login_required(Permissions.ModifyUsers)
 def new_assignment_submit():
   """ Submission endpoint for new assignment. """
-  # TODO
-  return
+  office_id = flask.request.form.get('office_id', '')
+  user_id = flask.request.form.get('user_id', '')
+  start_date = flask.request.form.get('start_date', '')
+  end_date = flask.request.form.get('end_date', '')
+
+  if position_helpers.handle_new_assignment(office_id, user_id,
+      start_date, end_date):
+    flask.flash("Success!")
+    return flask.redirect(flask.url_for('admin.manage_positions'))
+  return flask.redirect(flask.url_for('admin.new_assignment'))
 
 @blueprint.route('/positions/assignments/past')
 @login_required(Permissions.ModifyUsers)
