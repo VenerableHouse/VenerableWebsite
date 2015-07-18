@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script>
+/* Makes the select menu blank initially, without providing a blank option. */
+$(document).ready(function() {
+    $("#office_select").prop("selectedIndex", -1);
+});
+</script>
+{% endblock head %}
+
+{% block body %}
+<h2>Manage Positions</h2>
+Edit an existing assignment. Start/end dates should default to Feb 1 for elected positions and July 1 for appointed positions.
+<br><br>
+<form action="{{ url_for('admin.edit_assignment_submit', assignment_id=assignment['assignment_id']) }}" method="POST">
+  <table>
+    <tr>
+      <td>Office:</td>
+      <td>{{ assignment['office_name'] }}</td>
+    </tr>
+    <tr>
+      <td>Name:</td>
+      <td>{{ assignment['name'] }}</td>
+    </tr>
+    <tr>
+      <td>Start date:</td>
+      <td><input type="text" name="start_date" value="{{ assignment['start_date'] }}"
+        placeholder="YYYY-MM-DD" /></td>
+    </tr>
+    <tr>
+      <td>End date:</td>
+      <td><input type="text" name="end_date" value="{{ assignment['end_date'] }}"
+        placeholder="YYYY-MM-DD" /></td>
+    </tr>
+  </table>
+  <br>
+  <button type="button" onclick="location.href='{{ url_for('admin.manage_positions') }}'">
+    Back
+  </button>
+  <button type="submit">Submit</button>
+</form>
+{% endblock body %}

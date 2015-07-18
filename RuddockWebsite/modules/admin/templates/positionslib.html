@@ -10,6 +10,7 @@
           <th>Name</th>
           <th>Start Date</th>
           <th>End Date</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -19,6 +20,12 @@
           <td>{{ assignment['name'] }}</td>
           <td>{{ assignment['start_date'] }}</td>
           <td>{{ assignment['end_date'] }}</td>
+          <td>
+            <a href="{{ url_for('admin.edit_assignment',
+              assignment_id=assignment['assignment_id']) }}">
+              Edit
+            </a>
+          </td>
         </tr>
       {% endfor %}
       </tbody>

@@ -119,7 +119,33 @@ def new_assignment_submit():
       start_date, end_date):
     flask.flash("Success!")
     return flask.redirect(flask.url_for('admin.manage_positions'))
-  return flask.redirect(flask.url_for('admin.new_assignment'))
+  else:
+    return flask.redirect(flask.url_for('admin.new_assignment'))
+
+@blueprint.route('/positions/assignments/edit/<int:assignment_id>')
+@login_required(Permissions.ModifyUsers)
+def edit_assignment(assignment_id):
+  """ Provides an interface for editing an assignment. """
+  # Load current details.
+  assignment = office_utils.get_assignment(assignment_id)
+  if assignment is None:
+    flask.flash("Invalid request.")
+    return flask.redirect(flask.url_for('admin.manage_positions'))
+  return flask.render_template('edit_assignment.html',
+      assignment=assignment)
+
+@blueprint.route('/positions/assignments/edit/<int:assignment_id>/submit',
+    methods=['POST'])
+@login_required(Permissions.ModifyUsers)
+def edit_assignment_submit(assignment_id):
+  start_date = flask.request.form.get('start_date', '')
+  end_date = flask.request.form.get('end_date', '')
+  if position_helpers.handle_edit_assignment(assignment_id, start_date, end_date):
+    flask.flash("Success!")
+    return flask.redirect(flask.url_for('admin.manage_positions'))
+  else:
+    return flask.redirect(flask.url_for('admin.edit_assignment',
+      assignment_id=assignment_id))
 
 @blueprint.route('/positions/assignments/past')
 @login_required(Permissions.ModifyUsers)
