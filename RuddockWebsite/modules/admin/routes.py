@@ -125,26 +125,51 @@ def new_assignment_submit():
 @blueprint.route('/positions/assignments/edit/<int:assignment_id>')
 @login_required(Permissions.ModifyUsers)
 def edit_assignment(assignment_id):
-  """ Provides an interface for editing an assignment. """
+  """ Provides an interface for editing an assignment's start/end dates. """
   # Load current details.
   assignment = office_utils.get_assignment(assignment_id)
   if assignment is None:
     flask.flash("Invalid request.")
     return flask.redirect(flask.url_for('admin.manage_positions'))
-  return flask.render_template('edit_assignment.html',
-      assignment=assignment)
+  return flask.render_template('edit_assignment.html', assignment=assignment)
 
 @blueprint.route('/positions/assignments/edit/<int:assignment_id>/submit',
     methods=['POST'])
 @login_required(Permissions.ModifyUsers)
 def edit_assignment_submit(assignment_id):
+  """ Submission endpoint for editing an assignment. """
   start_date = flask.request.form.get('start_date', '')
   end_date = flask.request.form.get('end_date', '')
   if position_helpers.handle_edit_assignment(assignment_id, start_date, end_date):
     flask.flash("Success!")
     return flask.redirect(flask.url_for('admin.manage_positions'))
   else:
+    flask.flash("Encountered unexpected error. Try again?")
     return flask.redirect(flask.url_for('admin.edit_assignment',
+      assignment_id=assignment_id))
+
+@blueprint.route('/positions/assignments/delete/<int:assignment_id>')
+@login_required(Permissions.ModifyUsers)
+def delete_assignment(assignment_id):
+  """ Confirms request to delete an assignment. """
+  # Load assignment details.
+  assignment = office_utils.get_assignment(assignment_id)
+  if assignment is None:
+    flask.flash("Invalid request.")
+    return flask.redirect(flask.url_for('admin.manage_positions'))
+  return flask.render_template('delete_assignment.html', assignment=assignment)
+
+@blueprint.route('/positions/assignments/delete/<int:assignment_id>/confirm',
+    methods=['POST'])
+@login_required(Permissions.ModifyUsers)
+def delete_assignment_submit(assignment_id):
+  """ Handles a delete request. """
+  if position_helpers.handle_delete_assignment(assignment_id):
+    flask.flash("Success!")
+    return flask.redirect(flask.url_for('admin.manage_positions'))
+  else:
+    flask.flash("Encountered unexpected error. Try again?")
+    return flask.redirect(flask.url_for('admin.delete_assignment',
       assignment_id=assignment_id))
 
 @blueprint.route('/positions/assignments/past')

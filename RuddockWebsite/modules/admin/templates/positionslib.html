@@ -1,6 +1,6 @@
 {# Displays a table with all the assignments provided. #}
 {# Provided name is used if there are no assignments. #}
-{% macro show_assignments(assignments, name='') %}
+{% macro show_assignments(assignments, name) %}
   <h3>{{ name|title }} Assignments</h3>
   {% if assignments %}
     <table>
@@ -10,6 +10,7 @@
           <th>Name</th>
           <th>Start Date</th>
           <th>End Date</th>
+          <th></th>
           <th></th>
         </tr>
       </thead>
@@ -24,6 +25,12 @@
             <a href="{{ url_for('admin.edit_assignment',
               assignment_id=assignment['assignment_id']) }}">
               Edit
+            </a>
+          </td>
+          <td>
+            <a href="{{ url_for('admin.delete_assignment',
+              assignment_id=assignment['assignment_id']) }}">
+              Delete
             </a>
           </td>
         </tr>

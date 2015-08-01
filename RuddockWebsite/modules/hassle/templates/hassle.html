@@ -2,38 +2,31 @@
 {% block head %}
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script>
-  function start_new_hassle()
-  {
-    var msg = "Are you sure you want to start a new hassle? This will clear all existing hassle data.";
-    if (confirm(msg))
-    {
-      location.href='{{ url_for('hassle.new_hassle') }}';
-    }
+function start_new_hassle() {
+  var msg = "Are you sure you want to start a new hassle? This will clear all existing hassle data.";
+  if (confirm(msg)) {
+    location.href = '{{ url_for('hassle.new_hassle') }}';
   }
+}
 
-  function panic()
-  {
-    var msg = "Panic?";
-    if (confirm(msg))
-    {
-      location.href='{{ url_for('hassle.hassle_restart') }}';
-    }
+function panic() {
+  var msg = "Panic?";
+  if (confirm(msg)) {
+    location.href = '{{ url_for('hassle.hassle_restart') }}';
   }
+}
 
-  function restart(event_id)
-  {
-    var msg = "Confirm restart?";
-    if (confirm(msg))
-    {
-      location.href='{{ url_for('hassle.hassle_restart') }}' + '/' + event_id;
-    }
+function restart(event_id) {
+  var msg = "Confirm restart?";
+  if (confirm(msg)) {
+    location.href = '{{ url_for('hassle.hassle_restart') }}' + '/' + event_id;
   }
+}
 
-  $(document).ready(function()
-  {
-    $("#room_select").prop("selectedIndex", -1);
-    $("#name_select").prop("selectedIndex", -1);
-  });
+$(document).ready(function() {
+  $("#room_select").prop("selectedIndex", -1);
+  $("#name_select").prop("selectedIndex", -1);
+});
 </script>
 {% endblock head %}
 

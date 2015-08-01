@@ -63,5 +63,18 @@ def handle_edit_assignment(assignment_id, start_date, end_date):
     flask.g.db.execute(query, start=start_date, end=end_date, a=assignment_id)
     return True
   except Exception:
-    flask.flash("Encountered unexpected error. Try again?")
+    return False
+
+def handle_delete_assignment(assignment_id):
+  """
+  Deletes an assignment.
+  """
+  query = sqlalchemy.text("""
+    DELETE FROM office_assignments
+    WHERE assignment_id = :a
+    """)
+  try:
+    flask.g.db.execute(query, a=assignment_id)
+    return True
+  except Exception:
     return False
