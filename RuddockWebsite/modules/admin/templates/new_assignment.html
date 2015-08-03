@@ -35,7 +35,7 @@ function showSelectMemberUI() {
 
   // Load the initial contents of the table.
   $.ajax({
-    url: "{{ url_for('admin.ajax_load_members') }}",
+    url: "{{ url_for('admin.ajax_get_members') }}",
     method: "GET",
     dataType: "json",
     success: function(response) {

@@ -179,11 +179,11 @@ def past_assignments():
   return flask.render_template('past_positions.html',
       past_assignments = office_utils.get_past_assignments())
 
-@blueprint.route('/ajax/members/load')
+@blueprint.route('/ajax/members/get')
 @login_required(Permissions.ModifyUsers)
-def ajax_load_members():
+def ajax_get_members():
   """ Loads a list of all members. """
-  members = member_utils.load_all_members()
+  members = member_utils.get_all_members()
   # Need to manually convert into list of dicts so it can be converted to json.
   results = list(dict(member) for member in members)
   return json.dumps(results)

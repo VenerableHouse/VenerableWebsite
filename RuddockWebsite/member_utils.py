@@ -51,7 +51,7 @@ def search_members_by_name(query, mode=None):
       results.append(member['user_id'])
   return results
 
-def load_all_members():
+def get_all_members():
   """ Loads all members from the database. """
   query = sqlalchemy.text("""
     SELECT user_id, CONCAT(fname, ' ', lname) AS name

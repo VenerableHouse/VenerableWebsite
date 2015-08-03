@@ -12,7 +12,7 @@ FROM office_assignments
   NATURAL JOIN members
   NATURAL JOIN users
 {0}
-ORDER BY office_order, start_date
+ORDER BY office_order, start_date, name
 """
 
 def get_current_assignments():
@@ -35,7 +35,7 @@ def get_past_assignments():
 
 def get_future_assignments():
   """
-  Gets all past office assignments. Also gets additional information
+  Gets all future office assignments. Also gets additional information
   including name and username.
   """
   query = sqlalchemy.text(BASE_ASSIGNMENT_QUERY.format(
