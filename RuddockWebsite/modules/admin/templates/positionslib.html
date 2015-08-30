@@ -1,0 +1,43 @@
+{# Displays a table with all the assignments provided. #}
+{# Provided name is used if there are no assignments. #}
+{% macro show_assignments(assignments, name) %}
+  <h3>{{ name|title }} Assignments</h3>
+  {% if assignments %}
+    <table>
+      <thead>
+        <tr>
+          <th>Office</th>
+          <th>Name</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for assignment in assignments %}
+        <tr>
+          <td>{{ assignment['office_name'] }}</td>
+          <td>{{ assignment['name'] }}</td>
+          <td>{{ assignment['start_date'] }}</td>
+          <td>{{ assignment['end_date'] }}</td>
+          <td>
+            <a href="{{ url_for('admin.edit_assignment',
+              assignment_id=assignment['assignment_id']) }}">
+              Edit
+            </a>
+          </td>
+          <td>
+            <a href="{{ url_for('admin.delete_assignment',
+              assignment_id=assignment['assignment_id']) }}">
+              Delete
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+  <p>No {{ name }} assignments</p>
+  {% endif %}
+{% endmacro %}

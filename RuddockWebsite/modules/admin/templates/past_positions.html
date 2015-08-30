@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% import "positionslib.html" as lib %}
+
+{% block body %}
+<h2>Manage Positions</h2>
+Modify past position assignments.
+<br><br>
+<button onclick="location.href='{{ url_for('admin.manage_positions') }}'">
+  Back to current/future positions
+</button>
+<br><br>
+{{ lib.show_assignments(past_assignments, 'past') }}
+{% endblock body %}

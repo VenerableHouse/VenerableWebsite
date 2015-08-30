@@ -1,25 +1,24 @@
 {% extends "layout.html" %}
 {% block body %}
-  <script src="{{url_for('static', filename='js/tablesort.min.js')}}"></script>
-  {% for name, email, positions in all_types %}
+  <script src="{{ url_for('static', filename='js/tablesort.min.js') }}"></script>
+  {% for name, email, positions in assignment_data %}
     {# Display name and email of group #}
     <h2>{{ name }}</h2>
     <h3>{{ "[" + email + " at ruddock.caltech.edu" + "]" if email }}</h3>
     <br>
     <table class="userlist" id="sort-{{ name }}">
     {# First display header #}
-      <thead><tr style="cursor: pointer;">
+      <thead><tr>
         <th width='25%'>Office</th>
         <th width='25%'>Name</th>
         <th width='25%'>Office Email (at ruddock.caltech.edu)</th>
       </tr></thead>
       {# Now, display each row #}
       {% for position in positions %}
-        <tr class="link" onclick="location.href='{{ url_for('users.show_user_profile',
-          username=position['username']) }}'">
+        <tr class="link" onclick="location.href='{{ url_for('users.show_user_profile', username=position['username']) }}'">
           <td>{{ position['office_name'] }}</td>
           <td>{{ position['name'] }}</td>
-          <td>{{ position['office_email'] if position['office_email'] else '[Click Here]' }}</td>
+          <td>{{ position['office_email'] if position['office_email'] else '[None]' }}</td>
         </tr>
       {% endfor %}
     </table>

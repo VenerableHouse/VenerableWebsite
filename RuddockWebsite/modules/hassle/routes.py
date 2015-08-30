@@ -29,7 +29,7 @@ def hassle_event():
   room_number = flask.request.form.get('room', None)
   roommates = flask.request.form.getlist('roommate_id')
 
-  if user_id == None or room_number == None:
+  if user_id is None or room_number is None:
     flask.flash("Invalid request - try again?")
   else:
     roommates = list(r for r in roommates if r != "none")

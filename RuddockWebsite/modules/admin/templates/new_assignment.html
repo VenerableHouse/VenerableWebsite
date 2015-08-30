@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+{# CSS and JS for overlays #}
+<script src="{{ url_for('static', filename='js/overlay.js') }}"></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/overlay.css') }}" />
+
+<script>
+/* Makes the select menu blank initially, without providing a blank option. */
+$(document).ready(function() {
+    $("#office_select").prop("selectedIndex", -1);
+});
+
+/* Provides an interface for selecting a member. */
+function showSelectMemberUI() {
+  showOverlay();
+
+  var ui = document.createElement("div");
+  $(ui).text("Select someone from the list below.");
+  $(ui).append("<br><br>");
+  var searchInput = document.createElement("input");
+  searchInput.type = "text";
+  searchInput.id = "memberSearchInput";
+  searchInput.placeholder = "Search for a person...";
+  $(searchInput).css({
+      "width": "90%",
+  });
+  $(ui).append(searchInput);
+  $(ui).append("<br><br>");
+
+  var results = document.createElement("table");
+  results.id = "memberSearchResults";
+  $(ui).append(results);
+
+  // Load the initial contents of the table.
+  $.ajax({
+    url: "{{ url_for('admin.ajax_get_members') }}",
+    method: "GET",
+    dataType: "json",
+    success: function(response) {
+      for (var i = 0; i < response.length; i++) {
+        var member = response[i];
+        var row = document.createElement("tr");
+        $(row).prop("data-user-id", member.user_id);
+        $(row).prop("data-name", member.name);
+        var cell = document.createElement("td");
+        $(cell).text(member.name);
+
+        // Handle selecting the user.
+        $(row).click(selectMember);
+
+        $(row).append(cell);
+        $(results).append(row);
+      }
+    },
+  });
+
+  // Set event handler for search input.
+  $(searchInput).on("input", filterMembers);
+
+  $(ui).css({
+    "padding": "20px",
+  });
+  $("#overlayWindow").css({
+    "height": "60%",
+    "overflow": "auto",
+  });
+  $("#overlayWindow").append(ui);
+  centerOverlay();
+}
+
+/* Filters the list of members using the search query. */
+function filterMembers() {
+  var query = $("#memberSearchInput").val();
+
+  // If the query is cleared, everything should be shown.
+  if (query.length === 0) {
+    $("#memberSearchResults tr").show();
+    return;
+  }
+
+  // Perform the search using an AJAX request.
+  $.ajax({
+    url: "{{ url_for('admin.ajax_search_members') }}",
+    method: "GET",
+    data: {
+      query: query,
+    },
+    dataType: "json",
+    success: function(response) {
+      $("#memberSearchResults tr").each(function() {
+        var user_id = $(this).prop("data-user-id");
+        if ($.inArray(user_id, response) > -1) {
+          $(this).show();
+        } else {
+          $(this).hide();
+        }
+      });
+    },
+  });
+}
+
+/* Executes the logic when a member is actually selected. */
+function selectMember() {
+  var user_id = $(this).prop("data-user-id");
+  var name = $(this).prop("data-name");
+  $("#selectedUser").val(user_id);
+  $("#selectedName").text(name);
+  closeOverlay();
+}
+</script>
+{% endblock head %}
+
+{% block body %}
+<h2>Manage Positions</h2>
+Add a new assignment to a position. Start/end dates should default to Feb 1 for elected positions and July 1 for appointed positions.
+<br><br>
+<form action="{{ url_for('admin.new_assignment_submit') }}" method="POST">
+  <table>
+    <tr>
+      <td>Office:</td>
+      <td>
+        <select id="office_select" name="office_id">
+          {% for office in offices %}
+          <option value="{{ office['office_id'] }}">
+            {{ office['office_name'] }}
+          </option>
+          {% endfor %}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Name:</td>
+      <td>
+        <input type="hidden" id="selectedUser" name="user_id" value="-1" />
+        <span id="selectedName">(None selected)</span>
+      </td>
+      <td>
+        <button type="button" onclick="showSelectMemberUI()">Choose...</button>
+      </td>
+    </tr>
+    <tr>
+      <td>Start date:</td>
+      <td><input type="text" name="start_date" placeholder="YYYY-MM-DD" /></td>
+    </tr>
+    <tr>
+      <td>End date:</td>
+      <td><input type="text" name="end_date" placeholder="YYYY-MM-DD" /></td>
+    </tr>
+  </table>
+  <br>
+  <button type="button" onclick="location.href='{{ url_for('admin.manage_positions') }}'">
+    Back
+  </button>
+  <button type="submit">Submit</button>
+</form>
+{% endblock body %}

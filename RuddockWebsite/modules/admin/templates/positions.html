@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% import "positionslib.html" as lib %}
+
+{% block body %}
+<h2>Manage Positions</h2>
+Add new assignments (assign someone to a position) or modify existing assignments.
+<br><br>
+<button onclick="location.href='{{ url_for('admin.new_assignment') }}'">
+  Create new assignment
+</button>
+<button onclick="location.href='{{ url_for('admin.past_assignments') }}'">
+  Past assignments
+</button>
+<br><br>
+{{ lib.show_assignments(current_assignments, 'current') }}
+<br>
+{{ lib.show_assignments(future_assignments, 'future') }}
+{% endblock body %}

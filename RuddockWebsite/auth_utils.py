@@ -318,7 +318,8 @@ def get_permissions(username):
     (SELECT permission_id
       FROM users
         NATURAL JOIN offices
-        NATURAL JOIN office_members_current
+        NATURAL JOIN office_assignments
+        NATURAL JOIN office_assignments_current
         NATURAL JOIN office_permissions
       WHERE username=:u)
     UNION
@@ -352,6 +353,8 @@ def generate_admin_links():
   if check_permission(Permissions.ModifyUsers):
     links.append(AdminLink('Add members',
       flask.url_for('admin.add_members', _external=True)))
+    links.append(AdminLink('Manage positions',
+      flask.url_for('admin.manage_positions', _external=True)))
   if check_permission(Permissions.RunHassle):
     links.append(AdminLink('Room hassle',
       flask.url_for('hassle.run_hassle', _external=True)))

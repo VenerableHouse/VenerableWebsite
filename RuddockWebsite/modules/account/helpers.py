@@ -28,7 +28,7 @@ def handle_create_account(user_id, username, password, password2, birthday):
     is_valid = False
   if not validation_utils.validate_password(password, password2):
     is_valid = False
-  if not validation_utils.validate_birthday(birthday):
+  if not validation_utils.validate_date(birthday):
     is_valid = False
 
   if not is_valid:

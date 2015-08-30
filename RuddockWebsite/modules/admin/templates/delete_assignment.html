@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h2>Manage Positions</h2>
+Confirm deleting this assignment?
+<br><br>
+<form action="{{ url_for('admin.delete_assignment_submit', assignment_id=assignment['assignment_id']) }}" method="POST">
+  <table>
+    <tr>
+      <td>Office:</td>
+      <td>{{ assignment['office_name'] }}</td>
+    </tr>
+    <tr>
+      <td>Name:</td>
+      <td>{{ assignment['name'] }}</td>
+    </tr>
+    <tr>
+      <td>Start date:</td>
+      <td>{{ assignment['start_date'] }}</td>
+    </tr>
+    <tr>
+      <td>End date:</td>
+      <td>{{ assignment['end_date'] }}</td>
+    </tr>
+  </table>
+  <br>
+  <button type="button" onclick="location.href='{{ url_for('admin.manage_positions') }}'">
+    Back
+  </button>
+  <button type="submit">Confirm</button>
+</form>
+{% endblock body %}
