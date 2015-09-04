@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+  <head profile="http://www.w3.org/2005/10/profile">
     <title>Ruddock House Website- Ruddock House</title>
     <link rel="stylesheet" type="text/css"
           href="{{ url_for('static', filename='css/style.css') }}" />
     <!-- Google Fonts -->
     <link href="//fonts.googleapis.com/css?family=EB+Garamond|Roboto" rel="stylesheet" type="text/css">
+    <link rel="icon" type="image/png"
+          href="{{ url_for('static', filename='images/favicon.png') }}" />
     {% block head %}
     {% endblock head %}
   </head>
