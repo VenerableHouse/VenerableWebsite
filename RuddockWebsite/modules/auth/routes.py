@@ -1,7 +1,6 @@
 import flask
 
 from RuddockWebsite import auth_utils
-from RuddockWebsite import constants
 from RuddockWebsite.modules.auth import blueprint, helpers
 
 @blueprint.route('/login')

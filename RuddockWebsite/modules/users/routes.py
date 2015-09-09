@@ -4,7 +4,6 @@ import flask
 import sqlalchemy
 
 from RuddockWebsite import auth_utils
-from RuddockWebsite.constants import Permissions
 from RuddockWebsite.decorators import login_required
 from RuddockWebsite.modules.users import blueprint, helpers
 

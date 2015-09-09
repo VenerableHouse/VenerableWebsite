@@ -14,6 +14,13 @@ class EnumValue():
     self._value = value
     for key in kwargs:
       setattr(self, key, kwargs[key])
+    return
+
+  def __str__(self):
+    return str(self._value)
+
+  def __repr__(self):
+    return repr(self._value)
 
   def __eq__(self, other):
     return self._value == other
@@ -21,8 +28,5 @@ class EnumValue():
   def __ne__(self, other):
     return not self.__eq__(other)
 
-  def __str__(self):
-    return str(self._value)
-
-  def __repr__(self):
-    return repr(self._value)
+  def __trunc__(self):
+    return self._value.__trunc__()

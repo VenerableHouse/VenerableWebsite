@@ -5,7 +5,6 @@ Tests routes in the users module.
 import flask
 import httplib
 
-from RuddockWebsite.constants import Permissions
 from RuddockWebsite.tests import utils
 from RuddockWebsite.tests.fixtures import client
 
