@@ -10,7 +10,7 @@ import sqlalchemy
 import flask
 
 from RuddockWebsite import constants
-from RuddockWebsite.constants import Permissions
+from RuddockWebsite.resources import Permissions
 from RuddockWebsite import misc_utils
 
 class PasswordHashParser:
@@ -336,7 +336,7 @@ def check_permission(permission):
   if 'permissions' not in flask.session:
     return False
   # Admins always have access to everything.
-  if Permissions.Admin in flask.session['permissions']:
+  if Permissions.ADMIN in flask.session['permissions']:
     return True
   # Otherwise check if the permission is present in their permission list.
   return permission in flask.session['permissions']
@@ -350,15 +350,15 @@ class AdminLink:
 def generate_admin_links():
   """ Generates a list of links for the admin page. """
   links = []
-  if check_permission(Permissions.ModifyUsers):
+  if check_permission(Permissions.USERS):
     links.append(AdminLink('Add members',
       flask.url_for('admin.add_members', _external=True)))
     links.append(AdminLink('Manage positions',
       flask.url_for('admin.manage_positions', _external=True)))
-  if check_permission(Permissions.RunHassle):
+  if check_permission(Permissions.HASSLE):
     links.append(AdminLink('Room hassle',
       flask.url_for('hassle.run_hassle', _external=True)))
-  if check_permission(Permissions.EmailAdmin):
+  if check_permission(Permissions.EMAIL):
     links.append(AdminLink('Mailing lists',
       # This one needs to be hard coded.
       "https://ruddock.caltech.edu/mailman/admin"))

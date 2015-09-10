@@ -1,5 +1,3 @@
-from RuddockWebsite.constants import Permissions
-
 def login(session):
   """
   Simulates a login by manually adding values to the session variable provided.

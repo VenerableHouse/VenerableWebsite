@@ -4,8 +4,15 @@ import datetime
 import flask
 import sqlalchemy
 
-from RuddockWebsite import config, constants, email_templates, email_utils
-from RuddockWebsite.modules import account, admin, auth, hassle, users
+from RuddockWebsite import config
+from RuddockWebsite import constants
+from RuddockWebsite import email_templates
+from RuddockWebsite import email_utils
+from RuddockWebsite.modules import account
+from RuddockWebsite.modules import admin
+from RuddockWebsite.modules import auth
+from RuddockWebsite.modules import hassle
+from RuddockWebsite.modules import users
 
 app = flask.Flask(__name__)
 app.debug = False
