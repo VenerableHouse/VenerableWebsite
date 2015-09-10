@@ -7,15 +7,15 @@ necessarily constant.
 Note: DO NOT re-use enum values unless you know exactly what you are doing!
 """
 
-from RuddockWebsite.resource_utils import EnumValue
+import enum
 
 # Enum for permissions available to users.
-class Permissions:
+class Permissions(enum.IntEnum):
   # Site admins: always has access to everything
-  ADMIN = EnumValue(1)
+  ADMIN = 1
   # Add, edit, or delete user data
-  USERS = EnumValue(2)
+  USERS = 2
   # Run the room hassle
-  HASSLE = EnumValue(3)
+  HASSLE = 3
   # Manage mailing lists
-  EMAIL = EnumValue(4)
+  EMAIL = 4
