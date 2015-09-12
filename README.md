@@ -48,4 +48,4 @@ Which will automatically find all test scripts (test scripts look like `test_*.p
 
 ### Ruddock constitution
 
-When an update is made to the [constitution's repository](https://github.com/RuddockHouse/RuddockConstitution), simply download an updated copy of the pdf and commit it into this repository.
+When an update is made to the [constitution](https://github.com/RuddockHouse/RuddockConstitution), simply download an updated copy of the pdf and commit it into this repository.
