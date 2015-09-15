@@ -29,6 +29,7 @@ def get_local_constitution():
   try:
     constitution_file = open(LOCAL_PATH, "rb")
   except IOError:
+    print >> sys.stderr, "Could not open local copy of constitution. Make sure you're running the test suite from the top level RuddockWebsite/ directory."
     return None
   data = constitution_file.read()
   constitution_file.close()
