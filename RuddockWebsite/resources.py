@@ -19,3 +19,12 @@ class Permissions(enum.IntEnum):
   HASSLE = 3
   # Manage mailing lists
   EMAIL = 4
+
+# Enum for search modes.
+class MemberSearchMode(enum.IntEnum):
+  # Everyone
+  ALL = 1
+  # Current members
+  CURRENT = 2
+  # Alumni
+  ALUMNI = 3
