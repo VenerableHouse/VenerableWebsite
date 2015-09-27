@@ -4,8 +4,12 @@ CHANGE fname first_name VARCHAR(255) NOT NULL;
 ALTER TABLE members
 CHANGE lname last_name VARCHAR(255) NOT NULL;
 
+-- Don't use nicknames as alternate names... that ends poorly.
 ALTER TABLE members
-CHANGE nickname alternate_name VARCHAR(255) NOT NULL;
+DROP nickname;
+
+ALTER TABLE members
+ADD alternate_name VARCHAR(255);
 
 ALTER TABLE members
 DROP usenickname;
