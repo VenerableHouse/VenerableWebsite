@@ -11,6 +11,7 @@ from RuddockWebsite import email_utils
 from RuddockWebsite.modules import account
 from RuddockWebsite.modules import admin
 from RuddockWebsite.modules import auth
+from RuddockWebsite.modules import government
 from RuddockWebsite.modules import hassle
 from RuddockWebsite.modules import users
 
@@ -29,6 +30,7 @@ app.register_blueprint(account.blueprint, url_prefix='/account')
 app.register_blueprint(admin.blueprint, url_prefix='/admin')
 # Auth blueprint has no prefix, since not all endpoints have the same prefix.
 app.register_blueprint(auth.blueprint)
+app.register_blueprint(government.blueprint, url_prefix='/government')
 app.register_blueprint(hassle.blueprint, url_prefix='/hassle')
 app.register_blueprint(users.blueprint, url_prefix='/users')
 

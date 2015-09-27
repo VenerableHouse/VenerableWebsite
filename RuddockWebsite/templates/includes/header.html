@@ -16,7 +16,7 @@
       <a class="header-link" href="{{ url_for("users.show_users") }}">
         <div class="navbar-link">House Lists</div>
       </a>
-      <a class="header-link" href="{{ url_for("show_gov") }}">
+      <a class="header-link" href="{{ url_for("government.government_home") }}">
         <div class="navbar-link">Government</div>
       </a>
       <a class="header-link" href="{{ url_for("static", filename="constitution/constitution.pdf") }}">
@@ -31,7 +31,7 @@
         </a>
       {% else %}
         <a class="header-link" href="{{ url_for('users.show_user_profile', username=session['username']) }}">
-          <div class="navbar-link">{{session['username']}}</div>
+          <div class="navbar-link">{{ session['username'] }}</div>
         </a>
         {% if session['show_admin'] %}
           <a class="header-link" href="{{ url_for('admin.admin_home') }}">
