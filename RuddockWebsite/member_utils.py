@@ -2,6 +2,7 @@ import flask
 import sqlalchemy
 
 from RuddockWebsite import search_utils
+from RuddockWebsite.resources import MemberSearchMode
 
 def search_members_by_name(query, mode=None):
   """
@@ -51,11 +52,44 @@ def search_members_by_name(query, mode=None):
       results.append(member['user_id'])
   return results
 
-def get_all_members():
-  """ Loads all members from the database. """
+def get_members(search_mode=None, columns=None, order_by=None):
+  """
+  Loads members from the database.
+
+  search_mode should be an element of the MemberSearchMode enum.
+  columns should be a list of strings (the columns to select).
+  order_by should be a list of strings (the columns to order by).
+
+  If you want to specify ASC/DESC for columns, it should look like:
+  order_by = ["col1 ASC", "col2 DESC", ...]
+
+  Provide either both columns and order_by or neither.
+  """
+  # Default values for args.
+  if search_mode is None:
+    search_mode = MemberSearchMode.ALL
+  if columns is None:
+    columns = ["user_id, name"]
+  if order_by is None:
+    order_by = ["name ASC"]
+
+  # Determine which tables we're using.
+  if search_mode == MemberSearchMode.ALL:
+    tables = "members NATURAL JOIN members_extra"
+  elif search_mode == MemberSearchMode.CURRENT:
+    tables = "members NATURAL JOIN members_extra NATURAL JOIN members_current"
+  elif search_mode == MemberSearchMode.ALUMNI:
+    tables = "members NATURAL JOIN members_extra NATURAL JOIN members_alumni"
+  else:
+    # Invalid enum value.
+    raise ValueError
+
+  # Determine what columns we're using.
+  selected_columns = ", ".join(columns)
+
   query = sqlalchemy.text("""
-    SELECT user_id, CONCAT(fname, ' ', lname) AS name
-    FROM members
-    ORDER BY name
+    SELECT {}
+    FROM {}
+    ORDER BY {}
     """)
   return flask.g.db.execute(query).fetchall()

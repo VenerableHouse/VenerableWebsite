@@ -65,7 +65,7 @@ def new_hassle():
 def new_hassle_participants():
   """ Select participants for the room helpers. """
   # Get a list of all current members.
-  members = helpers.get_all_members()
+  members = helpers.get_members()
   return flask.render_template('hassle_new_participants.html', members=members)
 
 @blueprint.route('/new/participants/submit', methods=['POST'])

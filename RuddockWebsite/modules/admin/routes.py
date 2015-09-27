@@ -183,7 +183,7 @@ def past_assignments():
 @login_required(Permissions.USERS)
 def ajax_get_members():
   """ Loads a list of all members. """
-  members = member_utils.get_all_members()
+  members = member_utils.get_members()
   # Need to manually convert into list of dicts so it can be converted to json.
   results = list(dict(member) for member in members)
   return json.dumps(results)
