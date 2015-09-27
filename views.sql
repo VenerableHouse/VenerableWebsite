@@ -9,7 +9,7 @@ ALTER TABLE members
 DROP nickname;
 
 ALTER TABLE members
-ADD alternate_name VARCHAR(255);
+ADD alternate_name VARCHAR(255) AFTER last_name;
 
 ALTER TABLE members
 DROP usenickname;
