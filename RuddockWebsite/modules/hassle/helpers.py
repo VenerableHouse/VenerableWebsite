@@ -128,9 +128,9 @@ def set_rooms(rooms):
 def get_events():
   """ Returns events in the hassle. """
   query = sqlalchemy.text("""
-    SELECT hassle_event_id, user_id, CONCAT(fname, ' ', lname) AS name,
+    SELECT hassle_event_id, user_id, name,
       room_number, alley
-    FROM hassle_events NATURAL JOIN members NATURAL JOIN rooms
+    FROM hassle_events NATURAL JOIN members NATURAL JOIN members_extra NATURAL JOIN rooms
     ORDER BY hassle_event_id
     """)
   return flask.g.db.execute(query).fetchall()
@@ -190,9 +190,10 @@ def clear_events(event_id=None):
 def get_roommates(user_id):
   """ Gets all roommates for the provided user. """
   query = sqlalchemy.text("""
-    SELECT roommate_id, CONCAT(fname, ' ', lname) AS name
+    SELECT roommate_id, name
     FROM hassle_roommates
       JOIN members ON hassle_roommates.roommate_id = members.user_id
+      JOIN members_extra ON members.user_id = members_extra.user_id
     WHERE hassle_roommates.user_id=:u
     ORDER BY name
     """)

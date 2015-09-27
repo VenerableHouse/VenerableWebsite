@@ -49,6 +49,9 @@ MODIFY major VARCHAR(255);
 ALTER TABLE members
 MODIFY building VARCHAR(255);
 
+ALTER TABLE membership_types
+CHANGE membership_type member_type INTEGER NOT NULL;
+
 DROP VIEW IF EXISTS members_current;
 DROP VIEW IF EXISTS members_alumni;
 DROP VIEW IF EXISTS members_extra;
