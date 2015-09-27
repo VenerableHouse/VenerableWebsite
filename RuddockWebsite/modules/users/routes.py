@@ -7,42 +7,24 @@ from RuddockWebsite import auth_utils
 from RuddockWebsite.decorators import login_required
 from RuddockWebsite.modules.users import blueprint, helpers
 
-@blueprint.route('/')
+@blueprint.route('/members', defaults={'search_type': 'all'})
+@blueprint.route('/members/<search_type>')
 @login_required()
-def show_users():
-  """ Procedure to show a list of all users, with all membership details. """
-  # store which columns we want, and their display names
-  cols = ["user_id", "fname", "lname", "email", "matriculate_year", \
-          "grad_year", "membership_desc"]
-  display = [None, "First", "Last", "Email", "Matr.", "Grad.", "Membership"]
-  fieldMap = dict(zip(cols, display))
+def show_memberlist(search_type):
+  """
+  Displays the member list. Optionally filters for only current students
+  or only alumni.
+  """
+  # If search_type is not a valid value (someone is messing with the URL),
+  # abort the request.
+  if search_type not in ['all', 'current', 'alumni']:
+    flask.abort(httplib.NOT_FOUND)
 
-  # check which table to read from
-  filterType = flask.request.args.get('filterType', None)
-  if filterType == 'current':
-    tableName = 'members_current'
-  elif filterType == 'alumni':
-    tableName = 'members_alumni'
-  else:
-    tableName = 'members'
-
-  # perform query
-  query = sqlalchemy.text("""
-    SELECT * FROM {}
-    NATURAL JOIN membership_types
-    ORDER BY fname
-    """.format(tableName))
-  membership_data = flask.g.db.execute(query).fetchall()
-
-  # we also want to map ids to usernames so we can link to individual pages
-  query = sqlalchemy.text("SELECT user_id, username FROM users")
-  results = flask.g.db.execute(query)
-  idMap = dict(list(results)) # key is user_id, value is username
-
-  return flask.render_template('userlist.html',
-      data=membership_data, fields=cols,
-      displays=display, idMap=idMap, fieldMap=fieldMap,
-      filterType=filterType)
+  memberlist = helpers.get_memberlist(search_type)
+  return flask.render_template(
+      'memberlist.html',
+      memberlist=memberlist,
+      search_type=search_type)
 
 @blueprint.route('/view/<username>')
 @login_required()

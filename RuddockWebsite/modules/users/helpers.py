@@ -5,6 +5,34 @@ from collections import OrderedDict
 from RuddockWebsite import auth_utils
 from RuddockWebsite.resources import Permissions
 
+def get_memberlist(search_type):
+  """
+  Retrieves the full memberlist. Valid values for search_type
+  are 'all', 'current', or 'alumni'.
+  """
+  tables = "members NATURAL JOIN members_extra NATURAL JOIN membership_types"
+  if search_type == "all":
+    # Nothing to be done
+    pass
+  elif search_type == "current":
+    tables += " members_current"
+  elif search_type == "alumni":
+    tables += " members_alumni"
+  else:
+    # Something went wrong (this should have been validated earlier).
+    raise ValueError
+
+  # We also want usernames, or NULL if they don't exist.
+  tables += " NATURAL LEFT JOIN users"
+
+  query = sqlalchemy.text("""
+    SELECT user_id, username, first_name, last_name, email,
+      matriculation_year, graduation_year, membership_desc
+    FROM {}
+    ORDER BY first_name
+    """.format(tables))
+  return flask.g.db.execute(query).fetchall()
+
 def get_user_info(username):
   """ Procedure to get a user's info from the database. """
   cols = [["username"], ["fname", "lname"], ["nickname"], ["bday"], \
