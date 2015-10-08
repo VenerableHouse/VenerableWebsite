@@ -7,8 +7,8 @@ from RuddockWebsite import auth_utils
 from RuddockWebsite.decorators import login_required
 from RuddockWebsite.modules.users import blueprint, helpers
 
-@blueprint.route('/members', defaults={'search_type': 'all'})
-@blueprint.route('/members/<search_type>')
+@blueprint.route('/list', defaults={'search_type': 'all'})
+@blueprint.route('/list/<search_type>')
 @login_required()
 def show_memberlist(search_type):
   """
