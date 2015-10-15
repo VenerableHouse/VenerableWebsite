@@ -101,3 +101,8 @@ WHERE listname='members';
 UPDATE updating_email_lists
 SET query='SELECT email FROM members_current NATURAL JOIN members WHERE member_type in (1, 2, 4)'
 WHERE listname='socials';
+
+-- Clear out empty strings.
+UPDATE members SET phone=NULL WHERE phone='';
+UPDATE members SET building=NULL WHERE building='';
+UPDATE members SET major=NULL WHERE major='';

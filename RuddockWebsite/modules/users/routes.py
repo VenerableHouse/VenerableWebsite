@@ -30,14 +30,16 @@ def show_memberlist(search_type):
 @login_required()
 def show_user_profile(username):
   """ Procedure to show a user's profile and membership details. """
-  d_dict_user, q_dict_user = helpers.get_user_info(username)
+  user_info = helpers.get_user_info(username)
   offices = helpers.get_office_info(username)
-  editable = helpers.check_edit_permission(username)
+  has_edit_permission = helpers.check_edit_permission(username)
 
-  if d_dict_user != None and q_dict_user != None:
-    return flask.render_template('view_user.html', display=d_dict_user,
-        info=q_dict_user, offices=list(offices), strftime=time.strftime,
-        perm=editable)
+  if user_info is not None:
+    return flask.render_template('view_user.html',
+        info=user_info,
+        offices=list(offices),
+        strftime=time.strftime,
+        has_edit_permission=has_edit_permission)
   else:
     flask.abort(httplib.NOT_FOUND)
 

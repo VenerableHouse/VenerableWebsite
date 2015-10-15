@@ -34,44 +34,37 @@ def get_memberlist(search_type):
   return flask.g.db.execute(query).fetchall()
 
 def get_user_info(username):
-  """ Procedure to get a user's info from the database. """
-  cols = [["username"], ["fname", "lname"], ["nickname"], ["bday"], \
-          ["email"], ["email2"], ["status"], ["matriculate_year"], \
-          ["grad_year"], ["msc"], ["phone"], ["building", "room_num"], \
-          ["membership_desc"], ["major"], ["uid"], ["isabroad"]]
-  display = ["Username", "Name", "Nickname", "Birthday", "Primary Email", \
-             "Secondary Email", "Status", "Matriculation Year", \
-             "Graduation Year", "MSC", "Phone Number", "Residence", \
-             "Membership", "Major", "UID", "Is Abroad"]
-  # Defines the order and mapping of displayed attributes to sql columns
-  d_dict = OrderedDict(zip(display, cols))
+  """ Retrieves a user's info. """
   query = sqlalchemy.text("""
-    SELECT * FROM users
-      NATURAL JOIN members
+    SELECT
+      name,
+      email,
+      phone,
+      msc,
+      birthday,
+      matriculation_year,
+      graduation_year,
+      major,
+      membership_desc,
+      building,
+      room_number
+    FROM members
+      NATURAL JOIN members_extra
       NATURAL JOIN membership_types
+      NATURAL JOIN users
     WHERE username=:u
     """)
-  result = flask.g.db.execute(query, u=username)
-
-  values = result.first()
-  if not values:
-    d_dict = None
-    values = None
-  else:
-    if not values['usenickname']:
-      d_dict.pop('Nickname')
-  return (d_dict, values)
+  return flask.g.db.execute(query, u=username).first()
 
 def get_office_info(username):
   """ Procedure to get a user's officer info. """
-  cols = ["office_name", "start_date", "end_date"]
   query = sqlalchemy.text("""
     SELECT office_name, start_date, end_date
     FROM office_assignments NATURAL JOIN users NATURAL JOIN offices
     WHERE username = :u
     ORDER BY start_date, end_date, office_name
   """)
-  return flask.g.db.execute(query, u=username)
+  return flask.g.db.execute(query, u=username).fetchall()
 
 def check_edit_permission(username):
   """ Returns true if user has permission to edit page. """
