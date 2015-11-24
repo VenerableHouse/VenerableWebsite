@@ -6,12 +6,15 @@ alleys = [1, 2, 3, 4, 5, 6]
 def get_all_members():
   """ Gets all current members (potential hassle participants). """
   query = sqlalchemy.text("""
-    SELECT user_id, CONCAT(fname, ' ', lname) AS name, grad_year,
-      membership_type, membership_desc, user_id IN (
+    SELECT user_id, name, graduation_year,
+      member_type, membership_desc, user_id IN (
         SELECT user_id FROM hassle_participants
       ) AS participating
-    FROM members_current NATURAL JOIN membership_types
-    ORDER BY membership_type, grad_year, name
+    FROM members
+      NATURAL JOIN members_extra
+      NATURAL JOIN members_current
+      NATURAL JOIN membership_types
+    ORDER BY member_type, graduation_year, name
     """)
   return flask.g.db.execute(query).fetchall()
 
@@ -19,9 +22,9 @@ def get_rising_members():
   """ Gets IDs for all current frosh, sophomores, and juniors. """
   query = sqlalchemy.text("""
     SELECT user_id
-    FROM members_current
-    WHERE membership_type = 1
-      AND CONCAT(grad_year, '-07-01') > NOW() + INTERVAL 1 YEAR
+    FROM members NATURAL JOIN members_current
+    WHERE member_type = 1
+      AND CONCAT(graduation_year, '-07-01') > NOW() + INTERVAL 1 YEAR
     """)
   return flask.g.db.execute(query).fetchall()
 
@@ -29,27 +32,32 @@ def get_frosh():
   """ Gets IDs for all current frosh. """
   query = sqlalchemy.text("""
     SELECT user_id
-    FROM members_current
-    WHERE membership_type = 1
-      AND CONCAT(grad_year, '-07-01') > NOW() + INTERVAL 3 YEAR
+    FROM members NATURAL JOIN members_current
+    WHERE member_type = 1
+      AND CONCAT(graduation_year, '-07-01') > NOW() + INTERVAL 3 YEAR
     """)
   return flask.g.db.execute(query).fetchall()
 
 def get_participants():
   """ Gets all members participating in the hassle. """
   query = sqlalchemy.text("""
-    SELECT user_id, CONCAT(fname, ' ', lname) AS name, grad_year,
-      membership_type, membership_desc
-    FROM members NATURAL JOIN hassle_participants NATURAL JOIN membership_types
-    ORDER BY membership_type, grad_year, name
+    SELECT user_id, name, graduation_year,
+      member_type, membership_desc
+    FROM members
+      NATURAL JOIN members_extra
+      NATURAL JOIN hassle_participants
+      NATURAL JOIN membership_types
+    ORDER BY member_type, graduation_year, name
     """)
   return flask.g.db.execute(query).fetchall()
 
 def get_available_participants():
   """ Gets all participants who have not yet picked a room. """
   query = sqlalchemy.text("""
-    SELECT user_id, CONCAT(fname, ' ', lname) AS name
-    FROM members NATURAL JOIN hassle_participants
+    SELECT user_id, name
+    FROM members
+      NATURAL JOIN members_extra
+      NATURAL JOIN hassle_participants
     WHERE user_id NOT IN (
       SELECT user_id FROM hassle_events
       UNION
@@ -66,7 +74,10 @@ def set_participants(participants):
   flask.g.db.execute(delete_query)
 
   # Insert new participants.
-  insert_query = sqlalchemy.text("INSERT INTO hassle_participants (user_id) VALUES (:p)")
+  insert_query = sqlalchemy.text("""
+    INSERT INTO hassle_participants (user_id)
+    VALUES (:p)
+    """)
   for participant in participants:
     flask.g.db.execute(insert_query, p=participant)
 
@@ -128,9 +139,12 @@ def set_rooms(rooms):
 def get_events():
   """ Returns events in the hassle. """
   query = sqlalchemy.text("""
-    SELECT hassle_event_id, user_id, name,
-      room_number, alley
-    FROM hassle_events NATURAL JOIN members NATURAL JOIN members_extra NATURAL JOIN rooms
+    SELECT hassle_event_id, members.user_id, name,
+      hassle_events.room_number, alley
+    FROM hassle_events
+      JOIN members ON hassle_events.user_id = members.user_id
+      JOIN members_extra ON hassle_events.user_id = members_extra.user_id
+      JOIN rooms ON hassle_events.room_number = rooms.room_number
     ORDER BY hassle_event_id
     """)
   return flask.g.db.execute(query).fetchall()
