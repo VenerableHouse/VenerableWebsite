@@ -15,9 +15,9 @@ def get_memberlist(search_type):
     # Nothing to be done
     pass
   elif search_type == "current":
-    tables += " members_current"
+    tables += " NATURAL JOIN members_current"
   elif search_type == "alumni":
-    tables += " members_alumni"
+    tables += " NATURAL JOIN members_alumni"
   else:
     # Something went wrong (this should have been validated earlier).
     raise ValueError
