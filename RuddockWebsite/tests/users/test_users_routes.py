@@ -16,7 +16,7 @@ def test_show_memberlist(client):
   response = client.get(flask.url_for('users.show_memberlist'))
   assert response.status_code == httplib.OK
 
-def test_show_user(client, db):
+def test_view_profile(client, db):
   """ Tests that viewing a user works. """
   # Find a user to test.
   query = sqlalchemy.text("SELECT username FROM users LIMIT 1")
@@ -26,5 +26,5 @@ def test_show_user(client, db):
     with client.session_transaction() as session:
       utils.login(session)
     response = client.get(
-        flask.url_for('users.show_user_profile', username=username))
+        flask.url_for('users.view_profile', username=username))
     assert response.status_code == httplib.OK

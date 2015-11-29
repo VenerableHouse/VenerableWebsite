@@ -30,7 +30,7 @@
           <div class="navbar-link">Login</div>
         </a>
       {% else %}
-        <a class="header-link" href="{{ url_for('users.show_user_profile', username=session['username']) }}">
+        <a class="header-link" href="{{ url_for('users.view_profile', username=session['username']) }}">
           <div class="navbar-link">{{ session['username'] }}</div>
         </a>
         {% if session['show_admin'] %}

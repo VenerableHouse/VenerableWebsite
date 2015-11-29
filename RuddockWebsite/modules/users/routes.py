@@ -28,7 +28,7 @@ def show_memberlist(search_type):
 
 @blueprint.route('/view/<username>')
 @login_required()
-def show_user_profile(username):
+def view_profile(username):
   """ Procedure to show a user's profile and membership details. """
   user_info = helpers.get_user_info(username)
   offices = helpers.get_office_info(username)
@@ -45,7 +45,7 @@ def show_user_profile(username):
 
 @blueprint.route('/edit/<username>', methods=['GET', 'POST'])
 @login_required()
-def change_user_settings(username):
+def edit_profile(username):
   """ Show a page for users to edit their information. """
   # To visit this page, they must be either modifying their own page or be an
   # admin with appropriate permissions.

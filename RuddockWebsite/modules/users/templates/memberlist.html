@@ -35,7 +35,7 @@ Click on the columns to sort.
   {% for member in memberlist %}
     {# Yes, jinja2 has a test called 'none' and it's not spelled 'None' #}
     {% if member['username'] is not none %}
-    <tr class="link" onclick="location.href='{{ url_for('users.show_user_profile',
+    <tr class="link" onclick="location.href='{{ url_for('users.view_profile',
       username=member['username']) }}'">
     {% else %}
     <tr>

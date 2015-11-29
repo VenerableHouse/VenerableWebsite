@@ -37,6 +37,7 @@ def get_user_info(username):
   """ Retrieves a user's info. """
   query = sqlalchemy.text("""
     SELECT
+      username,
       name,
       email,
       phone,

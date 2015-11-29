@@ -70,7 +70,7 @@
 
   {% if has_edit_permission %}
   <br>
-  <a href="{{ url_for('users.change_user_settings',
+  <a href="{{ url_for('users.edit_profile',
     username = info["username"])}}">Click here</a> to edit this information!
   {% endif %}
 
