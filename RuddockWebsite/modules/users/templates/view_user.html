@@ -1,13 +1,13 @@
 {% extends "layout.html" %}
 
 {% block body %}
-  <center>
+<center>
   {# Name and subtitle #}
   <h2>{{ info["name"] }}</h2>
   <h3>
     {% if info["major"] is not none %}
       {{ info["major"] }}
-      {# Insert comma if major AND grad year are both set,
+      {# Insert comma if major and grad year are both set,
       e.g. "Physics, Class of 2015"
       #}
       {% if info["graduation_year"] is not none %}
@@ -67,12 +67,5 @@
       <td>{{ info["membership_desc"] }}</td>
     </tr>
   </table>
-
-  {% if has_edit_permission %}
-  <br>
-  <a href="{{ url_for('users.edit_profile',
-    username = info["username"])}}">Click here</a> to edit this information!
-  {% endif %}
-
-  </center>
+</center>
 {% endblock body %}

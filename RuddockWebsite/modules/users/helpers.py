@@ -66,10 +66,3 @@ def get_office_info(username):
     ORDER BY start_date, end_date, office_name
   """)
   return flask.g.db.execute(query, u=username).fetchall()
-
-def check_edit_permission(username):
-  """ Returns true if user has permission to edit page. """
-  if not auth_utils.check_login():
-    return False
-  return flask.session['username'] == username \
-      or auth_utils.check_permission(Permissions.USERS)
