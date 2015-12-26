@@ -49,7 +49,7 @@
       </tr>
     {% endif %}
 
-    {% if info["birthday"] is not none and info["birthday"]|length > 0 %}
+    {% if info["birthday"] is not none %}
       <tr>
         <td>Birthday</td>
         <td>{{ info["birthday"].strftime("%B %d, %Y") }}</td>
