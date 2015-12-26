@@ -2,6 +2,7 @@ import flask
 import sqlalchemy
 
 from RuddockWebsite import search_utils
+from RuddockWebsite.resources import MemberSearchMode
 
 def search_members_by_name(query, mode=None):
   """
@@ -10,19 +11,20 @@ def search_members_by_name(query, mode=None):
   'current', then only current members are searched. If mode is set to
   'alumni', then only alumni are searched.
   """
+  table = "members NATURAL JOIN members_extra"
   if mode is None:
-    table = "members"
+    pass
   elif mode == "current":
-    table = "members_current NATURAL JOIN members"
+    table += " NATURAL JOIN members_current"
   elif mode == "alumni":
-    table = "members_alumni NATURAL JOIN members"
+    table += " NATURAL JOIN members_alumni"
   else:
-    # This is not an option.
+    # Invalid request.
     raise ValueError
 
   # Don't name this 'query'!
   db_query = sqlalchemy.text("""
-    SELECT user_id, CONCAT(fname, ' ', lname) AS name
+    SELECT user_id, name
     FROM {}
     ORDER BY name
     """.format(table))
@@ -50,12 +52,3 @@ def search_members_by_name(query, mode=None):
     if matches >= len(query_keywords):
       results.append(member['user_id'])
   return results
-
-def get_all_members():
-  """ Loads all members from the database. """
-  query = sqlalchemy.text("""
-    SELECT user_id, CONCAT(fname, ' ', lname) AS name
-    FROM members
-    ORDER BY name
-    """)
-  return flask.g.db.execute(query).fetchall()

@@ -8,24 +8,24 @@ from RuddockWebsite import validation_utils
 
 class NewMember:
   """ Class containing data for adding a single new member. """
-  def __init__(self, fname, lname, matriculate_year, grad_year,
+  def __init__(self, first_name, last_name, matriculation_year, graduation_year,
       uid, email, membership_desc):
-    self.fname = fname
-    self.lname = lname
-    self.name = fname + ' ' + lname
-    self.matriculate_year = matriculate_year
-    self.grad_year = grad_year
+    self.first_name = first_name
+    self.last_name = last_name
+    self.name = first_name + ' ' + last_name
+    self.matriculation_year = matriculation_year
+    self.graduation_year = graduation_year
     self.uid = uid
     self.email = email
     self.membership_desc = membership_desc
     # Membership type is set from the membership desc.
-    self.membership_type = None
-    self.set_membership_type()
+    self.member_type = None
+    self.set_member_type()
 
   def __str__(self):
     """ Converts to a CSV string. """
-    return ','.join([self.fname, self.lname, self.matriculate_year, \
-        self.grad_year, self.uid, self.email, self.membership_desc])
+    return ','.join([self.first_name, self.last_name, self.matriculation_year, \
+        self.graduation_year, self.uid, self.email, self.membership_desc])
 
   def validate_data(self, flash_errors=True):
     """
@@ -34,19 +34,19 @@ class NewMember:
     """
     # Find all errors, don't just stop at the first one found.
     is_valid = True
-    if not validation_utils.validate_name(self.fname, flash_errors):
+    if not validation_utils.validate_name(self.first_name, flash_errors):
       is_valid = False
-    if not validation_utils.validate_name(self.lname, flash_errors):
+    if not validation_utils.validate_name(self.last_name, flash_errors):
       is_valid = False
-    if not validation_utils.validate_year(self.matriculate_year, flash_errors):
+    if not validation_utils.validate_year(self.matriculation_year, flash_errors):
       is_valid = False
-    if not validation_utils.validate_year(self.grad_year, flash_errors):
+    if not validation_utils.validate_year(self.graduation_year, flash_errors):
       is_valid = False
     if not validation_utils.validate_uid(self.uid, flash_errors):
       is_valid = False
     if not validation_utils.validate_email(self.email, flash_errors):
       is_valid = False
-    if self.membership_type is None:
+    if self.member_type is None:
       if flash_errors:
         flask.flash("'{0}' is not a valid membership type. Try 'full', 'social', 'associate', or 'RA'.".format(self.membership_desc))
       is_valid = False
@@ -63,18 +63,18 @@ class NewMember:
     # Generate an account creation key.
     create_account_key = auth_utils.generate_create_account_key()
     query = sqlalchemy.text("""
-      INSERT INTO members (fname, lname, matriculate_year, grad_year,
-        uid, email, membership_type, create_account_key)
-      VALUES (:fname, :lname, :matriculate_year, :grad_year,
-        :uid, :email, :membership_type, :create_account_key)
+      INSERT INTO members (first_name, last_name, matriculation_year, graduation_year,
+        uid, email, member_type, create_account_key)
+      VALUES (:first_name, :last_name, :matriculation_year, :graduation_year,
+        :uid, :email, :member_type, :create_account_key)
       """)
-    flask.g.db.execute(query, fname=self.fname,
-        lname=self.lname,
-        matriculate_year=self.matriculate_year,
-        grad_year=self.grad_year,
+    flask.g.db.execute(query, first_name=self.first_name,
+        last_name=self.last_name,
+        matriculation_year=self.matriculation_year,
+        graduation_year=self.graduation_year,
         uid=self.uid,
         email=self.email,
-        membership_type=self.membership_type,
+        member_type=self.member_type,
         create_account_key=create_account_key)
     # Email the user.
     subject = "Welcome to the Ruddock House website!"
@@ -86,24 +86,24 @@ class NewMember:
     email_utils.send_email(to, msg, subject)
     return True
 
-  def set_membership_type(self):
+  def set_member_type(self):
     """
     Takes a membership description (full, social, RA, etc) and sets the
-    membership_type and membership_desc attributes. If not successful, sets
-    membership_type to None.
+    member_type and membership_desc attributes. If not successful, sets
+    member_type to None.
     """
     query = sqlalchemy.text("""
-      SELECT membership_type, membership_desc_short
+      SELECT member_type, membership_desc_short
       FROM membership_types
       WHERE membership_desc = :d
         OR membership_desc_short = :d
       """)
     result = flask.g.db.execute(query, d=self.membership_desc).first()
     if result is not None:
-      self.membership_type = result['membership_type']
+      self.member_type = result['member_type']
       self.membership_desc = result['membership_desc_short']
     else:
-      self.membership_type = None
+      self.member_type = None
       # Don't set self.membership_desc, so we can print what the error was later.
     return
 
@@ -200,10 +200,10 @@ class NewMemberList:
       # Split each line by commas, and then strip leading/trailing whitespace.
       data = [s.strip() for s in line.split(',')]
       try:
-        fname = data[0]
-        lname = data[1]
-        matriculate_year = data[2]
-        grad_year = data[3]
+        first_name = data[0]
+        last_name = data[1]
+        matriculation_year = data[2]
+        graduation_year = data[3]
         uid = data[4]
         email = data[5]
         membership_desc = data[6]
@@ -214,7 +214,7 @@ class NewMemberList:
         # Not enough columns.
         flask.flash("File does not seem to be in the same format as the template.")
         return False
-      new_member = NewMember(fname, lname, matriculate_year, grad_year, \
+      new_member = NewMember(first_name, last_name, matriculation_year, graduation_year, \
           uid, email, membership_desc)
       new_member_list.append(new_member)
     self.new_member_list = new_member_list

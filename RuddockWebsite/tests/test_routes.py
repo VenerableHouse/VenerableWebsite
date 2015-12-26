@@ -12,11 +12,6 @@ def test_home(client):
   response = client.get(flask.url_for('home'))
   assert response.status_code == httplib.OK
 
-def test_government(client):
-  """ Tests the /government route. """
-  response = client.get(flask.url_for('show_gov'))
-  assert response.status_code == httplib.OK
-
 def test_contact(client):
   """ Tests the /contact route. """
   response = client.get(flask.url_for('show_contact'))

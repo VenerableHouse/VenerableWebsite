@@ -6,10 +6,11 @@ import sqlalchemy
 BASE_ASSIGNMENT_QUERY = """
 SELECT assignment_id, start_date, end_date,
   office_id, office_name, office_email, is_excomm, is_ucc,
-  user_id, CONCAT(fname, ' ', lname) AS name, username
+  user_id, name, username
 FROM office_assignments
   NATURAL JOIN offices
   NATURAL JOIN members
+  NATURAL JOIN members_extra
   NATURAL JOIN users
 {0}
 ORDER BY office_order, start_date, name

@@ -15,7 +15,7 @@
       </tr></thead>
       {# Now, display each row #}
       {% for position in positions %}
-        <tr class="link" onclick="location.href='{{ url_for('users.show_user_profile', username=position['username']) }}'">
+        <tr class="link" onclick="location.href='{{ url_for('users.view_profile', username=position['username']) }}'">
           <td>{{ position['office_name'] }}</td>
           <td>{{ position['name'] }}</td>
           <td>{{ position['office_email'] if position['office_email'] else '[None]' }}</td>

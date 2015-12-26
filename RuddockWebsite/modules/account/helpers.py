@@ -10,7 +10,8 @@ from RuddockWebsite import validation_utils
 def get_user_data(user_id):
   ''' Helper function to get user data. '''
   query = sqlalchemy.text("""
-    SELECT fname, lname, uid, matriculate_year, grad_year, email
+    SELECT first_name, last_name, email, uid,
+      matriculation_year, graduation_year
     FROM members
     WHERE user_id=:uid
     """)
@@ -36,7 +37,7 @@ def handle_create_account(user_id, username, password, password2, birthday):
 
   # Insert new values into the database. Because the password is updated in a
   # separate step, we must use a transaction to execute this query.
-  trans = flask.g.db.begin()
+  transaction = flask.g.db.begin()
   try:
     # Insert the new row into users.
     query = sqlalchemy.text("""
@@ -49,20 +50,22 @@ def handle_create_account(user_id, username, password, password2, birthday):
     # Set the birthday and invalidate the account creation key.
     query = sqlalchemy.text("""
       UPDATE members
-      SET bday = :b,
+      SET birthday = :b,
         create_account_key = NULL
       WHERE user_id = :u
       """)
     flask.g.db.execute(query, b=birthday, u=user_id)
-    trans.commit()
+    transaction.commit()
   except Exception:
-    trans.rollback()
+    transaction.rollback()
     flask.flash("An unexpected error occurred. Please find an IMSS rep.")
     return False
   # Email the user.
   query = sqlalchemy.text("""
-    SELECT CONCAT(fname, ' ', lname) AS name, email
-    FROM members NATURAL JOIN users
+    SELECT name, email
+    FROM members
+      NATURAL JOIN members_extra
+      NATURAL JOIN users
     WHERE username=:u
     """)
   result = flask.g.db.execute(query, u=username).first()

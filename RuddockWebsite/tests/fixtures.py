@@ -25,8 +25,9 @@ def db():
   transaction is used to ensure that testing does not change the database, and
   that each test is run against the same initial state of the database.
 
-  Be warned that this is for testing the database directly. It does not roll
-  back changes made as a result of sending requests to the test client.
+  Be warned that this is for testing methods that modify the database directly.
+  It does NOT roll back changes made as a result of sending requests to
+  endpoints that change database state.
   """
   engine = sqlalchemy.create_engine(config.DB_URI, convert_unicode=True)
   connection = engine.connect()
