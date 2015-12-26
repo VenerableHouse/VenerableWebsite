@@ -179,16 +179,16 @@ def past_assignments():
   return flask.render_template('past_positions.html',
       past_assignments = office_utils.get_past_assignments())
 
-@blueprint.route('/ajax/members/get')
+@blueprint.route('/ajax/positions/members/get')
 @login_required(Permissions.USERS)
 def ajax_get_members():
-  """ Loads a list of all members. """
-  members = member_utils.get_members()
+  """ Loads a list of all members for member selection. """
+  members = position_helpers.get_members()
   # Need to manually convert into list of dicts so it can be converted to json.
   results = list(dict(member) for member in members)
   return json.dumps(results)
 
-@blueprint.route('/ajax/members/search')
+@blueprint.route('/ajax/positions/members/search')
 @login_required(Permissions.USERS)
 def ajax_search_members():
   """ Returns a list of user IDs for members who match the search query. """

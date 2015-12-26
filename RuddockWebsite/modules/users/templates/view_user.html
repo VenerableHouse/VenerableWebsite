@@ -5,7 +5,7 @@
   {# Name and subtitle #}
   <h2>{{ info["name"] }}</h2>
   <h3>
-    {% if info["major"] is not none %}
+    {% if info["major"] is not none and info["major"]|length > 0 %}
       {{ info["major"] }}
       {# Insert comma if major and grad year are both set,
       e.g. "Physics, Class of 2015"
@@ -24,12 +24,11 @@
     <a href="&#109;&#097;&#105;&#108;&#116;&#111;:{{ info["email"] }}">
       {{ info["email"] }}
     </a>
-
-    {% if info["msc"] is not none %}
+    {% if info["msc"] is not none and info["msc"]|length > 0 %}
     &#8226; MSC {{ info["msc"] }}
     {% endif %}
 
-    {% if info["phone"] is not none %}
+    {% if info["phone"] is not none and info["phone"]|length > 0 %}
     &#8226; {{ info["phone"] }}
     {% endif %}
   </div>
@@ -37,7 +36,7 @@
   {# All other information #}
   <table>
     {# Display offices for this user, if any #}
-    {% if offices %}
+    {% if offices|length > 0 %}
       <tr>
         <td>Offices</td>
         <td><ul>
@@ -50,16 +49,17 @@
       </tr>
     {% endif %}
 
-    {% if info["birthday"] is not none %}
+    {% if info["birthday"] is not none and info["birthday"]|length > 0 %}
       <tr>
         <td>Birthday</td>
-        <td>{{ strftime("%B %d, %Y", info["birthday"].timetuple()) }}</td>
+        <td>{{ info["birthday"].strftime("%B %d, %Y") }}</td>
       </tr>
     {% endif %}
-    {% if info["building"] is not none and info["room_number"] is not none %}
+    {% if info["building"] is not none and info["building"]|length > 0
+        and info["room_number"] is not none and info["room_number"]|length > 0 %}
     <tr>
       <td>Residence</td>
-      <td>{{ info["building"] }} {{ info["room_num"] }}</td>
+      <td>{{ info["building"] }} {{ info["room_number"] }}</td>
     </tr>
     {% endif %}
     <tr>
