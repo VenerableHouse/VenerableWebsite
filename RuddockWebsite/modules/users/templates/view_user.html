@@ -56,7 +56,7 @@
       </tr>
     {% endif %}
     {% if info["building"] is not none and info["building"]|length > 0
-        and info["room_number"] is not none and info["room_number"]|length > 0 %}
+        and info["room_number"] is not none %}
     <tr>
       <td>Residence</td>
       <td>{{ info["building"] }} {{ info["room_number"] }}</td>
