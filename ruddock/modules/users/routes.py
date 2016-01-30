@@ -29,7 +29,7 @@ def show_memberlist(search_type):
 @blueprint.route('/view/<username>')
 @login_required()
 def view_profile(username):
-  """ Procedure to show a user's profile and membership details. """
+  """Procedure to show a user's profile and membership details."""
   user_info = helpers.get_user_info(username)
   offices = helpers.get_office_info(username)
 

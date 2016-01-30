@@ -5,7 +5,7 @@ from ruddock.modules.account import blueprint, helpers
 
 @blueprint.route('/create/<create_account_key>')
 def create_account(create_account_key):
-  """ Checks the key. If valid, displays the create account page. """
+  """Checks the key. If valid, displays the create account page."""
   user_id = auth_utils.check_create_account_key(create_account_key)
   if user_id is None:
     flask.flash('Invalid request. Please check your link and try again. If you continue to encounter problems, please find an IMSS rep.')
@@ -20,7 +20,7 @@ def create_account(create_account_key):
 
 @blueprint.route('/create/<create_account_key>/submit', methods=['POST'])
 def create_account_submit(create_account_key):
-  """ Handles a create account request. """
+  """Handles a create account request."""
   user_id = auth_utils.check_create_account_key(create_account_key)
   if user_id is None:
     # Key is invalid.

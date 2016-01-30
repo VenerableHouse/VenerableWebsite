@@ -34,7 +34,7 @@ def get_memberlist(search_type):
   return flask.g.db.execute(query).fetchall()
 
 def get_user_info(username):
-  """ Retrieves a user's info. """
+  """Retrieves a user's info."""
   query = sqlalchemy.text("""
     SELECT
       username,
@@ -58,7 +58,7 @@ def get_user_info(username):
   return flask.g.db.execute(query, u=username).first()
 
 def get_office_info(username):
-  """ Procedure to get a user's officer info. """
+  """Procedure to get a user's officer info."""
   query = sqlalchemy.text("""
     SELECT office_name, start_date, end_date
     FROM office_assignments NATURAL JOIN users NATURAL JOIN offices

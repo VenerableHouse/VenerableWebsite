@@ -28,13 +28,13 @@ def admin_home():
 @blueprint.route('/members/add')
 @login_required(Permissions.USERS)
 def add_members():
-  """ Displays a form to add new members. """
+  """Displays a form to add new members."""
   return flask.render_template('add_members.html')
 
 @blueprint.route('/members/add/single/confirm', methods=['POST'])
 @login_required(Permissions.USERS)
 def add_members_single_confirm():
-  """ Submission endpoint for adding a single member. """
+  """Submission endpoint for adding a single member."""
   fname = flask.request.form.get('fname', '')
   lname = flask.request.form.get('lname', '')
   matriculate_year = flask.request.form.get('matriculate_year', '')
@@ -56,7 +56,7 @@ def add_members_single_confirm():
 @blueprint.route('/members/add/multi/confirm', methods=['POST'])
 @login_required(Permissions.USERS)
 def add_members_multi_confirm():
-  """ Submission endpoint for adding multiple members at a time. """
+  """Submission endpoint for adding multiple members at a time."""
   new_members_file = flask.request.files.get('new_members_file', None)
   if new_members_file is None:
     flask.flash("You must upload a file!")
@@ -77,7 +77,7 @@ def add_members_multi_confirm():
 @blueprint.route('/members/add/confirm/submit', methods=['POST'])
 @login_required(Permissions.USERS)
 def add_members_confirm_submit():
-  """ Handles new member creation. """
+  """Handles new member creation."""
   # Expects new member data to be passed as a CSV string.
   new_member_data = flask.request.form.get('new_member_data', None)
   # Silently verify data. There shouldn't be any errors if everything is being
@@ -94,7 +94,7 @@ def add_members_confirm_submit():
 @blueprint.route('/positions/assignments')
 @login_required(Permissions.USERS)
 def manage_positions():
-  """ Provides an interface for managing office assignments. """
+  """Provides an interface for managing office assignments."""
   return flask.render_template('positions.html',
       current_assignments = office_utils.get_current_assignments(),
       future_assignments = office_utils.get_future_assignments())
@@ -102,14 +102,14 @@ def manage_positions():
 @blueprint.route('/positions/assignments/new')
 @login_required(Permissions.USERS)
 def new_assignment():
-  """ Provides an interface for adding new assignments. """
+  """Provides an interface for adding new assignments."""
   return flask.render_template('new_assignment.html',
       offices = office_utils.get_all_offices())
 
 @blueprint.route('/positions/assignments/new/submit', methods=['POST'])
 @login_required(Permissions.USERS)
 def new_assignment_submit():
-  """ Submission endpoint for new assignment. """
+  """Submission endpoint for new assignment."""
   office_id = flask.request.form.get('office_id', '')
   user_id = flask.request.form.get('user_id', '')
   start_date = flask.request.form.get('start_date', '')
@@ -125,7 +125,7 @@ def new_assignment_submit():
 @blueprint.route('/positions/assignments/edit/<int:assignment_id>')
 @login_required(Permissions.USERS)
 def edit_assignment(assignment_id):
-  """ Provides an interface for editing an assignment's start/end dates. """
+  """Provides an interface for editing an assignment's start/end dates."""
   # Load current details.
   assignment = office_utils.get_assignment(assignment_id)
   if assignment is None:
@@ -137,7 +137,7 @@ def edit_assignment(assignment_id):
     methods=['POST'])
 @login_required(Permissions.USERS)
 def edit_assignment_submit(assignment_id):
-  """ Submission endpoint for editing an assignment. """
+  """Submission endpoint for editing an assignment."""
   start_date = flask.request.form.get('start_date', '')
   end_date = flask.request.form.get('end_date', '')
   if position_helpers.handle_edit_assignment(assignment_id, start_date, end_date):
@@ -151,7 +151,7 @@ def edit_assignment_submit(assignment_id):
 @blueprint.route('/positions/assignments/delete/<int:assignment_id>')
 @login_required(Permissions.USERS)
 def delete_assignment(assignment_id):
-  """ Confirms request to delete an assignment. """
+  """Confirms request to delete an assignment."""
   # Load assignment details.
   assignment = office_utils.get_assignment(assignment_id)
   if assignment is None:
@@ -163,7 +163,7 @@ def delete_assignment(assignment_id):
     methods=['POST'])
 @login_required(Permissions.USERS)
 def delete_assignment_submit(assignment_id):
-  """ Handles a delete request. """
+  """Handles a delete request."""
   if position_helpers.handle_delete_assignment(assignment_id):
     flask.flash("Success!")
     return flask.redirect(flask.url_for('admin.manage_positions'))
@@ -175,14 +175,14 @@ def delete_assignment_submit(assignment_id):
 @blueprint.route('/positions/assignments/past')
 @login_required(Permissions.USERS)
 def past_assignments():
-  """ Shows past assignments. """
+  """Shows past assignments."""
   return flask.render_template('past_positions.html',
       past_assignments = office_utils.get_past_assignments())
 
 @blueprint.route('/ajax/positions/members/get')
 @login_required(Permissions.USERS)
 def ajax_get_members():
-  """ Loads a list of all members for member selection. """
+  """Loads a list of all members for member selection."""
   members = position_helpers.get_members()
   # Need to manually convert into list of dicts so it can be converted to json.
   results = list(dict(member) for member in members)
@@ -191,7 +191,7 @@ def ajax_get_members():
 @blueprint.route('/ajax/positions/members/search')
 @login_required(Permissions.USERS)
 def ajax_search_members():
-  """ Returns a list of user IDs for members who match the search query. """
+  """Returns a list of user IDs for members who match the search query."""
   query = flask.request.args.get('query', '')
   results = member_utils.search_members_by_name(query)
   return json.dumps(results)

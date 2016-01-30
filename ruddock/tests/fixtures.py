@@ -6,7 +6,7 @@ from ruddock import config
 
 @pytest.fixture
 def client():
-  """ Use the client fixture to test requests to the application. """
+  """Use the client fixture to test requests to the application."""
   # Specify a server name (needed for url building in the test client).
   app.config['SERVER_NAME'] = "127.0.0.1"
   # Turn debug and testing modes on.

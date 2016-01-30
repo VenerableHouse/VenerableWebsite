@@ -8,11 +8,11 @@ import httplib
 from ruddock.tests.fixtures import client
 
 def test_home(client):
-  """ Tests the / route. """
+  """Tests the / route."""
   response = client.get(flask.url_for('home'))
   assert response.status_code == httplib.OK
 
 def test_contact(client):
-  """ Tests the /contact route. """
+  """Tests the /contact route."""
   response = client.get(flask.url_for('show_contact'))
   assert response.status_code == httplib.OK

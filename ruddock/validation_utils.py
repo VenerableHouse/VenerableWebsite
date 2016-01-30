@@ -71,7 +71,7 @@ def validate_password(password, password2, flash_errors=True):
   return True
 
 def validate_name(name, flash_errors=True):
-  """ Validates a name. Flashes errors if flash_errors is True. """
+  """Validates a name. Flashes errors if flash_errors is True."""
   # Allow letters, spaces, hyphens, and apostrophes.
   # First and last characters must be letters.
   if not name_regex.match(name):
@@ -81,7 +81,7 @@ def validate_name(name, flash_errors=True):
   return True
 
 def validate_uid(uid, flash_errors=True):
-  """ Validates a UID. Flashes errors if flash_errors is True. """
+  """Validates a UID. Flashes errors if flash_errors is True."""
   if not uid_regex.match(uid):
     if flash_errors:
       flask.flash("'{0}' is not a valid UID.".format(uid))
@@ -89,7 +89,7 @@ def validate_uid(uid, flash_errors=True):
   return True
 
 def check_uid_exists(uid):
-  """ Returns True if the UID exists in the database. """
+  """Returns True if the UID exists in the database."""
   if not validate_uid(uid, flash_errors=False):
     return False
 
@@ -98,7 +98,7 @@ def check_uid_exists(uid):
   return result is not None
 
 def validate_year(year, flash_errors=True):
-  """ Validates a year. Flashes errors if flash_errors is True. """
+  """Validates a year. Flashes errors if flash_errors is True."""
   # Also check that the year is in the range supported by MySQL's year type.
   if year_regex.match(year) \
       and int(year) >= 1901 \
@@ -109,7 +109,7 @@ def validate_year(year, flash_errors=True):
   return False
 
 def validate_email(email, flash_errors=True):
-  """ Validates an email. Flashes errrors if flash_errors is True. """
+  """Validates an email. Flashes errrors if flash_errors is True."""
   if not email_regex.match(email):
     if flash_errors:
       flask.flash("'{0}' is not a valid email.".format(email))

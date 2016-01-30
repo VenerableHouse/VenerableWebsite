@@ -4,7 +4,7 @@ import sqlalchemy
 alleys = [1, 2, 3, 4, 5, 6]
 
 def get_all_members():
-  """ Gets all current members (potential hassle participants). """
+  """Gets all current members (potential hassle participants)."""
   query = sqlalchemy.text("""
     SELECT user_id, name, graduation_year,
       member_type, membership_desc, user_id IN (
@@ -19,7 +19,7 @@ def get_all_members():
   return flask.g.db.execute(query).fetchall()
 
 def get_rising_members():
-  """ Gets IDs for all current frosh, sophomores, and juniors. """
+  """Gets IDs for all current frosh, sophomores, and juniors."""
   query = sqlalchemy.text("""
     SELECT user_id
     FROM members NATURAL JOIN members_current
@@ -29,7 +29,7 @@ def get_rising_members():
   return flask.g.db.execute(query).fetchall()
 
 def get_frosh():
-  """ Gets IDs for all current frosh. """
+  """Gets IDs for all current frosh."""
   query = sqlalchemy.text("""
     SELECT user_id
     FROM members NATURAL JOIN members_current
@@ -39,7 +39,7 @@ def get_frosh():
   return flask.g.db.execute(query).fetchall()
 
 def get_participants():
-  """ Gets all members participating in the hassle. """
+  """Gets all members participating in the hassle."""
   query = sqlalchemy.text("""
     SELECT user_id, name, graduation_year,
       member_type, membership_desc
@@ -52,7 +52,7 @@ def get_participants():
   return flask.g.db.execute(query).fetchall()
 
 def get_available_participants():
-  """ Gets all participants who have not yet picked a room. """
+  """Gets all participants who have not yet picked a room."""
   query = sqlalchemy.text("""
     SELECT user_id, name
     FROM members
@@ -68,7 +68,7 @@ def get_available_participants():
   return flask.g.db.execute(query).fetchall()
 
 def set_participants(participants):
-  """ Sets hassle participants. """
+  """Sets hassle participants."""
   # Delete old participants.
   delete_query = sqlalchemy.text("DELETE FROM hassle_participants")
   flask.g.db.execute(delete_query)
@@ -82,7 +82,7 @@ def set_participants(participants):
     flask.g.db.execute(insert_query, p=participant)
 
 def get_all_rooms():
-  """ Gets all rooms in the house. """
+  """Gets all rooms in the house."""
   query = sqlalchemy.text("""
     SELECT room_number, alley,
       room_number IN (
@@ -94,7 +94,7 @@ def get_all_rooms():
   return flask.g.db.execute(query).fetchall()
 
 def get_participating_rooms():
-  """ Gets all rooms participating in the hassle. """
+  """Gets all rooms participating in the hassle."""
   query = sqlalchemy.text("""
     SELECT room_number, alley
     FROM hassle_rooms NATURAL JOIN rooms
@@ -103,7 +103,7 @@ def get_participating_rooms():
   return flask.g.db.execute(query).fetchall()
 
 def get_available_rooms():
-  """ Gets all rooms that have not been picked. """
+  """Gets all rooms that have not been picked."""
   query = sqlalchemy.text("""
     SELECT room_number, alley
     FROM hassle_rooms NATURAL JOIN rooms
@@ -126,7 +126,7 @@ def get_rooms_remaining():
   return alley_counts
 
 def set_rooms(rooms):
-  """ Sets rooms available for hassle. """
+  """Sets rooms available for hassle."""
   # Delete old rooms.
   delete_query = sqlalchemy.text("DELETE FROM hassle_rooms")
   flask.g.db.execute(delete_query)
@@ -137,7 +137,7 @@ def set_rooms(rooms):
     flask.g.db.execute(insert_query, r=room)
 
 def get_events():
-  """ Returns events in the hassle. """
+  """Returns events in the hassle."""
   query = sqlalchemy.text("""
     SELECT hassle_event_id, members.user_id, name,
       hassle_events.room_number, alley
@@ -150,7 +150,7 @@ def get_events():
   return flask.g.db.execute(query).fetchall()
 
 def get_events_with_roommates():
-  """ Returns events with additional roommate information. """
+  """Returns events with additional roommate information."""
   events = get_events()
   results = []
 
@@ -166,7 +166,7 @@ def get_events_with_roommates():
   return results
 
 def new_event(user_id, room_number, roommates):
-  """ Inserts a new event into the database. """
+  """Inserts a new event into the database."""
   # Insert event.
   query = sqlalchemy.text("""
     INSERT INTO hassle_events (user_id, room_number) VALUES (:u, :r)
@@ -202,7 +202,7 @@ def clear_events(event_id=None):
     flask.g.db.execute(sqlalchemy.text("DELETE FROM hassle_events"))
 
 def get_roommates(user_id):
-  """ Gets all roommates for the provided user. """
+  """Gets all roommates for the provided user."""
   query = sqlalchemy.text("""
     SELECT roommate_id, name
     FROM hassle_roommates
@@ -214,7 +214,7 @@ def get_roommates(user_id):
   return flask.g.db.execute(query, u=user_id).fetchall()
 
 def clear_all():
-  """ Clears all current hassle data. """
+  """Clears all current hassle data."""
   flask.g.db.execute(sqlalchemy.text("DELETE FROM hassle_roommates"))
   flask.g.db.execute(sqlalchemy.text("DELETE FROM hassle_events"))
   flask.g.db.execute(sqlalchemy.text("DELETE FROM hassle_participants"))

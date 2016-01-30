@@ -5,12 +5,12 @@ from ruddock.modules.auth import blueprint, helpers
 
 @blueprint.route('/login')
 def login():
-  """ Displays the login page. """
+  """Displays the login page."""
   return flask.render_template('login.html')
 
 @blueprint.route('/login/submit', methods=['POST'])
 def login_submit():
-  """ Handles authentication. """
+  """Handles authentication."""
   username = flask.request.form.get('username', None)
   password = flask.request.form.get('password', None)
 
@@ -36,12 +36,12 @@ def login_submit():
 
 @blueprint.route('/login/forgot')
 def forgot_password():
-  """ Displays a form for the user to reset a forgotten password. """
+  """Displays a form for the user to reset a forgotten password."""
   return flask.render_template('forgot_password.html')
 
 @blueprint.route('/login/forgot/submit', methods=['POST'])
 def forgot_password_submit():
-  """ Handle forgotten password submission. """
+  """Handle forgotten password submission."""
   username = flask.request.form.get('username', None)
   email = flask.request.form.get('email', None)
 
@@ -54,7 +54,7 @@ def forgot_password_submit():
 
 @blueprint.route('/login/reset/<reset_key>')
 def reset_password(reset_key):
-  """ Checks the reset key. If successful, displays the password reset prompt. """
+  """Checks the reset key. If successful, displays the password reset prompt."""
   username = auth_utils.check_reset_key(reset_key)
   if username is None:
     flask.flash('Invalid request. If your link has expired, then you will need to generate a new one. If you continue to encounter problems, please find an IMSS rep.')
@@ -64,7 +64,7 @@ def reset_password(reset_key):
 
 @blueprint.route('/login/reset/<reset_key>/submit', methods=['POST'])
 def reset_password_submit(reset_key):
-  """ Handles a password reset request. """
+  """Handles a password reset request."""
   username = auth_utils.check_reset_key(reset_key)
   if username is None:
     # Reset key was invalid.

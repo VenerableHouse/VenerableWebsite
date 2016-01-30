@@ -36,7 +36,7 @@ app.register_blueprint(users.blueprint, url_prefix='/users')
 
 @app.before_request
 def before_request():
-  """ Logic executed before request is processed. """
+  """Logic executed before request is processed."""
   # Create database engine object.
   engine = sqlalchemy.create_engine(config.DB_URI, convert_unicode=True)
   # Connect to the database and publish it in flask.g
@@ -44,7 +44,7 @@ def before_request():
 
 @app.teardown_request
 def teardown_request(exception):
-  """ Logic executed after every request is finished. """
+  """Logic executed after every request is finished."""
   # Close database connection.
   db = getattr(flask.g, 'db', None)
   if db is not None:
@@ -53,12 +53,12 @@ def teardown_request(exception):
 # Error handlers
 @app.errorhandler(httplib.NOT_FOUND)
 def page_not_found(error):
-  """ Handles a 404 page not found error. """
+  """Handles a 404 page not found error."""
   return flask.render_template("404.html"), httplib.NOT_FOUND
 
 @app.errorhandler(httplib.FORBIDDEN)
 def access_forbidden(error):
-  """ Handles a 403 access forbidden error. """
+  """Handles a 403 access forbidden error."""
   return flask.render_template("403.html"), httplib.FORBIDDEN
 
 @app.errorhandler(httplib.INTERNAL_SERVER_ERROR)

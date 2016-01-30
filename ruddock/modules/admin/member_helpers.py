@@ -7,7 +7,7 @@ from ruddock import email_utils
 from ruddock import validation_utils
 
 class NewMember:
-  """ Class containing data for adding a single new member. """
+  """Class containing data for adding a single new member."""
   def __init__(self, first_name, last_name, matriculation_year, graduation_year,
       uid, email, membership_desc):
     self.first_name = first_name
@@ -23,7 +23,7 @@ class NewMember:
     self.set_member_type()
 
   def __str__(self):
-    """ Converts to a CSV string. """
+    """Converts to a CSV string."""
     return ','.join([self.first_name, self.last_name, self.matriculation_year, \
         self.graduation_year, self.uid, self.email, self.membership_desc])
 
@@ -116,7 +116,7 @@ class NewMemberList:
     self.new_member_list = new_member_list
 
   def __str__(self):
-    """ Returns data formatted as a CSV string. """
+    """Returns data formatted as a CSV string."""
     return '\n'.join(str(new_member) for new_member in self.new_member_list)
 
   def validate_data(self, flash_errors=True):
@@ -132,7 +132,7 @@ class NewMemberList:
     return is_valid
 
   def add_members(self):
-    """ Adds all members to the database. Assumes data to be valid. """
+    """Adds all members to the database. Assumes data to be valid."""
     # Keep track of which members were added and which were skipped.
     members_added = []
     members_skipped = []

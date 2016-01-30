@@ -80,7 +80,7 @@ def handle_delete_assignment(assignment_id):
     return False
 
 def get_members():
-  """ Returns name and ID for all members. """
+  """Returns name and ID for all members."""
   query = sqlalchemy.text("""
     SELECT user_id, name
     FROM members NATURAL JOIN members_extra

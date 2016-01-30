@@ -8,7 +8,7 @@ from ruddock.modules.hassle import blueprint, helpers
 @blueprint.route('/')
 @login_required(Permissions.HASSLE)
 def run_hassle():
-  """ Logic for room hassles. """
+  """Logic for room hassles."""
   available_participants = helpers.get_available_participants()
   available_rooms = helpers.get_available_rooms()
   rooms_remaining = helpers.get_rooms_remaining()
@@ -24,7 +24,7 @@ def run_hassle():
 @blueprint.route('/event', methods=['POST'])
 @login_required(Permissions.HASSLE)
 def hassle_event():
-  """ Submission endpoint for a new event (someone picks a room). """
+  """Submission endpoint for a new event (someone picks a room)."""
   user_id = flask.request.form.get('user_id', None)
   room_number = flask.request.form.get('room', None)
   roommates = flask.request.form.getlist('roommate_id')
@@ -45,7 +45,7 @@ def hassle_event():
 @blueprint.route('/restart/<int:event_id>')
 @login_required(Permissions.HASSLE)
 def hassle_restart(event_id):
-  """ Handles a restart. """
+  """Handles a restart."""
   if event_id is None:
     helpers.clear_events()
   else:
@@ -55,7 +55,7 @@ def hassle_restart(event_id):
 @blueprint.route('/new')
 @login_required(Permissions.HASSLE)
 def new_hassle():
-  """ Redirects to the first page to start a new room helpers. """
+  """Redirects to the first page to start a new room helpers."""
   # Clear old data.
   helpers.clear_all()
   return flask.redirect(flask.url_for('hassle.new_hassle_participants'))
@@ -63,7 +63,7 @@ def new_hassle():
 @blueprint.route('/new/participants')
 @login_required(Permissions.HASSLE)
 def new_hassle_participants():
-  """ Select participants for the room helpers. """
+  """Select participants for the room helpers."""
   # Get a list of all current members.
   members = helpers.get_all_members()
   return flask.render_template('hassle_new_participants.html', members=members)
@@ -71,7 +71,7 @@ def new_hassle_participants():
 @blueprint.route('/new/participants/submit', methods=['POST'])
 @login_required(Permissions.HASSLE)
 def new_hassle_participants_submit():
-  """ Submission endpoint for hassle participants. Redirects to next page. """
+  """Submission endpoint for hassle participants. Redirects to next page."""
   # Get a list of all participants' user IDs.
   participants = map(lambda x: int(x), flask.request.form.getlist('participants'))
   # Update database with this hassle's participants.
@@ -81,7 +81,7 @@ def new_hassle_participants_submit():
 @blueprint.route('/new/rooms')
 @login_required(Permissions.HASSLE)
 def new_hassle_rooms():
-  """ Select rooms available for the room helpers. """
+  """Select rooms available for the room helpers."""
   # Get a list of all rooms.
   rooms = helpers.get_all_rooms()
   return flask.render_template('hassle_new_rooms.html',
@@ -90,7 +90,7 @@ def new_hassle_rooms():
 @blueprint.route('/new/rooms/submit', methods=['POST'])
 @login_required(Permissions.HASSLE)
 def new_hassle_rooms_submit():
-  """ Submission endpoint for hassle rooms. Redirects to next page. """
+  """Submission endpoint for hassle rooms. Redirects to next page."""
   # Get a list of all room numbers.
   rooms = map(lambda x: int(x), flask.request.form.getlist('rooms'))
   # Update database with participating rooms.
@@ -100,7 +100,7 @@ def new_hassle_rooms_submit():
 @blueprint.route('/new/confirm')
 @login_required(Permissions.HASSLE)
 def new_hassle_confirm():
-  """ Confirmation page for new room helpers. """
+  """Confirmation page for new room helpers."""
   participants = helpers.get_participants()
   rooms = helpers.get_participating_rooms()
   return flask.render_template('hassle_new_confirm.html', rooms=rooms, \
@@ -109,20 +109,20 @@ def new_hassle_confirm():
 @blueprint.route('/new/confirm/submit', methods=['POST'])
 @login_required(Permissions.HASSLE)
 def new_hassle_confirm_submit():
-  """ Submission endpoint for confirmation page. """
+  """Submission endpoint for confirmation page."""
   # Nothing to do, everything is already in the database.
   return flask.redirect(flask.url_for('hassle.run_hassle'))
 
 @blueprint.route('/ajax/rising')
 @login_required(Permissions.HASSLE)
 def ajax_get_rising_members():
-  """ AJAX endpoint that returns the user IDs of rising current members. """
+  """AJAX endpoint that returns the user IDs of rising current members."""
   results = list(x['user_id'] for x in helpers.get_rising_members())
   return json.dumps(results)
 
 @blueprint.route('/ajax/frosh')
 @login_required(Permissions.HASSLE)
 def ajax_get_frosh():
-  """ AJAX endpoint that returns the user IDs of current frosh. """
+  """AJAX endpoint that returns the user IDs of current frosh."""
   results = list(x['user_id'] for x in helpers.get_frosh())
   return json.dumps(results)

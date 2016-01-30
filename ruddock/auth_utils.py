@@ -199,7 +199,7 @@ def hash_password(password, salt, rounds, algorithm):
   return None
 
 def set_password(username, password):
-  """ Sets the user's password. Automatically generates a new salt. """
+  """Sets the user's password. Automatically generates a new salt."""
   algorithm = constants.PWD_HASH_ALGORITHM
   rounds = constants.HASH_ROUNDS
   salt = generate_salt()
@@ -222,7 +222,7 @@ def set_password(username, password):
   return
 
 def generate_salt():
-  """ Generates a pseudorandom salt. """
+  """Generates a pseudorandom salt."""
   return misc_utils.generate_random_string(constants.SALT_SIZE)
 
 def generate_reset_key():
@@ -236,7 +236,7 @@ def generate_reset_key():
       chars=chars)
 
 def check_reset_key(reset_key):
-  """ Returns the username if the reset key is valid, otherwise None. """
+  """Returns the username if the reset key is valid, otherwise None."""
   query = sqlalchemy.text("""
     SELECT username
     FROM users
@@ -249,7 +249,7 @@ def check_reset_key(reset_key):
     return None
 
 def get_user_id(username):
-  """ Takes a username and returns the user's ID. """
+  """Takes a username and returns the user's ID."""
   query = sqlalchemy.text("SELECT user_id FROM users WHERE username = :u")
   result = flask.g.db.execute(query, u = username).first()
   if result is not None:
@@ -257,7 +257,7 @@ def get_user_id(username):
   return None
 
 def update_last_login(username):
-  """ Updates the last login time for the user. """
+  """Updates the last login time for the user."""
   query = sqlalchemy.text("""
     UPDATE users
     SET lastlogin=NOW()
@@ -292,7 +292,7 @@ def check_create_account_key(key):
     return None
 
 def check_login():
-  """ Returns true if the user is logged in. """
+  """Returns true if the user is logged in."""
   return 'username' in flask.session
 
 def login_redirect():
@@ -332,7 +332,7 @@ def get_permissions(username):
   return list(row['permission_id'] for row in result)
 
 def check_permission(permission):
-  """ Returns true if the user has the given permission. """
+  """Returns true if the user has the given permission."""
   if 'permissions' not in flask.session:
     return False
   # Admins always have access to everything.
@@ -342,13 +342,13 @@ def check_permission(permission):
   return permission in flask.session['permissions']
 
 class AdminLink:
-  """ Simple class to hold link information. """
+  """Simple class to hold link information."""
   def __init__(self, name, link):
     self.name = name
     self.link = link
 
 def generate_admin_links():
-  """ Generates a list of links for the admin page. """
+  """Generates a list of links for the admin page."""
   links = []
   if check_permission(Permissions.USERS):
     links.append(AdminLink('Add members',
