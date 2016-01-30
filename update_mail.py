@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, text
-from RuddockWebsite import config, email_utils
+from ruddock import config, email_utils
 from subprocess import check_call
 import tempfile
 
