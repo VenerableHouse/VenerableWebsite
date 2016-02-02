@@ -17,7 +17,19 @@ from ruddock.modules import government
 from ruddock.modules import hassle
 from ruddock.modules import users
 
-app = flask.Flask(__name__)
+app = flask.Flask("ruddock")
+
+# Load blueprint modules
+app.register_blueprint(account.blueprint, url_prefix="/account")
+app.register_blueprint(admin.blueprint, url_prefix="/admin")
+# Auth blueprint has no prefix, since not all endpoints have the same prefix.
+app.register_blueprint(auth.blueprint)
+app.register_blueprint(government.blueprint, url_prefix="/government")
+app.register_blueprint(hassle.blueprint, url_prefix="/hassle")
+app.register_blueprint(users.blueprint, url_prefix="/users")
+
+# After initialization, import the routes.
+from ruddock import routes
 
 def init(environment_name):
   """Initializes the application with configuration variables and routes.
@@ -25,8 +37,7 @@ def init(environment_name):
   This function MUST be called before the server can be run.
 
   Args:
-    environment_name: this must be either "prod" or "dev", depending on which
-      environment should be loaded.
+    environment_name: this must be either "prod", "dev", or "test".
 
   Returns:
     None
@@ -34,6 +45,9 @@ def init(environment_name):
   if environment_name == "prod":
     environment = config.PROD
   elif environment_name == "dev":
+    environment = config.DEV
+  elif environment_name == "test":
+    # For now, point to the dev environment.
     environment = config.DEV
   else:
     raise ValueError("Illegal environment name.")
@@ -49,18 +63,6 @@ def init(environment_name):
   # Update jinja global functions
   app.jinja_env.globals.update(
       current_year=lambda: datetime.datetime.now().year)
-
-  # Load blueprint modules
-  app.register_blueprint(account.blueprint, url_prefix="/account")
-  app.register_blueprint(admin.blueprint, url_prefix="/admin")
-  # Auth blueprint has no prefix, since not all endpoints have the same prefix.
-  app.register_blueprint(auth.blueprint)
-  app.register_blueprint(government.blueprint, url_prefix="/government")
-  app.register_blueprint(hassle.blueprint, url_prefix="/hassle")
-  app.register_blueprint(users.blueprint, url_prefix="/users")
-
-  # After initialization, import the routes.
-  from ruddock import routes
 
 @app.before_request
 def before_request():
