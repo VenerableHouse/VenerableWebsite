@@ -1,16 +1,16 @@
 import pytest
 import sqlalchemy
 
+import ruddock
 from ruddock import app
-from ruddock import config
 
 @pytest.fixture
 def client():
   """Use the client fixture to test requests to the application."""
+  ruddock.init("test")
   # Specify a server name (needed for url building in the test client).
   app.config['SERVER_NAME'] = "127.0.0.1"
-  # Turn debug and testing modes on.
-  app.config['DEBUG'] = True
+  # Turn testing modes on.
   app.config['TESTING'] = True
 
   # Establish application context before running tests.
@@ -29,7 +29,7 @@ def db():
   It does NOT roll back changes made as a result of sending requests to
   endpoints that change database state.
   """
-  engine = sqlalchemy.create_engine(config.DB_URI, convert_unicode=True)
+  engine = sqlalchemy.create_engine(app.config['DB_URI'], convert_unicode=True)
   connection = engine.connect()
   # Use a transaction so we can rollback it later.
   transaction = connection.begin()

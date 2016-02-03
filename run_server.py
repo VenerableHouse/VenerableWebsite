@@ -1,12 +1,19 @@
-"""
-Starts an instance of the test server for testing locally. The production
-enviornment uses the wsgi script to start up and bypasses this file, so we are
-free to have debug settings enabled.
-"""
+"""Runs a test server."""
+
+import argparse
+
+import ruddock
 from ruddock import app
-from ruddock import config
+
+parser = argparse.ArgumentParser(
+    description="Run a local instance of the test server.")
+parser.add_argument("--env", default="dev",
+    help="Environment to run application in. Can be 'prod', 'dev', or 'test'. "
+        + "Default is 'dev'.")
+parser.add_argument("--port", type=int, default=5000,
+    help="Port to attach application to. Default is 5000.")
 
 if __name__ == "__main__":
-  test_port = getattr(config, 'TEST_PORT', 5000)
-  debug = getattr(config, 'DEBUG', True)
-  app.run(debug=debug, port=test_port)
+  args = parser.parse_args()
+  ruddock.init(args.env)
+  app.run(port=args.port)

@@ -1,8 +1,10 @@
-import traceback
-import httplib
+"""The Ruddock Website."""
+
 import datetime
 import flask
+import httplib
 import sqlalchemy
+import traceback
 
 from ruddock import config
 from ruddock import constants
@@ -15,30 +17,58 @@ from ruddock.modules import government
 from ruddock.modules import hassle
 from ruddock.modules import users
 
-app = flask.Flask(__name__)
-app.debug = False
-app.secret_key = config.SECRET_KEY
-
-# Maximum file upload size, in bytes.
-app.config['MAX_CONTENT_LENGTH'] = constants.MAX_CONTENT_LENGTH
-
-# Update jinja global functions
-app.jinja_env.globals.update(current_year=lambda: datetime.datetime.now().year)
+app = flask.Flask("ruddock")
 
 # Load blueprint modules
-app.register_blueprint(account.blueprint, url_prefix='/account')
-app.register_blueprint(admin.blueprint, url_prefix='/admin')
+app.register_blueprint(account.blueprint, url_prefix="/account")
+app.register_blueprint(admin.blueprint, url_prefix="/admin")
 # Auth blueprint has no prefix, since not all endpoints have the same prefix.
 app.register_blueprint(auth.blueprint)
-app.register_blueprint(government.blueprint, url_prefix='/government')
-app.register_blueprint(hassle.blueprint, url_prefix='/hassle')
-app.register_blueprint(users.blueprint, url_prefix='/users')
+app.register_blueprint(government.blueprint, url_prefix="/government")
+app.register_blueprint(hassle.blueprint, url_prefix="/hassle")
+app.register_blueprint(users.blueprint, url_prefix="/users")
+
+# After initialization, import the routes.
+from ruddock import routes
+
+def init(environment_name):
+  """Initializes the application with configuration variables and routes.
+
+  This function MUST be called before the server can be run.
+
+  Args:
+    environment_name: this must be either "prod", "dev", or "test".
+
+  Returns:
+    None
+  """
+  if environment_name == "prod":
+    environment = config.PROD
+  elif environment_name == "dev":
+    environment = config.DEV
+  elif environment_name == "test":
+    # For now, point to the dev environment.
+    environment = config.DEV
+  else:
+    raise ValueError("Illegal environment name.")
+
+  # Initialize configuration variables.
+  app.config["DB_URI"] = environment.db_uri
+  app.config["DEBUG"] = environment.debug
+  app.config["SECRET_KEY"] = environment.secret_key
+
+  # Maximum file upload size, in bytes.
+  app.config["MAX_CONTENT_LENGTH"] = constants.MAX_CONTENT_LENGTH
+
+  # Update jinja global functions
+  app.jinja_env.globals.update(
+      current_year=lambda: datetime.datetime.now().year)
 
 @app.before_request
 def before_request():
   """Logic executed before request is processed."""
   # Create database engine object.
-  engine = sqlalchemy.create_engine(config.DB_URI, convert_unicode=True)
+  engine = sqlalchemy.create_engine(app.config["DB_URI"], convert_unicode=True)
   # Connect to the database and publish it in flask.g
   flask.g.db = engine.connect()
 
@@ -46,7 +76,7 @@ def before_request():
 def teardown_request(exception):
   """Logic executed after every request is finished."""
   # Close database connection.
-  db = getattr(flask.g, 'db', None)
+  db = getattr(flask.g, "db", None)
   if db is not None:
     db.close()
 
@@ -75,5 +105,3 @@ def internal_server_error(error):
   email_utils.send_email(to, msg, subject)
   return flask.render_template("500.html"), httplib.INTERNAL_SERVER_ERROR
 
-# After initialization, import the routes.
-from ruddock import routes
