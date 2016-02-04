@@ -54,9 +54,11 @@ def handle_forgotten_password(username, email):
   """
   # Check username, email pair.
   query = sqlalchemy.text("""
-    SELECT user_id, CONCAT(fname, ' ', lname) AS name, email
-    FROM members NATURAL JOIN users
-    WHERE username=:u
+    SELECT user_id, name, email
+    FROM members
+      NATURAL JOIN members_extra
+      NATURAL JOIN users
+    WHERE username = :u
     """)
   result = flask.g.db.execute(query, u=username).first()
 
@@ -109,9 +111,11 @@ def handle_password_reset(username, new_password, new_password2):
   flask.g.db.execute(query, u=username)
   # Get the user's email.
   query = sqlalchemy.text("""
-    SELECT CONCAT(fname, ' ', lname) AS name, email
-    FROM members NATURAL JOIN users
-    WHERE username=:u
+    SELECT name, email
+    FROM members
+      NATURAL JOIN members_extra
+      NATURAL JOIN users
+    WHERE username = :u
     """)
   result = flask.g.db.execute(query, u=username).first()
   # Send confirmation email to user.
