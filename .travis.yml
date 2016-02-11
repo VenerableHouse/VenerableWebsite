@@ -1,0 +1,13 @@
+language: python
+python:
+  - "2.7"
+services:
+  - mariadb
+before_install:
+  - sudo apt-get install libmariadbclient-dev
+install:
+  - pip install -r requirements.txt
+addons:
+  mariadb: "10.1"
+script:
+  - py.test .
