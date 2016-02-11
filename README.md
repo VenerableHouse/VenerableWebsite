@@ -1,4 +1,4 @@
-# RuddockWebsite
+# RuddockWebsite [![Build Status][travis-image]][travis-url]
 
 The Ruddock House Website, written using Python/Flask and powered by MariaDB. The live version can be found at: https://ruddock.caltech.edu
 
@@ -49,3 +49,6 @@ Which will automatically find all test scripts (test scripts look like `test_*.p
 ### Ruddock constitution
 
 When an update is made to the [constitution](https://github.com/RuddockHouse/RuddockConstitution), simply download an updated copy of the pdf and commit it into this repository.
+
+[travis-url]: https://travis-ci.org/RuddockHouse/RuddockWebsite
+[travis-image]: https://travis-ci.org/RuddockHouse/RuddockWebsite.svg?branch=master
