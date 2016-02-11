@@ -11,26 +11,37 @@ INSERT INTO membership_types
   (4, 'Resident Associate', 'RA');
 
 INSERT INTO members
-  (uid, first_name, last_name, preferred_name, email, member_type)
+  (uid, first_name, last_name, preferred_name, email,
+    member_type, matriculation_year, graduation_year)
   VALUES
   -- user_id = 1
-  ('1000001', 'Twilight', 'Sparkle', 'Princess Twilight', 'twilight@canter.lot', 1),
+  ('1000001', 'Twilight', 'Sparkle', 'Princess Twilight', 'twilight@canter.lot',
+    1, 2010, 2014),
   -- user_id = 2
-  ('1000002', 'Rainbow', 'Dash', NULL, 'rainbow.dash@pony.ville', 1),
+  ('1000002', 'Rainbow', 'Dash', NULL, 'rainbow.dash@pony.ville',
+    1, 2010, 2014),
   -- user_id = 3
-  ('1000003', 'Princess', 'Luna', NULL, 'luna@canter.lot', 1),
+  ('1000003', 'Princess', 'Luna', NULL, 'luna@canter.lot',
+    1, 2007, 2009),
   -- user_id = 4
-  ('1000004', 'Princess', 'Celestia', NULL, 'celestia@canter.lot', 1),
+  ('1000004', 'Princess', 'Celestia', NULL, 'celestia@canter.lot',
+    1, 2007, 2009),
   -- user_id = 5
-  ('1000005', 'Apple', 'Bloom', NULL, 'apple.bloom@pony.ville', 2),
+  -- Should always appear in the current memberlist.
+  ('1000005', 'Apple', 'Bloom', NULL, 'apple.bloom@pony.ville',
+    2, 2015, 2025),
   -- user_id = 6
-  ('1000006', 'Sweetie', 'Belle', NULL, 'sweetie.belle@pony.ville', 2),
+  ('1000006', 'Sweetie', 'Belle', NULL, 'sweetie.belle@pony.ville',
+    2, 2015, 2025),
   -- user_id = 7
-  ('1000007', 'Scoot', 'Aloo', NULL, 'scoot@pony.ville', 2),
+  ('1000007', 'Scoot', 'Aloo', NULL, 'scoot@pony.ville',
+    2, 2015, 2025),
   -- user_id = 8
-  ('1000008', 'Princess', 'Derpy', NULL, 'muffins@pony.ville', 3),
+  ('1000008', 'Princess', 'Derpy', NULL, 'muffins@pony.ville',
+    3, 2010, NULL),
   -- user_id = 9
-  ('1000009', 'Star', 'Swirl', NULL, 'star.swirl@canter.lot', 4);
+  ('1000009', 'Star', 'Swirl', NULL, 'star.swirl@canter.lot',
+    4, 2000, NULL);
 
 INSERT INTO users
   (user_id, username, password_hash)
