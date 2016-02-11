@@ -1,4 +1,8 @@
-"""Runs a test server."""
+"""Runs a test server.
+
+Example usage:
+  python run_server.py --env test --port 9001
+"""
 
 import argparse
 
