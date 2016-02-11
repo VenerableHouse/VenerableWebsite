@@ -8,7 +8,7 @@ CREATE DATABASE ruddweb_test;
 USE ruddweb_test;
 
 -- Create the database schema.
-SOURCE 'database/schema.sql'
+SOURCE database/schema.sql
 
 -- Populate with test data.
-SOURCE 'database/test_data.sql'
+SOURCE database/test_data.sql
