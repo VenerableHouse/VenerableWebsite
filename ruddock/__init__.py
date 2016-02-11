@@ -6,7 +6,10 @@ import httplib
 import sqlalchemy
 import traceback
 
-from ruddock import config
+try:
+  from ruddock import config
+except ImportError:
+  from ruddock import default_config as config
 from ruddock import constants
 from ruddock import email_templates
 from ruddock import email_utils
@@ -42,13 +45,12 @@ def init(environment_name):
   Returns:
     None
   """
-  if environment_name == "prod":
+  if environment_name == "prod" and hasattr(config, "PROD"):
     environment = config.PROD
-  elif environment_name == "dev":
+  elif environment_name == "dev" and hasattr(config, "DEV"):
     environment = config.DEV
-  elif environment_name == "test":
-    # For now, point to the dev environment.
-    environment = config.DEV
+  elif environment_name == "test" and hasattr(config, "TEST"):
+    environment = config.TEST
   else:
     raise ValueError("Illegal environment name.")
 
