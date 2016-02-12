@@ -6,8 +6,8 @@ import flask
 import httplib
 
 from ruddock.resources import Permissions
-from ruddock.tests import utils
-from ruddock.tests.fixtures import client
+from tests import utils
+from tests.fixtures import client
 
 def test_run_hassle(client):
   """Tests /hassle route."""

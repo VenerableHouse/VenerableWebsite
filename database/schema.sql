@@ -15,7 +15,7 @@ CREATE TABLE membership_types (
 
 -- All members have an entry in this table.
 CREATE TABLE members (
-  user_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL AUTO_INCREMENT,
   uid VARCHAR(10) NOT NULL,
   first_name VARCHAR(255) NOT NULL,
   last_name VARCHAR(255) NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE user_permissions (
 
 -- Every house position has an entry in this table.
 CREATE TABLE offices (
-  office_id INTEGER NOT NULL,
+  office_id INTEGER NOT NULL AUTO_INCREMENT,
   office_name VARCHAR(32) NOT NULL,
   is_excomm BOOLEAN NOT NULL,
   is_ucc BOOLEAN NOT NULL,
@@ -78,7 +78,7 @@ CREATE TABLE offices (
 
 -- Many to many mapping between offices and members.
 CREATE TABLE office_assignments (
-  assignment_id INTEGER NOT NULL,
+  assignment_id INTEGER NOT NULL AUTO_INCREMENT,
   office_id INTEGER NOT NULL,
   user_id INTEGER NOT NULL,
   start_date DATE NOT NULL,
@@ -128,7 +128,7 @@ CREATE TABLE hassle_participants (
 
 -- Room hassle events. An event is a member choosing a room.
 CREATE TABLE hassle_events (
-  hassle_event_id INTEGER NOT NULL,
+  hassle_event_id INTEGER NOT NULL AUTO_INCREMENT,
   user_id INTEGER NOT NULL,
   room_number INTEGER NOT NULL,
   PRIMARY KEY (hassle_event_id),

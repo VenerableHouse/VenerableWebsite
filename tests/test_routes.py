@@ -5,7 +5,7 @@ Tests routes that are not in a module.
 import flask
 import httplib
 
-from ruddock.tests.fixtures import client
+from tests.fixtures import client
 
 def test_home(client):
   """Tests the / route."""

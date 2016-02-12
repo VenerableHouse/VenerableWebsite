@@ -13,4 +13,4 @@ before_script:
   - mysql -u root < database/setup.sql
   - mysql -u ruddweb_test --password=public < database/reset.sql
 script:
-  - py.test .
+  - py.test --cache-clear
