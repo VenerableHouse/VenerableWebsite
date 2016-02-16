@@ -6,8 +6,8 @@ import flask
 import sqlalchemy
 import httplib
 
-from tests import utils
-from tests.fixtures import client
+from ruddock.testing import utils
+from ruddock.testing.fixtures import client
 
 def test_show_memberlist(client):
   """Tests /members route."""
