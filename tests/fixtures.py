@@ -9,9 +9,7 @@ def client():
   """Use the client fixture to test requests to the application."""
   ruddock.init("test")
   # Specify a server name (needed for url building in the test client).
-  app.config['SERVER_NAME'] = "127.0.0.1"
-  # Turn testing modes on.
-  app.config['TESTING'] = True
+  app.config["SERVER_NAME"] = "127.0.0.1"
 
   # Establish application context before running tests.
   ctx = app.app_context()
