@@ -5,7 +5,7 @@ Tests routes in the government module.
 import flask
 import httplib
 
-from tests.fixtures import client
+from ruddock.testing.fixtures import client
 
 def test_government(client):
   """Tests the /government route."""

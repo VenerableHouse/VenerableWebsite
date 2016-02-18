@@ -9,4 +9,5 @@ TEST = environment.Environment(
     db_user="ruddweb_test",
     db_password="public",
     debug=True,
+    testing=True,
     secret_key="1234567890")

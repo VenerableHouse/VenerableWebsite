@@ -7,8 +7,8 @@ import httplib
 
 from ruddock import auth_utils
 from ruddock.resources import Permissions
-from tests import utils
-from tests.fixtures import client
+from ruddock.testing import utils
+from ruddock.testing.fixtures import client
 
 def test_admin_home(client):
   """Tests the /admin route."""

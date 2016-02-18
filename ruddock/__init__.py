@@ -57,6 +57,7 @@ def init(environment_name):
   # Initialize configuration variables.
   app.config["DB_URI"] = environment.db_uri
   app.config["DEBUG"] = environment.debug
+  app.config["TESTING"] = environment.testing
   app.config["SECRET_KEY"] = environment.secret_key
 
   # Maximum file upload size, in bytes.
@@ -95,11 +96,11 @@ def access_forbidden(error):
 
 @app.errorhandler(httplib.INTERNAL_SERVER_ERROR)
 def internal_server_error(error):
-  """
-  Handles a 500 internal server error response. This error is usually the
-  result of an improperly configured server or bugs in the actual codebase
-  (user errors should be handled gracefully), so IMSS must be notified if this
-  error occurs.
+  """Handles a 500 internal server error response.
+
+  This error is usually the result of an improperly configured server or bugs
+  in the actual codebase (user errors should be handled gracefully), so IMSS
+  should be notified if this error occurs.
   """
   msg = email_templates.ErrorCaughtEmail.format(traceback.format_exc())
   subject = "Ruddock website error"
