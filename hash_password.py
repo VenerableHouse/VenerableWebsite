@@ -3,7 +3,7 @@
 This is useful for creating test data.
 
 Example usage:
-  python scripts/hash_password.py examplepassword
+  python hash_password.py examplepassword
 """
 
 import argparse
