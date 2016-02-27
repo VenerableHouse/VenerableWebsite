@@ -33,16 +33,6 @@ Thanks!
 The Ruddock Website
 """
 
-CreateAccountSuccessfulEmail = \
-"""Hi {0},
-
-You have just created an account for the Ruddock website with the username
-"{1}". If this was not you, please let an IMSS rep know immediately.
-
-Thanks!
-The Ruddock Website
-"""
-
 AddedToWebsiteEmail = \
 """Hi {0},
 
@@ -53,6 +43,29 @@ areas of our site, please complete registration by creating an account here:
 
 If you have any questions or concerns, please find an IMSS rep or email us at
 imss@ruddock.caltech.edu.
+
+Thanks!
+The Ruddock Website
+"""
+
+CreateAccountRequestEmail = \
+"""Hi {0},
+
+To create an account on the Ruddock Website, please use this link:
+
+{1}
+
+If you did not initiate this request, please let an IMSS rep know immediately.
+
+Thanks!
+The Ruddock Website
+"""
+
+CreateAccountSuccessfulEmail = \
+"""Hi {0},
+
+You have just created an account for the Ruddock website with the username
+"{1}". If this was not you, please let an IMSS rep know immediately.
 
 Thanks!
 The Ruddock Website
