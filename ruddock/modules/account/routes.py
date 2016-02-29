@@ -11,8 +11,18 @@ def request_account():
 @blueprint.route("/request/submit", methods=["POST"])
 def request_account_submit():
   """Handles an account creation request."""
-  # TODO
-  return flask.redirect(flask.url_for("account.request_account"))
+  uid = flask.request.form.get("uid", None)
+  last_name = flask.request.form.get("last_name", None)
+  if uid is None or last_name is None:
+    flask.flash("Invalid request.")
+    return flask.redirect(flask.url_for("account.request_account"))
+
+  if helpers.handle_request_account(uid, last_name):
+    flask.flash("An email has been sent with a link to create your account.")
+    return flask.redirect(flask.url_for("home"))
+  else:
+    flask.flash("Incorrect UID and/or name.")
+    return flask.redirect(flask.url_for("account.request_account"))
 
 @blueprint.route("/create/<create_account_key>")
 def create_account(create_account_key):

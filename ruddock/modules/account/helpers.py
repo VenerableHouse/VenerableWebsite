@@ -81,7 +81,7 @@ def handle_create_account(user_id, username, password, password2, birthday):
   email_utils.send_email(email, msg, subject)
   return True
 
-def handle_request_account(email, uid):
+def handle_request_account(uid, last_name):
   """Handles a request to create an account.
 
   Checks that the email and UID match. If so, a create account link is sent to
@@ -91,13 +91,15 @@ def handle_request_account(email, uid):
     bool indicating success.
   """
   query = sqlalchemy.text("""
-    SELECT name
+    SELECT name, last_name, email
     FROM members NATURAL JOIN members_extra
     WHERE uid = :uid
     """)
   result = flask.g.db.execute(query, uid=uid).first()
-  if result is None or result["email"].lower() != email.lower():
+  if result is None or result["last_name"].lower() != last_name.lower():
     return False
+  email = result["email"]
+  name = result["name"]
 
   # Generate a new account creation key.
   create_account_key = auth_utils.generate_create_account_key()
@@ -114,5 +116,7 @@ def handle_request_account(email, uid):
   msg = email_templates.CreateAccountRequestEmail.format(name,
       create_account_link)
   subject = "Account creation request"
-  email_utils.send_email(email, msg, subject)
+  # TODO(dkong): testing
+  flask.flash(create_account_link)
+  #email_utils.send_email(email, msg, subject)
   return True
