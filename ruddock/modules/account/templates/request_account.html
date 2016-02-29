@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h2>Request An Account</h2>
+<form action="{{ url_for('account.request_account_submit') }}" method="post">
+  <p>Please provide your UID and last name:</p>
+  <table class="form">
+    <tr>
+      <td>UID</td>
+      <td><input type="text" name="uid" tabindex="1" autofocus /></td>
+    </tr>
+    <tr>
+      <td>Last Name</td>
+      <td><input type="text" name="last_name" tabindex="2" /></td>
+    </tr>
+  </table>
+  <button type="submit" tabindex="3">Submit</button>
+</form>
+{% endblock body %}
