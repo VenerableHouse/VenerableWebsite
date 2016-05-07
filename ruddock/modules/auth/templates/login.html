@@ -4,11 +4,11 @@
   <form action="{{ url_for('auth.login_submit') }}" method="post">
     <table class="form">
       <tr>
-        <td>Username:</td>
+        <td>Username</td>
         <td><input type="text" name="username" tabindex="1" autofocus></td>
       </tr>
       <tr>
-        <td>Password:</td>
+        <td>Password</td>
         <td><input type="password" name="password" tabindex="2"></td>
       </tr>
     </table>
@@ -16,5 +16,6 @@
     <button type="submit" tabindex="3">Login</button>
   </form>
   <br>
-  Forgot your password? Reset it <a href="{{ url_for('auth.forgot_password') }}">here</a>!
+  <a href="{{ url_for('account.request_account') }}">Create an account</a><br>
+  <a href="{{ url_for('auth.forgot_password') }}">Forgot your password?</a>
 {% endblock body %}
