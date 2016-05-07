@@ -88,16 +88,21 @@ def handle_request_account(uid, last_name):
   the user.
 
   Returns:
-    bool indicating success.
+    Tuple (bool, string). The bool indicates success. If not successful,
+    the string is an error message.
   """
   query = sqlalchemy.text("""
-    SELECT name, last_name, email
-    FROM members NATURAL JOIN members_extra
+    SELECT name, last_name, email, username
+    FROM members
+      NATURAL JOIN members_extra
+      NATURAL LEFT JOIN users
     WHERE uid = :uid
     """)
   result = flask.g.db.execute(query, uid=uid).first()
   if result is None or result["last_name"].lower() != last_name.lower():
-    return False
+    return (False, "Incorrect UID and/or name.")
+  if result["username"] is not None:
+    return (False, "You already have an account. Try recovering it?")
   email = result["email"]
   name = result["name"]
 
@@ -116,7 +121,5 @@ def handle_request_account(uid, last_name):
   msg = email_templates.CreateAccountRequestEmail.format(name,
       create_account_link)
   subject = "Account creation request"
-  # TODO(dkong): testing
-  flask.flash(create_account_link)
-  #email_utils.send_email(email, msg, subject)
-  return True
+  email_utils.send_email(email, msg, subject)
+  return (True, "")

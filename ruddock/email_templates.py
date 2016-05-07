@@ -64,8 +64,8 @@ The Ruddock Website
 CreateAccountSuccessfulEmail = \
 """Hi {0},
 
-You have just created an account for the Ruddock website with the username
-"{1}". If this was not you, please let an IMSS rep know immediately.
+Your Ruddock Website account with the username "{1}" has been created. If this
+was not you, please let an IMSS rep know immediately.
 
 Thanks!
 The Ruddock Website

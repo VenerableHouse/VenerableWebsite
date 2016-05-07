@@ -17,11 +17,12 @@ def request_account_submit():
     flask.flash("Invalid request.")
     return flask.redirect(flask.url_for("account.request_account"))
 
-  if helpers.handle_request_account(uid, last_name):
+  success, error_msg = helpers.handle_request_account(uid, last_name)
+  if success:
     flask.flash("An email has been sent with a link to create your account.")
     return flask.redirect(flask.url_for("home"))
   else:
-    flask.flash("Incorrect UID and/or name.")
+    flask.flash(error_msg)
     return flask.redirect(flask.url_for("account.request_account"))
 
 @blueprint.route("/create/<create_account_key>")
@@ -29,8 +30,7 @@ def create_account(create_account_key):
   """Checks the key. If valid, displays the create account page."""
   user_id = auth_utils.check_create_account_key(create_account_key)
   if user_id is None:
-    flask.flash("Invalid request. Please check your link and try again. "
-        "If you continue to encounter problems, please find an IMSS rep.")
+    flask.flash("Invalid request. Please check your link and try again.")
     return flask.redirect(flask.url_for("home"))
 
   user_data = helpers.get_user_data(user_id)
