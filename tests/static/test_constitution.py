@@ -3,7 +3,7 @@ Checks that constitution in static/ is synced with the upstream repository.
 """
 
 import hashlib
-import httplib
+import http.client
 import requests
 import sys
 
@@ -16,7 +16,7 @@ def get_upstream_constitution():
   repository. Returns a string in binary format.
   """
   response = requests.get(UPSTREAM_URL)
-  if response.status_code == httplib.OK:
+  if response.status_code == http.client.OK:
     return response.content
   else:
     return None
@@ -29,7 +29,7 @@ def get_local_constitution():
   try:
     constitution_file = open(LOCAL_PATH, "rb")
   except IOError:
-    print >> sys.stderr, "Could not open local copy of constitution. Make sure you're running the test suite from the top level RuddockWebsite/ directory."
+    print("Could not open local copy of constitution. Make sure you're running the test suite from the top level RuddockWebsite/ directory.", file=sys.stderr)
     return None
   data = constitution_file.read()
   constitution_file.close()

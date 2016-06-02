@@ -3,7 +3,7 @@ Tests routes in the admin module.
 """
 
 import flask
-import httplib
+import http.client
 
 from ruddock import auth_utils
 from ruddock.resources import Permissions
@@ -16,4 +16,4 @@ def test_admin_home(client):
     utils.login(session)
     utils.add_permission(session, Permissions.ADMIN)
   response = client.get(flask.url_for('admin.admin_home'))
-  assert response.status_code == httplib.OK
+  assert response.status_code == http.client.OK

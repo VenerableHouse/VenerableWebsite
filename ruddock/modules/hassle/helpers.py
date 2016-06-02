@@ -119,7 +119,7 @@ def get_rooms_remaining():
   Gets the number of rooms remaining for each alley.
   Returns a dict mapping alley to number of remaining rooms.
   """
-  alley_counts = dict(zip(alleys, [0] * len(alleys)))
+  alley_counts = dict(list(zip(alleys, [0] * len(alleys))))
   available_rooms = get_available_rooms()
   for room in available_rooms:
     alley_counts[room['alley']] += 1
@@ -155,7 +155,7 @@ def get_events_with_roommates():
   results = []
 
   for event in events:
-    row_dict = dict(event.items())
+    row_dict = dict(list(event.items()))
     roommates = get_roommates(event['user_id'])
     row_dict['roommates'] = roommates
     occupant_names = [event['name']]

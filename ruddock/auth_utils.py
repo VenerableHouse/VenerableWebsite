@@ -84,7 +84,7 @@ class PasswordHashParser:
       return None
 
     algorithms = self.algorithms
-    rounds = map(lambda x: str(x) if x is not None else '', self.rounds)
+    rounds = [str(x) if x is not None else '' for x in self.rounds]
     salts = self.salts
 
     algorithm_str = '|'.join(algorithms)
@@ -158,7 +158,7 @@ class PasswordHashParser:
 
     test_hash = password
     true_hash = self.password_hash
-    for i in xrange(len(self.algorithms)):
+    for i in range(len(self.algorithms)):
       algorithm = self.algorithms[i]
       rounds = self.rounds[i]
       salt = self.salts[i]

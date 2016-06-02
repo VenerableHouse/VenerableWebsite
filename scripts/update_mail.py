@@ -4,7 +4,7 @@ from subprocess import check_call
 import tempfile
 
 def updateFromList(results, lst):
-  print "Updating list: " + lst
+  print("Updating list: " + lst)
 
   # write emails to flat file
   if len(results) <= 0:

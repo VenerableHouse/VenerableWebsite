@@ -29,4 +29,4 @@ if __name__ == "__main__":
       rounds=[constants.HASH_ROUNDS],
       salts=[salt],
       password_hash=password_hash)
-  print str(parser)
+  print(str(parser))

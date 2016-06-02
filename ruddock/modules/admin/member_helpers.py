@@ -186,7 +186,7 @@ class NewMemberList:
       template_file = open(template_filename, 'rU')
       template_header = template_file.readlines()[0].strip()
       template_file.close()
-    except IOError, IndexError:
+    except IOError as IndexError:
       # Something weird happened, but this shouldn't be fatal.
       template_header = ''
 
