@@ -24,5 +24,5 @@ class Environment(object):
 
   @property
   def db_uri(self):
-    return "mysql://{0}:{1}@{2}/{3}".format(
+    return "mysql+pymysql://{0}:{1}@{2}/{3}".format(
         self.db_user, self.db_password, self.db_hostname, self.db_name)
