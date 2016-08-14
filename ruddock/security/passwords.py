@@ -68,7 +68,7 @@ class PasswordHash(object):
     return "${0}${1}${2}${3}".format(
         "|".join(self.algorithms),
         "|".join([str(x) if x is not None else "" for x in self.costs]),
-        "|".join(self.costs),
+        "|".join(self.salts),
         self.hash_value)
 
   def verify_password(self, candidate):
@@ -86,7 +86,7 @@ class PasswordHash(object):
     try:
       for i in range(len(self.algorithms)):
         candidate_hash = compute_hash(
-            candidate_hash_value,
+            candidate_hash,
             self.salts[i],
             self.costs[i],
             self.algorithms[i])
@@ -142,7 +142,7 @@ def compute_hash(password, salt, cost, algorithm):
         password.encode(),
         salt.encode(),
         cost)
-    return binascii.hexlify(result)
+    return binascii.hexlify(result).decode()
   elif algorithm == "md5":
     return hashlib.md5((salt + password).encode()).hexdigest()
   else:

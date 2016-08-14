@@ -1,6 +1,6 @@
 language: python
 python:
-  - "2.7"
+  - "3.5"
 services:
   - mariadb
 before_install:
@@ -13,4 +13,4 @@ before_script:
   - mysql -u root < database/setup.sql
   - mysql -u ruddweb_test --password=public < database/reset.sql
 script:
-  - py.test --cache-clear
+  - python -m unittest
