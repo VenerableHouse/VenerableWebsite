@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h2>Dinners</h2>
+
+{% for dinner in dinner_list %}
+  <a href="{{ url_for('rotation.show_dinner_list', dinner_id=dinner) }}">Dinner {{ dinner }}</a>
+  <br>
+{% endfor %}
+
+{% endblock body %}

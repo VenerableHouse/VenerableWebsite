@@ -167,6 +167,46 @@ CREATE TABLE updating_email_lists_additions (
   PRIMARY KEY (listname, email)
 );
 
+-- ROTATION TABLES
+
+CREATE TABLE rotation_buckets ( -- bucket names are defined in rotation/helpers.py
+  bucket_id INTEGER NOT NULL AUTO_INCREMENT,
+  bucket_name VARCHAR(10),
+  PRIMARY KEY (bucket_id)
+);
+
+CREATE TABLE rotation_prefrosh (
+  prefrosh_id INTEGER NOT NULL AUTO_INCREMENT,
+  first_name VARCHAR(255) NOT NULL,
+  last_name VARCHAR(255) NOT NULL,
+  preferred_name VARCHAR(255),
+  image LONGBLOB,
+  bucket_id INTEGER,
+  votes_neg_two INTEGER NOT NULL DEFAULT 0,
+  votes_neg_one INTEGER NOT NULL DEFAULT 0,
+  votes_zero INTEGER NOT NULL DEFAULT 0,
+  votes_plus_one INTEGER NOT NULL DEFAULT 0,
+  votes_plus_two INTEGER NOT NULL DEFAULT 0,
+  votes_plus_three INTEGER NOT NULL DEFAULT 0,
+  dinner INTEGER, -- defined in rotation/helpers.py (1-8)
+  attended_dinner BOOLEAN,
+  comments VARCHAR(60000),
+  PRIMARY KEY (prefrosh_id),
+  FOREIGN KEY (bucket_id) REFERENCES rotation_buckets (bucket_id)
+);
+
+CREATE TABLE rotation_move_history (
+  event_id INTEGER NOT NULL AUTO_INCREMENT,
+  prefrosh_id INTEGER NOT NULL,
+  old_bucket INTEGER NOT NULL,
+  new_bucket INTEGER NOT NULL,
+  PRIMARY KEY (event_id),
+  UNIQUE (prefrosh_id, old_bucket, new_bucket),
+  FOREIGN KEY (prefrosh_id) REFERENCES rotation_prefrosh (prefrosh_id),
+  FOREIGN KEY (old_bucket) REFERENCES rotation_buckets (bucket_id),
+  FOREIGN KEY (new_bucket) REFERENCES rotation_buckets (bucket_id)
+);
+
 -- VIEWS
 
 CREATE VIEW members_alumni AS
