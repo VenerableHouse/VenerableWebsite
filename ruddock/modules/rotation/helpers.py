@@ -1,29 +1,26 @@
 import flask
 import sqlalchemy
 
-def get_dinners():
-  query = sqlalchemy.text("""
-    SELECT DISTINCT dinner FROM rotation_prefrosh
-  """)
-  return flask.g.db.execute(query).fetchall()
+DINNERS = list(range(1, 9))
+BUCKETS = ['000', '-2', '-1', '0', '1', '2', '3']
 
-def get_prefrosh(prefrosh_id):
+def get_prefrosh_data(prefrosh_id):
   query = sqlalchemy.text("""
     SELECT prefrosh_id, first_name, preferred_name, last_name, dinner,
-    bucket, votes_neg_two, votes_neg_one, votes_zero, votes_plus_one,
+    bucket_name, votes_neg_two, votes_neg_one, votes_zero, votes_plus_one,
     votes_plus_two, votes_plus_three, comments
-    FROM rotation_prefrosh WHERE prefrosh_id = {}
-    """.format(prefrosh_id))
-  return flask.g.db.execute(query).first()
+    FROM rotation_prefrosh NATURAL JOIN buckets WHERE prefrosh_id = (:pid)
+    """)
+  return flask.g.db.execute(query, pid=prefrosh_id).first()
 
-def get_prefrosh_by_dinner(dinner):
+def get_prefrosh_by_dinner(dinner_id):
   query = sqlalchemy.text("""
     SELECT prefrosh_id, first_name, preferred_name, last_name, dinner,
-      bucket, votes_neg_two, votes_neg_one, votes_zero,
+      bucket_name, votes_neg_two, votes_neg_one, votes_zero,
       votes_plus_one, votes_plus_two, votes_plus_three, comments
-    FROM rotation_prefrosh WHERE dinner = (:d)
+    FROM rotation_prefrosh NATURAL JOIN buckets WHERE dinner = (:d)
     """)
-  return flask.g.db.execute(query, d=dinner).fetchall()
+  return flask.g.db.execute(query, d=dinner_id).fetchall()
 
 def get_image_contents(prefrosh_id):
   query = sqlalchemy.text("""

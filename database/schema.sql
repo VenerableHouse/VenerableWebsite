@@ -169,31 +169,42 @@ CREATE TABLE updating_email_lists_additions (
 
 -- ROTATION TABLES
 
+CREATE TABLE buckets ( -- bucket names are defined in rotation/helpers.py
+  bucket_id INTEGER NOT NULL AUTO_INCREMENT,
+  bucket_name VARCHAR(10),
+  PRIMARY KEY (bucket_id)
+);
+
 CREATE TABLE rotation_prefrosh (
   prefrosh_id INTEGER NOT NULL AUTO_INCREMENT,
   first_name VARCHAR(255) NOT NULL,
   last_name VARCHAR(255) NOT NULL,
   preferred_name VARCHAR(255),
   image LONGBLOB,
-  bucket ENUM('-2', '-1', '000', '0', '0.5', '1', '1.5', '2', '3') NOT NULL DEFAULT '0',
+  bucket_id INTEGER,
   votes_neg_two INTEGER NOT NULL DEFAULT 0,
   votes_neg_one INTEGER NOT NULL DEFAULT 0,
   votes_zero INTEGER NOT NULL DEFAULT 0,
   votes_plus_one INTEGER NOT NULL DEFAULT 0,
   votes_plus_two INTEGER NOT NULL DEFAULT 0,
   votes_plus_three INTEGER NOT NULL DEFAULT 0,
-  dinner INTEGER,
+  dinner INTEGER NOT NULL DEFAULT 1, -- defined in rotation/helpers.py (1-8)
   attended_dinner BOOLEAN,
-  comments VARCHAR(5000),
-  PRIMARY KEY (prefrosh_id)
+  comments VARCHAR(60000),
+  PRIMARY KEY (prefrosh_id),
+  FOREIGN KEY (bucket_id) REFERENCES buckets (bucket_id)
 );
 
 CREATE TABLE rotation_move_history (
+  event_id INTEGER NOT NULL AUTO_INCREMENT,
   prefrosh_id INTEGER NOT NULL,
   old_bucket INTEGER NOT NULL,
   new_bucket INTEGER NOT NULL,
-  PRIMARY KEY (prefrosh_id, old_bucket, new_bucket),
-  FOREIGN KEY (prefrosh_id) REFERENCES rotation_prefrosh (prefrosh_id)
+  PRIMARY KEY (event_id),
+  UNIQUE (prefrosh_id, old_bucket, new_bucket),
+  FOREIGN KEY (prefrosh_id) REFERENCES rotation_prefrosh (prefrosh_id),
+  FOREIGN KEY (old_bucket) REFERENCES buckets (bucket_id),
+  FOREIGN KEY (new_bucket) REFERENCES buckets (bucket_id)
 );
 
 -- VIEWS
