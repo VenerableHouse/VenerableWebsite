@@ -19,6 +19,8 @@ class Permissions(enum.IntEnum):
   HASSLE = 3
   # Manage mailing lists
   EMAIL = 4
+  # Run rotation meetings
+  ROTATION = 5
 
 # Enum for search modes.
 class MemberSearchMode(enum.IntEnum):

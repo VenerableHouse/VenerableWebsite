@@ -167,6 +167,35 @@ CREATE TABLE updating_email_lists_additions (
   PRIMARY KEY (listname, email)
 );
 
+-- ROTATION TABLES
+
+CREATE TABLE rotation_prefrosh (
+  prefrosh_id INTEGER NOT NULL AUTO_INCREMENT,
+  first_name VARCHAR(255) NOT NULL,
+  last_name VARCHAR(255) NOT NULL,
+  preferred_name VARCHAR(255),
+  image LONGBLOB,
+  bucket ENUM('-2', '-1', '000', '0', '0.5', '1', '1.5', '2', '3') NOT NULL DEFAULT '0',
+  votes_neg_two INTEGER NOT NULL DEFAULT 0,
+  votes_neg_one INTEGER NOT NULL DEFAULT 0,
+  votes_zero INTEGER NOT NULL DEFAULT 0,
+  votes_plus_one INTEGER NOT NULL DEFAULT 0,
+  votes_plus_two INTEGER NOT NULL DEFAULT 0,
+  votes_plus_three INTEGER NOT NULL DEFAULT 0,
+  dinner INTEGER,
+  attended_dinner BOOLEAN,
+  comments VARCHAR(5000),
+  PRIMARY KEY (prefrosh_id)
+);
+
+CREATE TABLE rotation_move_history (
+  prefrosh_id INTEGER NOT NULL,
+  old_bucket INTEGER NOT NULL,
+  new_bucket INTEGER NOT NULL,
+  PRIMARY KEY (prefrosh_id, old_bucket, new_bucket),
+  FOREIGN KEY (prefrosh_id) REFERENCES rotation_prefrosh (prefrosh_id)
+);
+
 -- VIEWS
 
 CREATE VIEW members_alumni AS
