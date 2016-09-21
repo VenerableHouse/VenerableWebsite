@@ -169,7 +169,7 @@ CREATE TABLE updating_email_lists_additions (
 
 -- ROTATION TABLES
 
-CREATE TABLE buckets ( -- bucket names are defined in rotation/helpers.py
+CREATE TABLE rotation_buckets ( -- bucket names are defined in rotation/helpers.py
   bucket_id INTEGER NOT NULL AUTO_INCREMENT,
   bucket_name VARCHAR(10),
   PRIMARY KEY (bucket_id)
@@ -188,11 +188,11 @@ CREATE TABLE rotation_prefrosh (
   votes_plus_one INTEGER NOT NULL DEFAULT 0,
   votes_plus_two INTEGER NOT NULL DEFAULT 0,
   votes_plus_three INTEGER NOT NULL DEFAULT 0,
-  dinner INTEGER NOT NULL DEFAULT 1, -- defined in rotation/helpers.py (1-8)
+  dinner INTEGER, -- defined in rotation/helpers.py (1-8)
   attended_dinner BOOLEAN,
   comments VARCHAR(60000),
   PRIMARY KEY (prefrosh_id),
-  FOREIGN KEY (bucket_id) REFERENCES buckets (bucket_id)
+  FOREIGN KEY (bucket_id) REFERENCES rotation_buckets (bucket_id)
 );
 
 CREATE TABLE rotation_move_history (
@@ -203,8 +203,8 @@ CREATE TABLE rotation_move_history (
   PRIMARY KEY (event_id),
   UNIQUE (prefrosh_id, old_bucket, new_bucket),
   FOREIGN KEY (prefrosh_id) REFERENCES rotation_prefrosh (prefrosh_id),
-  FOREIGN KEY (old_bucket) REFERENCES buckets (bucket_id),
-  FOREIGN KEY (new_bucket) REFERENCES buckets (bucket_id)
+  FOREIGN KEY (old_bucket) REFERENCES rotation_buckets (bucket_id),
+  FOREIGN KEY (new_bucket) REFERENCES rotation_buckets (bucket_id)
 );
 
 -- VIEWS

@@ -37,23 +37,39 @@ if __name__ == "__main__":
   else:
     raise ValueError("Illegal environment name.")
 
-  # initialize the buckets
+
   engine = sqlalchemy.create_engine(db_uri, convert_unicode=True)
   db = engine.connect()
+
+  # clear out old data
+  query = sqlalchemy.text("""
+    DELETE FROM rotation_move_history;
+    DELETE FROM rotation_prefrosh;
+    DELETE FROM rotation_buckets;
+  """)
+  db.execute(query)
+
+  # initialize the buckets
   for bucket in helpers.BUCKETS:
     query = sqlalchemy.text("""
-    INSERT INTO buckets (bucket_name) VALUES (:b)
+    INSERT INTO rotation_buckets (bucket_name) VALUES (:b)
     """)
     db.execute(query, b=bucket)
+
+  # grab the bucket_id for the 000 bucket, since this is the default bucket
+  query = sqlalchemy.text("""
+    SELECT bucket_id FROM rotation_buckets WHERE bucket_name = '000'
+    """)
+  bucket_id = db.execute(query).first()['bucket_id']
 
   # import the prefrosh from the image directory
   for filename in os.listdir(args.imgpath):
     full_name = os.path.splitext(filename)
     last, dash, first = full_name[0].partition('-')
-    with open('../../images/' + filename, 'rb') as f:
+    with open(args.imgpath + filename, 'rb') as f:
       img_data = f.read()
     query = sqlalchemy.text("""
     INSERT INTO rotation_prefrosh (first_name, last_name, image, bucket_id)
-    VALUES (:first, :last, :img_data, 1)
+    VALUES (:first, :last, :img_data, :bid)
     """)
-    db.execute(query, first=first, last=last, img_data=img_data)
+    db.execute(query, first=first, last=last, img_data=img_data, bid=bucket_id)

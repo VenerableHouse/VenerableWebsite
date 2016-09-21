@@ -14,7 +14,10 @@
     $('form').areYouSure( {'message': 'You have unsaved votes/comments!'} );
   });
 </script>
-<a href="{{ url_for('rotation.show_dinner_list', dinner_id=prefrosh['dinner']) }}">Return to Dinner</a>
+
+{% if prefrosh['dinner'] is not none %}
+  <a href="{{ url_for('rotation.show_dinner_list', dinner_id=prefrosh['dinner']) }}">Return to Dinner</a>
+{% endif %}
 <h1>{{ full_name }}</h1>
 <div class="container" style="display: flex; flex-direction: row; justify-content: space-between;">
   <div>
