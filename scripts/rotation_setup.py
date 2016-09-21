@@ -13,7 +13,10 @@ usage: python rotation_setup.py --env ENV /path/to/images/
 import sqlalchemy
 import os
 import argparse
-from ruddock import config
+try:
+  from ruddock import config
+except ImportError:
+  from ruddock import default_config as config
 from ruddock.modules.rotation import helpers
 
 parser = argparse.ArgumentParser(
