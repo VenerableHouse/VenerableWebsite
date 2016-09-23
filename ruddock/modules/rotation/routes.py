@@ -32,13 +32,12 @@ def serve_image(prefrosh_id):
 @login_required(Permissions.ROTATION)
 def show_prefrosh(prefrosh_id):
   prefrosh = helpers.get_prefrosh_data(prefrosh_id)
-  name_parts = []
-  name_parts.append(prefrosh["first_name"])
-  if prefrosh["preferred_name"] is not None:
-    name_parts.append("({})".format(prefrosh["preferred_name"]))
-  name_parts.append(prefrosh["last_name"])
-  full_name = " ".join(name_parts)
-  return flask.render_template('prefrosh.html', full_name=full_name, prefrosh=prefrosh)
+  full_name = helpers.format_name(
+    prefrosh['first_name'], prefrosh['last_name'], prefrosh['preferred_name'])
+  prev, next = helpers.get_adjacent_ids(prefrosh['prefrosh_id'], prefrosh['dinner'])
+
+  return flask.render_template('prefrosh.html',
+          full_name=full_name, prefrosh=prefrosh, prev=prev, next=next)
 
 @blueprint.route('/update_info/<int:prefrosh_id>', methods=['POST'])
 @login_required(Permissions.ROTATION)

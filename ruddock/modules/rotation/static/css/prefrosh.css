@@ -1,9 +1,22 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
 .commentInput {
   width: 100%;
   font-size: 20px;
 }
 
 .voteStepper {
-  width: 7%;
+  width: 60%;
   font-size: 20px;
+}
+
+.voteLabel {
+  font-size: 20px;
+}
+
+.voteBlock {
 }

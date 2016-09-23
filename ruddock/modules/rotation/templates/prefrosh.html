@@ -18,11 +18,19 @@
 {% if prefrosh['dinner'] is not none %}
   <a href="{{ url_for('rotation.show_dinner_list', dinner_id=prefrosh['dinner']) }}">Return to Dinner</a>
 {% endif %}
+<br>
+{% if prev is not none %}
+  <a href ="{{ url_for('rotation.show_prefrosh', prefrosh_id=prev) }}">Prev</a>
+{% endif %}
+<br>
+{% if next is not none %}
+  <a href ="{{ url_for('rotation.show_prefrosh', prefrosh_id=next) }}">Next</a>
+{% endif %}
 <h1>{{ full_name }}</h1>
-<div class="container" style="display: flex; flex-direction: row; justify-content: space-between;">
+<div class="container">
   <div>
     <img src="{{ url_for('rotation.serve_image', prefrosh_id=prefrosh['prefrosh_id']) }}"
-      height = "600">
+      height = "550">
     <table style="font-size: 20px;">
       <thead>
         <tr>
@@ -56,21 +64,45 @@
         <textarea name="comments" class="commentInput"
               rows="25">{{ prefrosh['comments'] if prefrosh['comments'] is not none else '' }}</textarea>
       </label>
-      <label>
-        <input class="voteStepper" type="number" name="votes_neg_two"
+      <div class="container">
+        <div class="voteBlock">
+          <label class="voteLabel">-2</label>
+          <br>
+          <input class="voteStepper" type="number" name="votes_neg_two"
                step="1" value="{{ prefrosh['votes_neg_two'] }}">
-        <input class="voteStepper" type="number" name="votes_neg_one"
+        </div>
+        <div class="voteBlock">
+          <label class="voteLabel">-1</label>
+          <br>
+          <input class="voteStepper" type="number" name="votes_neg_two"
                step="1" value="{{ prefrosh['votes_neg_one'] }}">
-        <input class="voteStepper" type="number" name="votes_zero"
+        </div>
+        <div class="voteBlock">
+          <label class="voteLabel">0</label>
+          <br>
+          <input class="voteStepper" type="number" name="votes_neg_two"
                step="1" value="{{ prefrosh['votes_zero'] }}">
-        <input class="voteStepper" type="number" name="votes_plus_one"
+        </div>
+        <div class="voteBlock">
+          <label class="voteLabel">1</label>
+          <br>
+          <input class="voteStepper" type="number" name="votes_neg_two"
                step="1" value="{{ prefrosh['votes_plus_one'] }}">
-        <input class="voteStepper" type="number" name="votes_plus_two"
+        </div>
+        <div class="voteBlock">
+          <label class="voteLabel">2</label>
+          <br>
+          <input class="voteStepper" type="number" name="votes_neg_two"
                step="1" value="{{ prefrosh['votes_plus_two'] }}">
-        <input class="voteStepper" type="number" name="votes_plus_three"
+        </div>
+        <div class="voteBlock">
+          <label class="voteLabel">3</label>
+          <br>
+          <input class="voteStepper" type="number" name="votes_neg_two"
                step="1" value="{{ prefrosh['votes_plus_three'] }}">
-      </label>
-      <input type="submit">
+        </div>
+        <input type="submit">
+      </div>
     </form>
   </div>
 </div>
