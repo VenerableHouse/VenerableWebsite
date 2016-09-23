@@ -55,3 +55,17 @@ def update_votes(prefrosh_id, votes):
     p3=votes['votes_plus_three'],
     pid=prefrosh_id
   )
+
+def format_name(first, last, preferred):
+  name_parts = []
+  name_parts.append(first)
+  if preferred is not None:
+    name_parts.append("({})".format(preferred))
+  name_parts.append(last)
+  return " ".join(name_parts)
+
+def get_adjacent_ids(prefrosh_id, dinner_id):
+  prefrosh_list = get_prefrosh_by_dinner(dinner_id)
+  ids = [prefrosh['prefrosh_id'] for prefrosh in prefrosh_list]
+  idx = ids.index(prefrosh_id)
+  return [(ids[idx - 1] if idx > 0 else None), (ids[idx + 1] if idx < len(ids) - 1 else None)]
