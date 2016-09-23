@@ -31,13 +31,12 @@ def serve_image(prefrosh_id):
 @blueprint.route('/prefrosh/<int:prefrosh_id>')
 @login_required(Permissions.ROTATION)
 def show_prefrosh(prefrosh_id):
-  prefrosh = helpers.get_prefrosh_data(prefrosh_id)
+  prefrosh, prev_id, next_id = helpers.get_prefrosh_and_adjacent(prefrosh_id)
   full_name = helpers.format_name(
     prefrosh['first_name'], prefrosh['last_name'], prefrosh['preferred_name'])
-  prev, next = helpers.get_adjacent_ids(prefrosh['prefrosh_id'], prefrosh['dinner'])
 
-  return flask.render_template('prefrosh.html',
-          full_name=full_name, prefrosh=prefrosh, prev=prev, next=next)
+  return flask.render_template('prefrosh.html', full_name=full_name, prefrosh=prefrosh,
+            prev_id=prev_id, next_id=next_id, vote_tuples=helpers.VOTE_TUPLES)
 
 @blueprint.route('/update_info/<int:prefrosh_id>', methods=['POST'])
 @login_required(Permissions.ROTATION)

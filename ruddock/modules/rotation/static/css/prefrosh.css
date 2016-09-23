@@ -5,13 +5,13 @@
 }
 
 .commentInput {
-  width: 100%;
   font-size: 20px;
+  width: 100%;
 }
 
 .voteStepper {
-  width: 60%;
   font-size: 20px;
+  width: 60%;
 }
 
 .voteLabel {
