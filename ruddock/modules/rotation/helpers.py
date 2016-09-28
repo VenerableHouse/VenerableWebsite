@@ -2,7 +2,7 @@ import flask
 import sqlalchemy
 
 DINNERS = range(1, 9)
-BUCKETS = ['000', '-2', '-1', '0', '1', '2', '3']
+BUCKETS = ['000', '-2', '-1', '0', '0.5', '1', '1.5', '2', '3']
 VOTE_TUPLES = [
   {'vote_value': -2, 'vote_string': 'votes_neg_two'},
   {'vote_value': -1, 'vote_string': 'votes_neg_one'},
