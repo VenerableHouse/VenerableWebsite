@@ -1,11 +1,41 @@
 {% extends "layout.html" %}
 
-{% block body %}
-<h2>Dinners</h2>
+{% block head %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('rotation.static', filename='css/portal.css') }}" />
+{% endblock head %}
 
-{% for dinner in dinner_list %}
-  <a href="{{ url_for('rotation.show_dinner_list', dinner_id=dinner) }}">Dinner {{ dinner }}</a>
-  <br>
-{% endfor %}
+{% block body %}
+<div class="container">
+  <div class="menuItem">
+    <h2>Dinners</h2>
+    {% for dinner in dinner_list %}
+      <a href="{{ url_for('rotation.show_prefrosh_list', dinner_id=dinner) }}">Dinner {{ dinner }}</a>
+      <br>
+    {% endfor %}
+    <a href="{{ url_for('rotation.show_prefrosh_list') }}">All Prefrosh</a>
+  </div>
+  <div class="menuItem">
+    <h2>Move Prefrosh</h2>
+    <form action="{{ url_for('rotation.move') }}" method="post" id="bucket_form">
+      <label>Old Bucket:</label>
+      <select name="oldBucket">
+        {% for bucket in buckets %}
+          <option value="{{ bucket }}">{{ bucket }}</option>
+        {% endfor %}
+      </select>
+      <br>
+      <label>New Bucket:</label>
+      <select name="newBucket">
+        {% for bucket in buckets %}
+          <option value="{{ bucket }}">{{ bucket }}</option>
+        {% endfor %}
+      </select>
+      <br>
+      <input type="submit">
+    </form>
+  </div>
+</div>
+
 
 {% endblock body %}

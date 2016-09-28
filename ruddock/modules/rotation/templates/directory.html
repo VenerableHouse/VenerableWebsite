@@ -2,15 +2,13 @@
 
 {% block body %}
 <script src="{{ url_for('static', filename='js/tablesort.min.js') }}"></script>
-<h2>Prefrosh Directory (Dinner {{ dinner_id }})</h2>
+<h2>Prefrosh Directory {{ '(Dinner %d)' % dinner_id if dinner_id is not none else '(All)' }}</h2>
 <a href="{{ url_for('rotation.show_portal') }}">Return to Portal</a>
 <table class="prefroshlist" id="user-table">
   <thead style="cursor: pointer;">
     <tr>
       <th>Image</th>
-      <th>First</th>
-      <th>Preferred</th>
-      <th>Last</th>
+      <th>Name</th>
       <th>Bucket</th>
       <th>-2</th>
       <th>-1</th>
@@ -28,9 +26,7 @@
       <img src="{{ url_for('rotation.serve_image', prefrosh_id=prefrosh['prefrosh_id']) }}"
       height = "200">
     </td>
-    <td>{{ prefrosh['first_name'] }}</td>
-    <td>{{ prefrosh['preferred_name'] if prefrosh['preferred_name'] is not none else '' }}</td>
-    <td>{{ prefrosh['last_name'] }}</td>
+    <td>{{ prefrosh['full_name'] }}</td>
     <td>{{ prefrosh['bucket_name'] }}</td>
     <td>{{ prefrosh['votes_neg_two'] }}</td>
     <td>{{ prefrosh['votes_neg_one'] }}</td>

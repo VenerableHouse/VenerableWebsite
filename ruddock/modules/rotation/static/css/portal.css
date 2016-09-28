@@ -1,0 +1,8 @@
+.menuItem {
+  padding-right: 100px;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+}
