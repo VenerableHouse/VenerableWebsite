@@ -15,14 +15,15 @@ def show_portal():
   return flask.render_template('portal.html',
     dinner_list=dinner_list, buckets=buckets)
 
-@blueprint.route('/dinner', defaults={'dinner_id': None})
-@blueprint.route('/dinner/<int:dinner_id>')
+@blueprint.route('/directory')
 @login_required(Permissions.ROTATION)
-def show_prefrosh_list(dinner_id):
-  if dinner_id:
-    prefrosh_list = helpers.get_prefrosh_by_dinner(dinner_id)
-  else:
+def show_prefrosh_list():
+  dinner_id = flask.request.args.get('dinner_id')
+  if dinner_id is None or int(dinner_id) not in helpers.DINNERS:
     prefrosh_list = helpers.get_all_prefrosh()
+  else:
+    dinner_id = int(dinner_id)
+    prefrosh_list = helpers.get_prefrosh_by_dinner(dinner_id)
   return flask.render_template('directory.html',
     prefrosh_list=prefrosh_list, dinner_id=dinner_id)
 
@@ -51,16 +52,19 @@ def update_comment(prefrosh_id):
   helpers.update_votes(prefrosh_id, flask.request.form)
   return flask.redirect(flask.url_for("rotation.show_prefrosh", prefrosh_id=prefrosh_id))
 
-@blueprint.route('/move/', methods=['POST'])
+@blueprint.route('/move')
 @login_required(Permissions.ROTATION)
 def move():
-  old_bucket_name = flask.request.form.get("oldBucket")
-  new_bucket_name = flask.request.form.get("newBucket")
+  old_bucket_name = flask.request.args.get("old_bucket_name")
+  new_bucket_name = flask.request.args.get("new_bucket_name")
+  print "@@@@@@@@@@@@@@@@@"
+  print old_bucket_name
+  print new_bucket_name
   if old_bucket_name not in helpers.BUCKETS or new_bucket_name not in helpers.BUCKETS:
     flask.flash("Bad value for one of the buckets.")
     return flask.redirect(flask.url_for('rotation.show_portal'))
   elif old_bucket_name == new_bucket_name:
-    flask.flash("Buckets must be distinct")
+    flask.flash("Buckets must be distinct.")
     return flask.redirect(flask.url_for('rotation.show_portal'))
   else:
     old_bucket_prefrosh = helpers.get_prefrosh_by_bucket(old_bucket_name)
@@ -69,15 +73,21 @@ def move():
       new_bucket=new_bucket_prefrosh, old_bucket_name=old_bucket_name, new_bucket_name=new_bucket_name,
       vote_tuples=helpers.VOTE_TUPLES)
 
-@blueprint.route('/change_bucket/<int:prefrosh_id>', methods=['POST'])
+@blueprint.route('/move/change_bucket/<int:prefrosh_id>', methods=['POST'])
 @login_required(Permissions.ROTATION)
 def change_bucket(prefrosh_id):
   new_bucket_name = flask.request.form.get("newBucket")
   old_bucket_name = flask.request.form.get("oldBucket")
-  bucket_prefrosh = helpers.get_prefrosh_by_bucket(old_bucket_name)
-  prefrosh, prev_id, next_id = helpers.get_prefrosh_and_adjacent(prefrosh_id, bucket_prefrosh)
+  if old_bucket_name not in helpers.BUCKETS or new_bucket_name not in helpers.BUCKETS:
+    flask.flash("Bad value for one of the buckets.")
+  elif old_bucket_name == new_bucket_name:
+    flask.flash("Buckets must be distinct.")
+  old_bucket_prefrosh = helpers.get_prefrosh_by_bucket(old_bucket_name)
+  prefrosh, prev_id, next_id = helpers.get_prefrosh_and_adjacent(prefrosh_id, old_bucket_prefrosh)
   helpers.change_bucket(prefrosh_id, new_bucket_name)
   if prev_id:
-    return flask.redirect(flask.url_for("rotation.move", _anchor=prev_id), code=307)
+    return flask.redirect(flask.url_for("rotation.move",
+      _anchor=prev_id, old_bucket_name=old_bucket_name, new_bucket_name=new_bucket_name))
   else:
-    return flask.redirect(flask.url_for("rotation.move", _anchor=next_id), code=307)
+    return flask.redirect(flask.url_for("rotation.move",
+      _anchor=next_id, old_bucket_name=old_bucket_name, new_bucket_name=new_bucket_name))

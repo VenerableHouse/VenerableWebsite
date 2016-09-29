@@ -21,7 +21,7 @@ def get_dinner_prefrosh_by_prefrosh_id(prefrosh_id):
       (SELECT dinner FROM rotation_prefrosh WHERE prefrosh_id = :pid)
     """)
   raw = flask.g.db.execute(query, pid=prefrosh_id).fetchall()
-  return format_prefrosh_list(raw)
+  return postprocess_prefrosh_data(raw)
 
 def get_prefrosh_by_dinner(dinner_id):
   query = sqlalchemy.text("""
@@ -31,7 +31,7 @@ def get_prefrosh_by_dinner(dinner_id):
     FROM rotation_prefrosh NATURAL JOIN rotation_buckets WHERE dinner = (:d)
     """)
   raw = flask.g.db.execute(query, d=dinner_id).fetchall()
-  return format_prefrosh_list(raw)
+  return postprocess_prefrosh_data(raw)
 
 def get_prefrosh_by_bucket(bucket_name):
   query = sqlalchemy.text("""
@@ -41,7 +41,7 @@ def get_prefrosh_by_bucket(bucket_name):
     FROM rotation_prefrosh NATURAL JOIN rotation_buckets WHERE bucket_name = (:b)
     """)
   raw = flask.g.db.execute(query, b=bucket_name).fetchall()
-  return format_prefrosh_list(raw)
+  return postprocess_prefrosh_data(raw)
 
 def get_all_prefrosh():
   query = sqlalchemy.text("""
@@ -51,7 +51,7 @@ def get_all_prefrosh():
     FROM rotation_prefrosh NATURAL JOIN rotation_buckets
     """)
   raw = flask.g.db.execute(query).fetchall()
-  return format_prefrosh_list(raw)
+  return postprocess_prefrosh_data(raw)
 
 def get_image_contents(prefrosh_id):
   query = sqlalchemy.text("""
@@ -102,7 +102,7 @@ def get_prefrosh_and_adjacent(prefrosh_id, prefrosh_list):
   next_id = prefrosh_list[idx + 1]['prefrosh_id'] if idx < len(prefrosh_list) - 1 else None
   return [prefrosh, prev_id, next_id]
 
-def format_prefrosh_list(ls):
+def postprocess_prefrosh_data(ls):
   prefrosh_list = [dict(pf.items()) for pf in ls]
   for prefrosh in prefrosh_list:
     prefrosh['full_name'] = format_name(

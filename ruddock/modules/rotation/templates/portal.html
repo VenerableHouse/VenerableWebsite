@@ -17,16 +17,16 @@
   </div>
   <div class="menuItem">
     <h2>Move Prefrosh</h2>
-    <form action="{{ url_for('rotation.move') }}" method="post" id="bucket_form">
+    <form action="{{ url_for('rotation.move') }}" method="get" id="bucket_form">
       <label>Old Bucket:</label>
-      <select name="oldBucket">
+      <select name="old_bucket_name">
         {% for bucket in buckets %}
           <option value="{{ bucket }}">{{ bucket }}</option>
         {% endfor %}
       </select>
       <br>
       <label>New Bucket:</label>
-      <select name="newBucket">
+      <select name="new_bucket_name">
         {% for bucket in buckets %}
           <option value="{{ bucket }}">{{ bucket }}</option>
         {% endfor %}
