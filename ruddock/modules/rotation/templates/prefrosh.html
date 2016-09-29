@@ -16,7 +16,7 @@
 </script>
 
 {% if prefrosh['dinner'] is not none %}
-  <a href="{{ url_for('rotation.show_dinner_list', dinner_id=prefrosh['dinner']) }}">Return to Dinner</a>
+  <a href="{{ url_for('rotation.show_prefrosh_list', dinner_id=prefrosh['dinner']) }}">Return to Dinner</a>
 {% endif %}
 {% if prev_id is not none %}
   <br>
@@ -26,6 +26,7 @@
   <br>
   <a href ="{{ url_for('rotation.show_prefrosh', prefrosh_id=next_id) }}">Next</a>
 {% endif %}
+
 <h1>{{ full_name }}</h1>
 <div class="container">
   <div>
