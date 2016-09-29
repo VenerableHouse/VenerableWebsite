@@ -57,9 +57,6 @@ def update_comment(prefrosh_id):
 def move():
   old_bucket_name = flask.request.args.get("old_bucket_name")
   new_bucket_name = flask.request.args.get("new_bucket_name")
-  print "@@@@@@@@@@@@@@@@@"
-  print old_bucket_name
-  print new_bucket_name
   if old_bucket_name not in helpers.BUCKETS or new_bucket_name not in helpers.BUCKETS:
     flask.flash("Bad value for one of the buckets.")
     return flask.redirect(flask.url_for('rotation.show_portal'))
