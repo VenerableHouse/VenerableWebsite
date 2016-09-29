@@ -6,6 +6,12 @@
 {% endblock head %}
 
 {% block body %}
+<script>
+function updateComment(name, comment) {
+  document.getElementById("commentName").innerHTML = name;
+  document.getElementById("commentBody").innerHTML = comment;
+}
+</script>
 
 <div class="container">
   <div>
@@ -15,7 +21,7 @@
         <div class="prefroshDetails" id="{{ prefrosh['prefrosh_id'] }}">
           <img src="{{ url_for('rotation.serve_image', prefrosh_id=prefrosh['prefrosh_id']) }}"
         height = "300">
-          <a href="{{ url_for('rotation.show_prefrosh',
+          <a class="prefroshName" href="{{ url_for('rotation.show_prefrosh',
         prefrosh_id=prefrosh['prefrosh_id']) }}">{{ prefrosh['full_name'] }}</a>
           <div class="container">
             <table>
@@ -34,6 +40,8 @@
                 </tr>
               </tbody>
             </table>
+            <button onclick="updateComment('{{ prefrosh['first_name'] }}',
+                              '{{ prefrosh['escaped_comments'] }}')">Comments</button>
             <form action="{{ url_for('rotation.change_bucket', prefrosh_id=prefrosh['prefrosh_id']) }}"
               method="post" id="change_bucket_form">
               <input type="hidden" name="oldBucket" value="{{ old_bucket_name }}">
@@ -47,6 +55,9 @@
   </div>
   <div>
     <a href="{{ url_for('rotation.show_portal') }}">Return To Portal</a>
+    <h4>Comments For: <span id="commentName"></span></h4>
+    <br>
+    <div id="commentBody"></div>
   </div>
   <div>
     <h2>Bucket {{ new_bucket_name }}</h2>
@@ -55,7 +66,7 @@
         <div class="prefroshDetails" id="{{ prefrosh['prefrosh_id'] }}">
           <img src="{{ url_for('rotation.serve_image', prefrosh_id=prefrosh['prefrosh_id']) }}"
         height = "300">
-          <a href="{{ url_for('rotation.show_prefrosh',
+          <a class="prefroshName" href="{{ url_for('rotation.show_prefrosh',
         prefrosh_id=prefrosh['prefrosh_id']) }}">{{ prefrosh['full_name'] }}</a>
           <div class="container">
             <table>
