@@ -16,3 +16,11 @@
   flex-direction: column;
   margin-bottom: 10px;
 }
+
+.prefroshName {
+  font-size: 24px;
+}
+
+#commentBody {
+  white-space: pre-wrap;
+}

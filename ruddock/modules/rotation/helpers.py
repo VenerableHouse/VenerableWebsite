@@ -1,5 +1,6 @@
 import flask
 import sqlalchemy
+import cgi
 
 DINNERS = range(1, 9)
 BUCKETS = ['000', '-2', '-1', '0', '0.5', '1', '1.5', '2', '3']
@@ -107,7 +108,7 @@ def postprocess_prefrosh_data(ls):
   for prefrosh in prefrosh_list:
     prefrosh['full_name'] = format_name(
       prefrosh['first_name'], prefrosh['last_name'], prefrosh['preferred_name'])
-
+    prefrosh['escaped_comments'] = escape_comments(prefrosh['comments'])
   return prefrosh_list
 
 def change_bucket(prefrosh_id, new_bucket_name):
@@ -117,3 +118,16 @@ def change_bucket(prefrosh_id, new_bucket_name):
     WHERE prefrosh_id = (:pid)
     """)
   flask.g.db.execute(query, b=new_bucket_name, pid=prefrosh_id)
+
+def escape_comments(str):
+  if str is not None:
+    # cgi.escape escapes '<', '>', and '&'
+    # unicode.escape escapes newlines to '\n'
+    # the replace statement escapes apostrophes
+    # TODO: refactor this to something less hacky
+    ret = str.encode('unicode_escape')
+    ret = ret.replace("'", "\\'")
+    ret = cgi.escape(ret)
+    return ret
+  else:
+    return str
