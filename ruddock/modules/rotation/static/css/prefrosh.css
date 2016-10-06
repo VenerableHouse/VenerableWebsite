@@ -1,0 +1,22 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.commentInput {
+  font-size: 20px;
+  width: 100%;
+}
+
+.voteStepper {
+  font-size: 20px;
+  width: 60%;
+}
+
+.voteLabel {
+  font-size: 20px;
+}
+
+.voteBlock {
+}

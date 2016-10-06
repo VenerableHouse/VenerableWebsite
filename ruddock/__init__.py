@@ -18,6 +18,7 @@ from ruddock.modules import admin
 from ruddock.modules import auth
 from ruddock.modules import government
 from ruddock.modules import hassle
+from ruddock.modules import rotation
 from ruddock.modules import users
 
 app = flask.Flask("ruddock")
@@ -29,6 +30,7 @@ app.register_blueprint(admin.blueprint, url_prefix="/admin")
 app.register_blueprint(auth.blueprint)
 app.register_blueprint(government.blueprint, url_prefix="/government")
 app.register_blueprint(hassle.blueprint, url_prefix="/hassle")
+app.register_blueprint(rotation.blueprint, url_prefix="/rotation")
 app.register_blueprint(users.blueprint, url_prefix="/users")
 
 # After initialization, import the routes.

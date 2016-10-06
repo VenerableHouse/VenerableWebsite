@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<script src="{{ url_for('static', filename='js/tablesort.min.js') }}"></script>
+<h2>Prefrosh Directory {{ '(Dinner %d)' % dinner_id if dinner_id is not none else '(All)' }}</h2>
+<a href="{{ url_for('rotation.show_portal') }}">Return to Portal</a>
+<table class="prefroshlist" id="user-table">
+  <thead style="cursor: pointer;">
+    <tr>
+      <th>Image</th>
+      <th>Name</th>
+      <th>Bucket</th>
+      <th>-2</th>
+      <th>-1</th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for prefrosh in prefrosh_list %}
+    <tr class="link" onclick="location.href='{{ url_for('rotation.show_prefrosh',
+      prefrosh_id=prefrosh['prefrosh_id']) }}'">
+    <td>
+      <img src="{{ url_for('rotation.serve_image', prefrosh_id=prefrosh['prefrosh_id']) }}"
+      height = "200">
+    </td>
+    <td>{{ prefrosh['full_name'] }}</td>
+    <td>{{ prefrosh['bucket_name'] }}</td>
+    <td>{{ prefrosh['votes_neg_two'] }}</td>
+    <td>{{ prefrosh['votes_neg_one'] }}</td>
+    <td>{{ prefrosh['votes_zero'] }}</td>
+    <td>{{ prefrosh['votes_plus_one'] }}</td>
+    <td>{{ prefrosh['votes_plus_two'] }}</td>
+    <td>{{ prefrosh['votes_plus_three'] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<script>
+  new Tablesort(document.getElementById('user-table'));
+</script>
+{% endblock body %}

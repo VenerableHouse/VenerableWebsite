@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('rotation.static', filename='css/prefrosh.css') }}" />
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+{% endblock head %}
+
+{% block body %}
+<script src="{{ url_for('static', filename='js/tablesort.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.are-you-sure.js') }}"></script>
+<script>
+  $(function() {
+    $('form').areYouSure( {'message': 'You have unsaved votes/comments!'} );
+  });
+</script>
+
+{% if prefrosh['dinner'] is not none %}
+  <a href="{{ url_for('rotation.show_prefrosh_list', dinner_id=prefrosh['dinner']) }}">Return to Dinner</a>
+{% endif %}
+{% if prev_id is not none %}
+  <br>
+  <a href ="{{ url_for('rotation.show_prefrosh', prefrosh_id=prev_id) }}">Prev</a>
+{% endif %}
+{% if next_id is not none %}
+  <br>
+  <a href ="{{ url_for('rotation.show_prefrosh', prefrosh_id=next_id) }}">Next</a>
+{% endif %}
+
+<h1>{{ full_name }}</h1>
+<div class="container">
+  <div>
+    <img src="{{ url_for('rotation.serve_image', prefrosh_id=prefrosh['prefrosh_id']) }}"
+      height = "550">
+    <table style="font-size: 20px;">
+      <thead>
+        <tr>
+          <th>Bucket</th>
+          <th>-2</th>
+          <th>-1</th>
+          <th>0</th>
+          <th>1</th>
+          <th>2</th>
+          <th>3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ prefrosh['bucket_name'] }}</td>
+          {% for vote_tuple in vote_tuples %}
+            <td>{{ prefrosh[vote_tuple['vote_string']] }}</td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <form action="{{ url_for('rotation.update_comment', prefrosh_id=prefrosh['prefrosh_id']) }}"
+        method="post"
+        id="comment_form">
+      <label>
+        <textarea name="comments" class="commentInput"
+              rows="25">{{ prefrosh['comments'] if prefrosh['comments'] is not none else '' }}</textarea>
+      </label>
+      <div class="container">
+        {% for vote_tuple in vote_tuples %}
+          <div class="voteBlock">
+            <label class="voteLabel">{{ vote_tuple['vote_value'] }}</label>
+            <br>
+            <input class="voteStepper" type="number" name="{{ vote_tuple['vote_string'] }}"
+                 step="1" value="{{ prefrosh[vote_tuple['vote_string']] }}">
+          </div>
+        {% endfor %}
+        <input type="submit">
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock body %}

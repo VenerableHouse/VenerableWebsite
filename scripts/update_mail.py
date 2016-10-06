@@ -37,7 +37,7 @@ def getAdditionalEmails(lst):
 if __name__ == "__main__":
 
   # Connect to the mySQL database.
-  engine = create_engine(config.DB_URI, convert_unicode=True)
+  engine = create_engine(config.PROD.db_uri, convert_unicode=True)
   connection = engine.connect()
 
   ### First update email lists from table 'updating_email_lists' ###

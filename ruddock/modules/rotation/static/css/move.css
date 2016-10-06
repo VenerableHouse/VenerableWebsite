@@ -1,0 +1,26 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.bucketContents {
+  height: 65vh;
+  overflow: scroll;
+}
+
+.prefroshDetails {
+  background-clip: border-box;
+  background-color: lightgray;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.prefroshName {
+  font-size: 24px;
+}
+
+#commentBody {
+  white-space: pre-wrap;
+}
