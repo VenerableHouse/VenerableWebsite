@@ -2,7 +2,7 @@ import flask
 import sqlalchemy
 import cgi
 
-DINNERS = range(1, 9)
+DINNERS = list(range(1, 9))
 BUCKETS = ['000', '-2', '-1', '0', '0.5', '1', '1.5', '2', '3']
 VOTE_TUPLES = [
   {'vote_value': -2, 'vote_string': 'votes_neg_two'},
@@ -97,14 +97,14 @@ def format_name(first, last, preferred):
   return " ".join(name_parts)
 
 def get_prefrosh_and_adjacent(prefrosh_id, prefrosh_list):
-  idx, prefrosh = ((idx, pf) for idx, pf in enumerate(prefrosh_list)
-              if pf['prefrosh_id'] == prefrosh_id).next()
+  idx, prefrosh = next(((idx, pf) for idx, pf in enumerate(prefrosh_list)
+              if pf['prefrosh_id'] == prefrosh_id))
   prev_id = prefrosh_list[idx - 1]['prefrosh_id'] if idx > 0 else None
   next_id = prefrosh_list[idx + 1]['prefrosh_id'] if idx < len(prefrosh_list) - 1 else None
   return [prefrosh, prev_id, next_id]
 
 def postprocess_prefrosh_data(ls):
-  prefrosh_list = [dict(pf.items()) for pf in ls]
+  prefrosh_list = [dict(list(pf.items())) for pf in ls]
   for prefrosh in prefrosh_list:
     prefrosh['full_name'] = format_name(
       prefrosh['first_name'], prefrosh['last_name'], prefrosh['preferred_name'])
