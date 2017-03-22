@@ -5,7 +5,7 @@ from ruddock.modules.government import blueprint
 
 @blueprint.route('/')
 def government_home():
-  # Get current assignments
+  """Get current assignments."""
   assignments = office_utils.get_current_assignments()
 
   # Organize by type (excomm and ucc are special)
