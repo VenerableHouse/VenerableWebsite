@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<!--
+
+Access entries were:
+  Account Summary
+  Add Expense
+  Budget Summary
+  Check Summary
+  Term Report
+  Uncashed Checks
+  Write Checks
+  Year Report
+
+Interface should include:
+  You have N unpaid expenses (make payment)
+  Add expense
+  Record check deposits
+
+  links:
+    account/budget summaries
+    list of expenses
+    list of payments
+
+
+-->
+
+<a href="{{ url_for('budget.show_summary') }}">Account and Budget Summaries</a>
+<br>
+<a href="{{ url_for('budget.show_expenses') }}">List of Expenses</a>
+<br>
+<a href="{{ url_for('budget.show_payments') }}">List of Payments</a>
+<br>
+<a href="{{ url_for('budget.add_expense') }}">Add an Expense</a>
+
+
+{% endblock body %}
