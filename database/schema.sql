@@ -207,6 +207,72 @@ CREATE TABLE rotation_move_history (
   FOREIGN KEY (new_bucket) REFERENCES rotation_buckets (bucket_id)
 );
 
+-- BUDGET TABLES
+
+-- Table of all accounts Ruddock owns.
+CREATE TABLE budget_accounts (
+  account_id INTEGER NOT NULL AUTO_INCREMENT,
+  account_name VARCHAR(32) NOT NULL,
+  initial_balance NUMERIC(9,2) NOT NULL, -- this is sufficent to store up to 10 million
+  PRIMARY KEY (account_id)
+);
+
+-- Table of fiscal years and when they start.
+CREATE TABLE budget_fyears (
+  fyear_id INTEGER NOT NULL AUTO_INCREMENT,
+  fyear_num INTEGER NOT NULL, -- the number itself, like 2016
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  PRIMARY KEY (fyear_id)
+);
+
+-- Table of all budgets.
+CREATE TABLE budget_budgets (
+  budget_id INTEGER NOT NULL AUTO_INCREMENT,
+  budget_name VARCHAR(32) NOT NULL,
+  fyear_id INTEGER NOT NULL,
+  starting_amount NUMERIC(9,2) NOT NULL,
+  PRIMARY KEY (budget_id),
+  FOREIGN KEY (fyear_id) REFERENCES budget_fyears (fyear_id)
+);
+
+-- Table of payees. This is used for students, other houses, basically anyone you'd write a check to.
+CREATE TABLE budget_payees (
+  payee_id INTEGER NOT NULL AUTO_INCREMENT,
+  payee_name VARCHAR(255) NOT NULL,
+  PRIMARY KEY (payee_id)
+);
+
+-- Table of payments. This is actual money flow, and each payment could include multiple expenses.
+CREATE TABLE budget_payments (
+  payment_id INTEGER NOT NULL AUTO_INCREMENT,
+  account_id INTEGER NOT NULL,
+  type VARCHAR(10) NOT NULL,
+  amount NUMERIC(9,2) NOT NULL,
+  date_written DATE NOT NULL,
+  date_posted DATE, -- checks don't go through immediately, so this makes balance checking easier
+  payee_id INTEGER, -- only used for checks, venmo, etc
+  check_no VARCHAR(10), -- only used for checks (duh)
+  PRIMARY KEY (payment_id),
+  FOREIGN KEY (account_id) REFERENCES budget_accounts (account_id),
+  FOREIGN KEY (payee_id) REFERENCES budget_payees (payee_id)
+);
+
+-- Table of expenses. These include expenditures that need to be reimbursed.
+CREATE TABLE budget_expenses (
+  expense_id INTEGER NOT NULL AUTO_INCREMENT,
+  budget_id INTEGER NOT NULL,
+  date_incurred DATE NOT NULL,
+  description VARCHAR(500) NOT NULL,
+  cost NUMERIC(9,2) NOT NULL,
+  payment_id INTEGER, -- null until the expense gets a matching payment
+  payee_id INTEGER,
+  PRIMARY KEY (expense_id),
+  FOREIGN KEY (budget_id) REFERENCES budget_budgets (budget_id),
+  FOREIGN KEY (payment_id) REFERENCES budget_payments (payment_id),
+  FOREIGN KEY (payee_id) REFERENCES budget_payees (payee_id)
+);
+
 -- VIEWS
 
 CREATE VIEW members_alumni AS

@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+<script>
+function dpayment_updated() {
+
+  var deferred = $("#defer_payment").is(':checked');
+
+  $("#deferred_payment").toggle(deferred);
+  $("#direct_payment").toggle(!deferred);
+}
+
+$(document).ready(function() {
+  dpayment_updated();
+});
+</script>
+
+{% endblock head %}
+
+{% block body %}
+
+<form action="{{ url_for('budget.submit_expense', fyear=fyear) }}" method="POST">
+  <h2>Expense Info</h2>
+  Fiscal Year: {{ fyear }}
+  <br>
+  <label for="budget_id">Budget: </label>
+  <select id="budget_id" name="budget_id">
+    {% for row in budgets %}
+    <option value="{{ row["budget_id"] }}">{{ row["budget_name"] }}</option>
+    {% endfor %}}
+  </select>
+  <br>
+  <!-- TODO make these required -->
+  <label for="date_incurred">Date Incurred: </label>
+  <input type="date" id="date_incurred" name="date_incurred">
+  <br>
+  <label for="amount">Amount: </label>
+  <input type="text" id="amount" name="amount">
+  <br>
+  <label for="description">Description: </label>
+  <textarea id="description" name="description"></textarea>
+
+  <h2>Payment Info</h2>
+  <label for="defer_payment">Defer Payment?</label>
+  <input type="checkbox" id="defer_payment" name="defer_payment" onclick="dpayment_updated()">
+  <br><br>
+  <div id="direct_payment">
+    <label for="payment_type">Payment Type: </label>
+    <select id="payment_type" name="payment_type">
+      <option value="1">Option1</option>
+      <option value="2">Option2</option>
+    </select>
+    <br>
+    <label for="account_id">Account: </label>
+    <select id="account_id" name="account_id">
+      <option value="1">Option1</option>
+      <option value="2">Option2</option>
+    </select>
+    <br>
+    <label for="check_no">Check #: </label>
+    <input type="text" id="check_no" name="check_no">
+  </div>
+  <div id="deferred_payment">
+    <label for="payee">Pay To: </label>
+    <input type="text" id="payee" name="payee">
+  </div>
+
+  <input type="submit" value="Record Expense">
+</form>
+
+{% endblock body %}
