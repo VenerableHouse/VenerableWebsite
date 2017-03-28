@@ -14,26 +14,32 @@ Access entries were:
   Write Checks
   Year Report
 
-Interface should include:
-  You have N unpaid expenses (make payment)
+Pages should be:
   Add expense
-  Record check deposits
+  do payments
+  view expenses
+  view payments
+  view budget/account summaries
+  record check deposits
 
-  links:
-    account/budget summaries
-    list of expenses
-    list of payments
-
+  make new fiscal year / budgets
+  edit budget amounts
 
 -->
 
-<a href="{{ url_for('budget.show_summary') }}">Account and Budget Summaries</a>
+<a href="{{ url_for('budget.route_add_expense') }}">Add Expense</a>
 <br>
-<a href="{{ url_for('budget.show_expenses') }}">List of Expenses</a>
+<a href="{{ url_for('budget.route_unpaid') }}">Do Payments</a>
 <br>
-<a href="{{ url_for('budget.show_payments') }}">List of Payments</a>
+<a href="{{ url_for('budget.route_expenses') }}">View Expenses</a>
 <br>
-<a href="{{ url_for('budget.add_expense') }}">Add an Expense</a>
+<a href="{{ url_for('budget.route_payments') }}">View Payments</a>
+<br>
+<a href="{{ url_for('budget.route_summary') }}">View Account/Budget Summaries</a>
+<br>
+<a href="">Record Deposited Checks</a>
+<br>
+<a href="">New/Edit Fiscal Years and Budgets</a>
 
 
 {% endblock body %}

@@ -1,0 +1,26 @@
+<label for="payment-type">Payment Type: </label>
+<select id="payment-type" name="payment-type">
+  <option value="" selected="selected">-- Select Type --</option>
+  {% for t in payment_types %}
+  <option value={{t}}>{{t}}</option>
+  {% endfor %}
+</select>
+<!--
+<fieldset>
+  <legend>Payment Type</legend>
+  {% for t in payment_types %}
+  <input type="radio" name="payment-type" value={{t}}>{{t}}
+  {% endfor %}
+</fieldset>
+-->
+<br>
+<label for="account-id">Account: </label>
+<select id="account-id" name="account-id">
+  <option value="" selected="selected">-- Select Account --</option>
+  {% for row in accounts %}
+  <option value="{{ row["account_id"] }}">{{ row["account_name"] }}</option>
+  {% endfor %}
+</select>
+<br>
+<label for="check-no">Check #: </label>
+<input type="text" id="check-no" name="check-no">

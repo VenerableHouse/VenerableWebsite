@@ -4,16 +4,91 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 
 <script>
+function change_year() {
+  alert("Not implemented yet!")
+}
+
 function dpayment_updated() {
 
-  var deferred = $("#defer_payment").is(':checked');
+  var deferred = $("#defer-payment").is(':checked');
 
-  $("#deferred_payment").toggle(deferred);
-  $("#direct_payment").toggle(!deferred);
+  $("#deferred-payment").toggle(deferred);
+  $("#direct-payment").toggle(!deferred);
+}
+
+// TODO split into little "on input" event listeners, so a) it's less bulky,
+// b) so i can pull the functions into a js file, and c) better UX
+function validate() {
+  // Looks a little peculiar, but catches both cents-only and dollar-only
+  // strings, and blocks the empty string (.43, 12, for example).
+  var regex_amount = /^-?\d*(\d|(\.\d\d))$/;
+
+  var budget_id = $("#budget-id").val();
+  var amount = $("#amount").val();
+  var date = $("#date-incurred").val();
+  var description = $("#description").val();
+  var deferred = $("#defer-payment").is(':checked');
+  var payment_type = $("#payment-type").val();
+  var account_id = $("#account-id").val();
+  var check_no = $("#check-no").val();
+  var payee_id = $("#payee-id").val();
+  var new_payee = $("#new-payee").val();
+
+
+  var errorbox = $("#errorbox")[0];
+  var failed = false;
+
+  errorbox.innerHTML = "";
+
+  if (budget_id == "") {
+    failed = true;
+    errorbox.innerHTML += "You must select a budget.<br>";
+  }
+
+  // Bless HTML5 for not making me parse dates
+  if (date == "") {
+    failed = true;
+    errorbox.innerHTML += "You must enter a date.<br>";
+  }
+
+  if (!regex_amount.test(amount)) {
+    failed = true;
+    errorbox.innerHTML += "You must enter an amount.<br>";
+  }
+
+  if (description == "") {
+    failed = true;
+    errorbox.innerHTML += "The description must be non-empty.<br>";
+  }
+
+  if (deferred) {
+    if (payee_id == "" & new_payee == "") {
+      failed = true;
+      errorbox.innerHTML += "You must specify a payee when deferring payment.<br>";
+    }
+  } else {
+    if (payment_type == "") {
+      failed = true;
+      errorbox.innerHTML += "You must specify the type of payment.<br>";
+    }
+    if (account_id == "") {
+      failed = true;
+      errorbox.innerHTML += "You must specify an account to pay from.<br>";
+    }
+    if (payment_type == "Check" & check_no == "") {
+      failed = true;
+      errorbox.innerHTML += "You must specify a number when paying by check.<br>";
+    }
+  }
+
+  if(failed) {
+    event.preventDefault();
+  }
 }
 
 $(document).ready(function() {
   dpayment_updated();
+  $("#form")[0].addEventListener("submit", validate);
 });
 </script>
 
@@ -21,20 +96,24 @@ $(document).ready(function() {
 
 {% block body %}
 
-<form action="{{ url_for('budget.submit_expense', fyear=fyear) }}" method="POST">
+<p id="errorbox" style="color:red"></p>
+
+<form id="form" action="{{ url_for('budget.route_submit_expense') }}" method="POST">
   <h2>Expense Info</h2>
-  Fiscal Year: {{ fyear }}
+  Fiscal Year: 2017
+  <input type="button" value="Need a different year?" onclick="change_year()">
   <br>
-  <label for="budget_id">Budget: </label>
-  <select id="budget_id" name="budget_id">
+  <label for="budget-id">Budget: </label>
+  <select id="budget-id" name="budget-id">
+    <option value="" selected="selected">-- Select Budget --</option>
     {% for row in budgets %}
     <option value="{{ row["budget_id"] }}">{{ row["budget_name"] }}</option>
     {% endfor %}}
   </select>
   <br>
   <!-- TODO make these required -->
-  <label for="date_incurred">Date Incurred: </label>
-  <input type="date" id="date_incurred" name="date_incurred">
+  <label for="date-incurred">Date Incurred: </label>
+  <input type="date" id="date-incurred" name="date-incurred">
   <br>
   <label for="amount">Amount: </label>
   <input type="text" id="amount" name="amount">
@@ -43,28 +122,22 @@ $(document).ready(function() {
   <textarea id="description" name="description"></textarea>
 
   <h2>Payment Info</h2>
-  <label for="defer_payment">Defer Payment?</label>
-  <input type="checkbox" id="defer_payment" name="defer_payment" onclick="dpayment_updated()">
+  <label for="defer-payment">Defer Payment?</label>
+  <input type="checkbox" id="defer-payment" name="defer-payment" onclick="dpayment_updated()">
   <br><br>
-  <div id="direct_payment">
-    <label for="payment_type">Payment Type: </label>
-    <select id="payment_type" name="payment_type">
-      <option value="1">Option1</option>
-      <option value="2">Option2</option>
-    </select>
-    <br>
-    <label for="account_id">Account: </label>
-    <select id="account_id" name="account_id">
-      <option value="1">Option1</option>
-      <option value="2">Option2</option>
-    </select>
-    <br>
-    <label for="check_no">Check #: </label>
-    <input type="text" id="check_no" name="check_no">
+  <div id="direct-payment">
+    {% include "includes/account_input.html" %}
   </div>
-  <div id="deferred_payment">
-    <label for="payee">Pay To: </label>
-    <input type="text" id="payee" name="payee">
+  <div id="deferred-payment">
+    <label for="payee-id">Existing Payee: </label>
+    <select id="payee-id" name="payee-id">
+      <option value="" selected="selected">-- Select Payee --</option>
+      {% for row in payees %}
+      <option value="{{ row["payee_id"] }}">{{ row["payee_name"] }}</option>
+      {% endfor %}
+    </select>
+    <label for="new-payee">or add a new one: </label>
+    <input type="text" id="new-payee" name="new-payee">
   </div>
 
   <input type="submit" value="Record Expense">
