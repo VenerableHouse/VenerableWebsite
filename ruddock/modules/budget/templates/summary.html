@@ -8,7 +8,7 @@ function update_fy() {
   var fy_id = $("#fy-select").val();
 
   $.ajax({
-    url: "{{ url_for('budget.ajax_get_budget_summary') }}",
+    url: "{{ url_for('budget.ajax_budget_summary') }}",
     method: "GET",
     data: {fyear_id: fy_id},
     dataType: "json",
@@ -24,11 +24,12 @@ function update_budget_summary(rows) {
   // Repopulate it
   var table = $("#budget-table tbody");
   $.each(rows, function(idx, row) {
-    table.append("<tr>\
+    var str = "<tr>\
       <td>"+row["budget_name"]+"</td>\
       <td>"+row["starting_amount"]+"</td>\
       <td>"+row["spent"]+"</td>\
-    </tr>");
+    </tr>";
+    table.append(str);
   });
 }
 
@@ -41,7 +42,7 @@ $(document).ready(update_fy);
 {% block body %}
 
 <h2>Account Summary</h2>
-<table id="account-table">
+<table>
 
   <thead>
     <tr>
