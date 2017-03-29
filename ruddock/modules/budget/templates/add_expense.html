@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
 
+{% import 'forms.html' as forms %}
+
 {% block head %}
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script src="{{ url_for('budget.static', filename='js/validation.js') }}"></script>
@@ -33,7 +35,7 @@ function validate() {
 
   errors = errors.concat(validate_expense(budget_id, date, amount, description));
   if (deferred) {
-    errors = errors.concat(validate_payee(payee_id, new_payee));    
+    errors = errors.concat(validate_payee(payee_id, new_payee));
   } else {
     errors = errors.concat(validate_payment(payment_type, account_id, check_no));
   }
@@ -67,41 +69,17 @@ $(document).ready(function() {
   Fiscal Year: 2017
   <input type="button" value="Need a different year?" onclick="change_year()">
   <br>
-  <label for="budget-id">Budget: </label>
-  <select id="budget-id" name="budget-id">
-    <option value="" selected="selected">-- Select Budget --</option>
-    {% for row in budgets %}
-    <option value="{{ row["budget_id"] }}">{{ row["budget_name"] }}</option>
-    {% endfor %}}
-  </select>
-  <br>
-  <!-- TODO make these required -->
-  <label for="date-incurred">Date Incurred: </label>
-  <input type="date" id="date-incurred" name="date-incurred">
-  <br>
-  <label for="amount">Amount: </label>
-  <input type="text" id="amount" name="amount">
-  <br>
-  <label for="description">Description: </label>
-  <textarea id="description" name="description"></textarea>
+  {{ forms.expense(budgets) }}
 
   <h2>Payment Info</h2>
   <label for="defer-payment">Defer Payment?</label>
   <input type="checkbox" id="defer-payment" name="defer-payment" onclick="dpayment_updated()">
   <br><br>
   <div id="direct-payment">
-    {% include "includes/account_input.html" %}
+    {{ forms.payment(payment_types, accounts) }}
   </div>
   <div id="deferred-payment">
-    <label for="payee-id">Existing Payee: </label>
-    <select id="payee-id" name="payee-id">
-      <option value="" selected="selected">-- Select Payee --</option>
-      {% for row in payees %}
-      <option value="{{ row["payee_id"] }}">{{ row["payee_name"] }}</option>
-      {% endfor %}
-    </select>
-    <label for="new-payee">or add a new one: </label>
-    <input type="text" id="new-payee" name="new-payee">
+    {{ forms.payee(payees) }}
   </div>
 
   <input type="submit" value="Record Expense">

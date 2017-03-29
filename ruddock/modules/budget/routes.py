@@ -2,6 +2,7 @@ import flask
 import httplib
 import json
 import itertools
+from decimal import Decimal
 
 from ruddock.resources import Permissions
 from ruddock.decorators import login_required
@@ -57,9 +58,9 @@ def route_add_expense():
 @blueprint.route('/add_expense/submit', methods=['POST'])
 def route_submit_expense():
   """Sends the expense to the database."""
-  form = flask.request.form
 
   # Extract the form data; it's all strings
+  form = flask.request.form
   budget_id = form["budget-id"]
   date_incurred = form["date-incurred"]
   amount = form["amount"]
@@ -71,6 +72,8 @@ def route_submit_expense():
   check_no = form["check-no"]
   # except this guy, who's a boolean, because checkboxes are dumb
   defer_payment = form.get("defer-payment") is not None
+
+  # TODO clear check number if payment isn't check? same in unpaid too
 
   # Server side validation
   valid = True
@@ -88,16 +91,15 @@ def route_submit_expense():
   if not valid:
     return flask.redirect(flask.url_for("budget.route_add_expense"))
 
-  # This next part depends on whether we are deferring payment or not.
-  # If so, then we leave the payment ID null, cause it the corresponding payment
-  # hasn't been made yet. However, we require the payee. If it's a new payee,
-  # we have to insert it into the database first.
-  # If not, then we need to make a new payment, and use its ID. Payee ID is not
-  # needed.
-
   # We use a transaction to make sure we don't submit halfway.
   transaction = flask.g.db.begin()
   try:
+    # This next part depends on whether we are deferring payment or not.
+    # If so, then we leave the payment ID null, cause it the corresponding payment
+    # hasn't been made yet. However, we require the payee. If it's a new payee,
+    # we have to insert it into the database first.
+    # If not, then we need to make a new payment, and use its ID. Payee ID is not
+    # needed.
     if defer_payment:
       payment_id = None
       if new_payee:
@@ -106,7 +108,7 @@ def route_submit_expense():
       payee_id = None
       payment_id = helpers.record_payment(account_id, payment_type, amount, date_incurred, date_incurred, None, check_no)
 
-    # Either way, record the expense and refresh the page
+    # Either way, record the expense
     helpers.record_expense(budget_id, date_incurred, description, amount, payment_id, payee_id)
     transaction.commit()
   except Exception:
@@ -121,7 +123,19 @@ def route_unpaid():
 
   # Wow, I love itertools
   unpaid = helpers.get_unpaid_expenses()
-  unpaid_groups = itertools.groupby(unpaid, lambda x : x["payee_name"])
+  unpaid_groups = itertools.groupby(unpaid, lambda x : x["payee_id"])
+
+  # Convert to list so we don't exhaust the iterator
+  unpaid_groups = [list(expenses) for _, expenses in unpaid_groups]
+
+  # TODO rename!
+  def foo(expense_list):
+    payee_id = expense_list[0]["payee_id"]
+    payee_name = expense_list[0]["payee_name"]
+    total = sum(Decimal(e["cost"]) for e in expense_list)
+    return payee_id, payee_name, total, expense_list
+
+  unpaid_full = [foo(expense_list) for expense_list in unpaid_groups]
 
   payment_types = helpers.get_payment_types()
   accounts = helpers.get_accounts()
@@ -129,8 +143,41 @@ def route_unpaid():
   return flask.render_template('unpaid.html',
     payment_types=payment_types,
     accounts=accounts,
-    unpaid_groups=unpaid_groups)
+    unpaid_expenses=unpaid_full)
 
+@blueprint.route('/unpaid/submit', methods=['POST'])
+def route_submit_unpaid():
+  """Sends the payment to the database."""
+
+  # Extract the form data; it's all strings
+  form = flask.request.form
+  payee_id = form["payee-id"]
+  amount = form["total"]
+  payment_type = form["payment-type"]
+  account_id = form["account-id"]
+  check_no = form["check-no"]
+  date_written = form["date-written"]
+
+  #TODO validation!
+
+  # The date posted is the same as the date written, unless we're using a check
+  # -- make sure to update this if adding a similar form of payment! --
+  if payment_type == helpers.PaymentType.CHECK.value:
+    date_posted = None
+  else:
+    date_posted = date_written
+
+  # We use a transaction to make sure we don't submit halfway.
+  transaction = flask.g.db.begin()
+  try:
+    payment_id = helpers.record_payment(account_id, payment_type, amount, date_written, date_posted, payee_id, check_no)
+    helpers.mark_as_paid(payee_id, payment_id)
+    transaction.commit()
+  except Exception as e:
+    transaction.rollback()
+    flask.flash("An unexpected error occurred. Please find an IMSS rep.")
+
+  return flask.redirect(flask.url_for("budget.route_unpaid"))
 
 @blueprint.route('/ajax/budget_summary')
 def ajax_budget_summary():
