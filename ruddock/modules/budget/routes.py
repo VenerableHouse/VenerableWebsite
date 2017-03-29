@@ -59,19 +59,34 @@ def route_submit_expense():
   """Sends the expense to the database."""
   form = flask.request.form
 
-  # Extract the form data
+  # Extract the form data; it's all strings
   budget_id = form["budget-id"]
   date_incurred = form["date-incurred"]
   amount = form["amount"]
   description = form["description"]
-  defer_payment = form.get("defer-payment") is not None # checkboxes are dumb
   payee_id = form["payee-id"]
   new_payee = form["new-payee"]
   payment_type = form["payment-type"]
   account_id = form["account-id"]
   check_no = form["check-no"]
+  # except this guy, who's a boolean, because checkboxes are dumb
+  defer_payment = form.get("defer-payment") is not None
 
-  # TODO do some server-side validation too!
+  # Server side validation
+  valid = True
+  if not helpers.validate_expense(budget_id, date_incurred, amount, description):
+    valid = False
+    flask.flash("Invalid expense.")
+  if not defer_payment and not helpers.validate_payment(payment_type, account_id, check_no):
+    valid = False
+    flask.flash("Invalid payment.")
+  if defer_payment and not helpers.validate_payee(payee_id, new_payee):
+    valid = False
+    flask.flash("Invalid payee.")
+
+  # If any of the validation failed
+  if not valid:
+    return flask.redirect(flask.url_for("budget.route_add_expense"))
 
   # This next part depends on whether we are deferring payment or not.
   # If so, then we leave the payment ID null, cause it the corresponding payment
@@ -79,17 +94,25 @@ def route_submit_expense():
   # we have to insert it into the database first.
   # If not, then we need to make a new payment, and use its ID. Payee ID is not
   # needed.
-  # TODO transaction stuff?
-  if defer_payment:
-    payment_id = None
-    if new_payee:
-      payee_id = helpers.record_new_payee(new_payee)
-  else:
-    payee_id = None
-    payment_id = helpers.record_payment(account_id, payment_type, amount, date_incurred, date_incurred, None, check_no)
 
-  # Either way, record the expense and refresh the page
-  helpers.record_expense(budget_id, date_incurred, description, amount, payment_id, payee_id)
+  # We use a transaction to make sure we don't submit halfway.
+  transaction = flask.g.db.begin()
+  try:
+    if defer_payment:
+      payment_id = None
+      if new_payee:
+        payee_id = helpers.record_new_payee(new_payee)
+    else:
+      payee_id = None
+      payment_id = helpers.record_payment(account_id, payment_type, amount, date_incurred, date_incurred, None, check_no)
+
+    # Either way, record the expense and refresh the page
+    helpers.record_expense(budget_id, date_incurred, description, amount, payment_id, payee_id)
+    transaction.commit()
+  except Exception:
+    transaction.rollback()
+    flask.flash("An unexpected error occurred. Please find an IMSS rep.")
+
   return flask.redirect(flask.url_for("budget.route_add_expense"))
 
 @blueprint.route('/unpaid')
