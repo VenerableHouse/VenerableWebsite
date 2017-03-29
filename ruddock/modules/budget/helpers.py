@@ -2,9 +2,10 @@ import flask
 import sqlalchemy
 import enum
 import datetime
+import decimal
 
 # Enum for payment types
-class PaymentTypes(enum.Enum):
+class PaymentType(enum.Enum):
   CASH = "Cash"
   CHECK = "Check"
   DEBIT = "Debit"
@@ -31,7 +32,7 @@ def stringify(db_rows, cols):
   return rows
 
 def get_payment_types():
-  return [x.value for x in PaymentTypes]
+  return [x.value for x in PaymentType]
 
 def get_fyears():
   """Gets list of all fiscal years."""
@@ -163,13 +164,13 @@ def get_budget_summary(fyear_id):
 def get_unpaid_expenses():
   """Gets all expenses without a corresponding payment."""
   query = sqlalchemy.text("""
-    SELECT payee_name, budget_name, fyear_num, date_incurred, description, cost
+    SELECT payee_id, payee_name, budget_name, fyear_num, date_incurred, description, cost
     FROM budget_expenses
       NATURAL JOIN budget_budgets
       NATURAL JOIN budget_fyears
       NATURAL JOIN budget_payees
     WHERE ISNULL(payment_id)
-    ORDER BY payee_id
+    ORDER BY payee_id #change to name TODO
   """)
 
   results = flask.g.db.execute(query).fetchall()
@@ -229,6 +230,17 @@ def record_new_payee(payee_name):
   result = flask.g.db.execute(query, p=payee_name)
   return result.lastrowid
 
+def mark_as_paid(payee_id, payment_id):
+  """Assigns the given payment id to all expenses from the given payee."""
+  query = sqlalchemy.text("""
+    UPDATE budget_expenses
+    SET payment_id = (:payment)
+    WHERE payee_id = (:payee)
+  """)
+
+  flask.g.db.execute(query, payment=payment_id, payee=payee_id)
+
+
 # these should move to somewhere more global...
 def is_integer(x):
   try:
@@ -246,8 +258,8 @@ def is_date(x):
 
 def is_currency(x):
   try:
-    y = Decimal(x)
-  except:
+    y = decimal.Decimal(x)
+  except ValueError:
     return False
   return True
 
@@ -259,7 +271,7 @@ def validate_expense(budget_id, date_incurred, amount, description):
 def validate_payment(payment_type, account_id, check_no):
   valid_payment_type = payment_type in get_payment_types()
   return (valid_payment_type and is_integer(account_id) and
-    (payment_type != PaymentTypes.CHECK or is_integer(check_no)))
+    (payment_type != PaymentType.CHECK.value or is_integer(check_no)))
 
 def validate_payee(payee_id, payee_name):
   well_formed = is_integer(payee_id)

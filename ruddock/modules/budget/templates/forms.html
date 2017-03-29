@@ -1,0 +1,59 @@
+{% macro expense(budgets) %}
+<label for="budget-id">Budget: </label>
+  <select id="budget-id" name="budget-id">
+    <option value="" selected="selected">-- Select Budget --</option>
+    {% for row in budgets %}
+    <option value="{{ row["budget_id"] }}">{{ row["budget_name"] }}</option>
+    {% endfor %}}
+  </select>
+  <br>
+  <label for="date-incurred">Date Incurred: </label>
+  <input type="date" id="date-incurred" name="date-incurred">
+  <br>
+  <label for="amount">Amount: </label>
+  <input type="text" id="amount" name="amount">
+  <br>
+  <label for="description">Description: </label>
+  <textarea id="description" name="description"></textarea>
+{% endmacro %}
+
+{% macro payment(payment_types, accounts) %}
+<label for="payment-type">Payment Type: </label>
+<select id="payment-type" name="payment-type">
+  <option value="" selected="selected">-- Select Type --</option>
+  {% for t in payment_types %}
+  <option value={{t}}>{{t}}</option>
+  {% endfor %}
+</select>
+{#
+<fieldset>
+  <legend>Payment Type</legend>
+  {% for t in payment_types %}
+  <input type="radio" name="payment-type" value={{t}}>{{t}}
+  {% endfor %}
+</fieldset>
+#}
+<br>
+<label for="account-id">Account: </label>
+<select id="account-id" name="account-id">
+  <option value="" selected="selected">-- Select Account --</option>
+  {% for row in accounts %}
+  <option value="{{ row["account_id"] }}">{{ row["account_name"] }}</option>
+  {% endfor %}
+</select>
+<br>
+<label for="check-no">Check #: </label>
+<input type="number" id="check-no" name="check-no">
+{% endmacro %}
+
+{% macro payee(payees) %}
+<label for="payee-id">Existing Payee: </label>
+    <select id="payee-id" name="payee-id">
+      <option value="" selected="selected">-- Select Payee --</option>
+      {% for row in payees %}
+      <option value="{{ row["payee_id"] }}">{{ row["payee_name"] }}</option>
+      {% endfor %}
+    </select>
+    <label for="new-payee">or add a new one: </label>
+    <input type="text" id="new-payee" name="new-payee">
+{% endmacro %}

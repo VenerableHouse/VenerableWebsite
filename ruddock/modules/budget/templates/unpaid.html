@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
 
+{% import "forms.html" as forms %}
+
 {% block head %}
 <script>
 
@@ -11,10 +13,18 @@
 
 <h2>Unpaid Expenses</h2>
 <hr>
-{% for name, group in unpaid_groups %}
-<h3>{{ name }}</h3>
-<form>
-  {% include "includes/account_input.html" %}
+{% if unpaid_expenses %}
+{% for payee_id, payee_name, total, expenses in unpaid_expenses %}
+<h3>{{ payee_name }}: ${{ total }}</h3>
+<form action="{{ url_for('budget.route_submit_unpaid') }}" method="POST">
+  <!-- hidden input tags so that POST sends these -->
+  <input type="hidden" name="payee-id" value="{{ payee_id }}">
+  <input type="hidden" name="total" value="{{ total }}">
+  <!-- visible stuff -->
+  {{ forms.payment(payment_types, accounts) }}
+  <br>
+  <label for="date-written">Date Written:</label>
+  <input type="date" id="date-written" name="date-written">
   <br>
   <label for="expense-list">Expenses:</label>
   <table id="expense-list">
@@ -30,7 +40,7 @@
     </thead>
 
     <tbody>
-      {% for r in group %}
+      {% for r in expenses %}
       <tr>
         <td>{{ r["budget_name"] }}</td>
         <td>{{ r["fyear_num"] }}</td>
@@ -40,10 +50,13 @@
       </tr>
       {% endfor %}
     </tbody>
-
   </table>
+  <input type="submit" value="Record Payment">
 </form>
 <hr>
 {% endfor %}
+{% else %}
+<h3>All expenses have been paid!</h3>
+{% endif %}
 
 {% endblock body %}
