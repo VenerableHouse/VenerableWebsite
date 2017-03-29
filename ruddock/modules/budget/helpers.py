@@ -1,6 +1,7 @@
 import flask
 import sqlalchemy
 import enum
+import datetime
 
 # Enum for payment types
 class PaymentTypes(enum.Enum):
@@ -226,5 +227,42 @@ def record_new_payee(payee_name):
   """)
 
   result = flask.g.db.execute(query, p=payee_name)
-
   return result.lastrowid
+
+# these should move to somewhere more global...
+def is_integer(x):
+  try:
+    y = int(x)
+  except ValueError:
+    return False
+  return True
+
+def is_date(x):
+  try:
+    y = datetime.datetime.strptime(x , '%Y-%m-%d')
+  except ValueError:
+    return False
+  return True
+
+def is_currency(x):
+  try:
+    y = Decimal(x)
+  except:
+    return False
+  return True
+
+#TODO length contraints?
+def validate_expense(budget_id, date_incurred, amount, description):
+  return (is_integer(budget_id) and is_date(date_incurred) and
+    is_currency(amount) and len(description) > 0)
+
+def validate_payment(payment_type, account_id, check_no):
+  valid_payment_type = payment_type in get_payment_types()
+  return (valid_payment_type and is_integer(account_id) and
+    (payment_type != PaymentTypes.CHECK or is_integer(check_no)))
+
+def validate_payee(payee_id, payee_name):
+  well_formed = is_integer(payee_id)
+  existing_payee = payee_id != 0
+  new_payee = len(payee_name) > 0
+  return well_formed and (existing_payee != new_payee)
