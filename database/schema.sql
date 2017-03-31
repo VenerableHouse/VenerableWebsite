@@ -251,7 +251,7 @@ CREATE TABLE budget_payments (
   amount NUMERIC(9,2) NOT NULL,
   date_written DATE NOT NULL,
   date_posted DATE, -- checks don't go through immediately, so this makes balance checking easier
-  payee_id INTEGER, -- only used for checks, venmo, etc
+  payee_id INTEGER, -- not strictly necessary, but hard to derive from budget_expenses
   check_no VARCHAR(10), -- only used for checks (duh)
   PRIMARY KEY (payment_id),
   FOREIGN KEY (account_id) REFERENCES budget_accounts (account_id),
@@ -266,7 +266,7 @@ CREATE TABLE budget_expenses (
   description VARCHAR(500) NOT NULL,
   cost NUMERIC(9,2) NOT NULL,
   payment_id INTEGER, -- null until the expense gets a matching payment
-  payee_id INTEGER,
+  payee_id INTEGER, -- used to keep track of who to reimburse
   PRIMARY KEY (expense_id),
   FOREIGN KEY (budget_id) REFERENCES budget_budgets (budget_id),
   FOREIGN KEY (payment_id) REFERENCES budget_payments (payment_id),

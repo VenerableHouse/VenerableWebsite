@@ -21,6 +21,8 @@ class Permissions(enum.IntEnum):
   EMAIL = 4
   # Run rotation meetings
   ROTATION = 5
+  # Add, edit, or delete expenses
+  BUDGET = 6
   # See birthday list
   BIRTHDAYS = 7
 
