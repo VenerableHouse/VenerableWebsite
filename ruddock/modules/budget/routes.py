@@ -10,11 +10,13 @@ from ruddock.decorators import login_required
 from ruddock.modules.budget import blueprint, helpers
 
 @blueprint.route('/')
+@login_required(Permissions.BUDGET)
 def route_portal():
   """Displays the budget portal."""
   return flask.render_template('portal.html')
 
 @blueprint.route('/summary')
+@login_required(Permissions.BUDGET)
 def route_summary():
   """Displays account and budget summaries."""
   current_fyear = helpers.get_fyear_from_num(None)
@@ -25,6 +27,7 @@ def route_summary():
     a_summary=a_summary, fyears=fyears, current_fyear_id=current_fyear["fyear_id"])
 
 @blueprint.route('/expenses')
+@login_required(Permissions.BUDGET)
 def route_expenses():
   """Displays list of expenses."""
   expenses = helpers.get_expenses()
@@ -32,6 +35,7 @@ def route_expenses():
   return flask.render_template('expenses.html', expenses=expenses)
 
 @blueprint.route('/payments')
+@login_required(Permissions.BUDGET)
 def route_payments():
   """Displays list of payments."""
   payments = helpers.get_payments()
@@ -39,6 +43,7 @@ def route_payments():
   return flask.render_template('payments.html', payments=payments)
 
 @blueprint.route('/add_expense')
+@login_required(Permissions.BUDGET)
 def route_add_expense():
   """Provides an interface for submitting an expense."""
 
@@ -57,6 +62,7 @@ def route_add_expense():
     payees=payees)
 
 @blueprint.route('/add_expense/submit', methods=['POST'])
+@login_required(Permissions.BUDGET)
 def route_submit_expense():
   """Sends the expense to the database."""
 
@@ -121,6 +127,7 @@ def route_submit_expense():
   return flask.redirect(flask.url_for("budget.route_add_expense"))
 
 @blueprint.route('/unpaid')
+@login_required(Permissions.BUDGET)
 def route_unpaid():
   """Displays unpaid expenses, and allows the user to create payments for them."""
 
@@ -149,6 +156,7 @@ def route_unpaid():
     unpaid_expenses=unpaid_full)
 
 @blueprint.route('/unpaid/submit', methods=['POST'])
+@login_required(Permissions.BUDGET)
 def route_submit_unpaid():
   """Sends the payment to the database."""
 
@@ -195,6 +203,7 @@ def route_submit_unpaid():
   return flask.redirect(flask.url_for("budget.route_unpaid"))
 
 @blueprint.route('/ajax/budget_summary')
+@login_required(Permissions.BUDGET)
 def ajax_budget_summary():
   fyear_id = flask.request.args.get('fyear_id')
   if fyear_id is None:
