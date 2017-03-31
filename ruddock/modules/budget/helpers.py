@@ -14,20 +14,19 @@ class PaymentType(enum.Enum):
   TRANSFER = "Transfer"
   OTHER = "Other"
 
-def stringify(db_rows, cols):
-  """Changes the specified columns to strings.
+def stringify(db_rows):
+  """Changes all columns to strings.
      This is especially useful when working with NUMERIC, because
      JSON refuses to serialize Decimal objects.
      This has the side effect of replacing the RowProxy objects with
      dictionaries, but hopefully no method should notice... :/ """
 
-  # TODO drop cols argument and stringify everything?
-  # or maybe have it detect numeric columns?
+  # maybe have it detect numeric columns?
 
   rows = [dict(r.items()) for r in db_rows]
 
   for r in rows:
-    for k in cols:
+    for k in r:
       r[k] = str(r[k])
 
   return rows
@@ -87,7 +86,7 @@ def get_budget_list(fyear_id):
 def get_expenses():
   """Gets list of all expenses."""
   query = sqlalchemy.text("""
-    SELECT budget_name, fyear_num, date_incurred, description, cost, payee_name
+    SELECT expense_id, budget_name, fyear_num, date_incurred, description, cost, payee_name, payment_id
     FROM budget_expenses
       NATURAL JOIN budget_budgets
       NATURAL JOIN budget_fyears
@@ -100,7 +99,7 @@ def get_expenses():
 def get_payments():
   """Gets list of all payments."""
   query = sqlalchemy.text("""
-    SELECT account_name, type, amount, date_written, date_posted, payee_name, check_no
+    SELECT payment_id, account_name, type, amount, date_written, date_posted, payee_name, check_no
     FROM budget_payments
       NATURAL JOIN budget_accounts
       NATURAL LEFT JOIN budget_payees
@@ -146,15 +145,19 @@ def get_account_summary():
 def get_budget_summary(fyear_id):
   """Gets the status of all budgets for the given fiscal year."""
   query = sqlalchemy.text("""
-    SELECT budget_name,
-      starting_amount,
-      IFNULL(SUM(cost), 0) AS spent
-    FROM budget_budgets
-      NATURAL JOIN budget_fyears
-      NATURAL LEFT JOIN budget_expenses
-    WHERE fyear_id = (:f)
-    GROUP BY budget_id
-    ORDER BY budget_name
+    SELECT *,
+      starting_amount - spent AS remaining
+    FROM (
+      SELECT budget_name,
+        starting_amount,
+        IFNULL(SUM(cost), 0) AS spent
+      FROM budget_budgets
+        NATURAL JOIN budget_fyears
+        NATURAL LEFT JOIN budget_expenses
+      WHERE fyear_id = (:f)
+      GROUP BY budget_id
+      ORDER BY budget_name
+    ) AS t
     """)
 
   return flask.g.db.execute(query, f=fyear_id).fetchall()
