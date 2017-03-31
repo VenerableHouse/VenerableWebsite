@@ -132,8 +132,7 @@ def get_account_summary():
   """Gets the status of all accounts."""
   query = sqlalchemy.text("""
     SELECT account_name,
-      initial_balance - IFNULL(SUM(IF(ISNULL(date_posted), 0, amount)), 0) AS bal,
-      initial_balance - IFNULL(SUM(amount), 0) AS post_bal
+      initial_balance - IFNULL(SUM(IF(ISNULL(date_posted), 0, amount)), 0) AS bal
     FROM budget_accounts
       NATURAL LEFT JOIN budget_payments
     GROUP BY account_id
@@ -171,7 +170,7 @@ def get_unpaid_expenses():
       NATURAL JOIN budget_fyears
       NATURAL JOIN budget_payees
     WHERE ISNULL(payment_id)
-    ORDER BY payee_id #change to name TODO
+    ORDER BY payee_name
   """)
 
   return flask.g.db.execute(query).fetchall()
