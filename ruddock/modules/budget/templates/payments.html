@@ -7,6 +7,7 @@
 
   <thead>
     <tr>
+      <th>ID</th>
       <th>Account</th>
       <th>Type</th>
       <th>Amount</th>
@@ -14,12 +15,14 @@
       <th>Date Posted</th>
       <th>Payee</th>
       <th>Check #</th>
+      <th>Expenses</th>
     </tr>
   </thead>
 
   <tbody>
     {% for r in payments %}
     <tr>
+      <td>{{ r["payment_id"] }}</td>
       <td>{{ r["account_name"] }}</td>
       <td>{{ r["type"] }}</td>
       <td>{{ r["amount"] }}</td>
@@ -27,6 +30,7 @@
       <td>{{ r["date_posted"] }}</td>
       <td>{{ r["payee_name"] }}</td>
       <td>{{ r["check_no"] }}</td>
+      <td>&lt;link&gt;</td>
     </tr>
     {% endfor %}
   </tbody>

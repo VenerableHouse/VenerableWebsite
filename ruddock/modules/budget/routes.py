@@ -202,6 +202,6 @@ def ajax_budget_summary():
     results = [["Error", "Error", "Error"]]
   else:
     results = helpers.get_budget_summary(fyear_id)
-    results = helpers.stringify(results, ['starting_amount', 'spent'])
+    results = helpers.stringify(results)
 
   return json.dumps(results)

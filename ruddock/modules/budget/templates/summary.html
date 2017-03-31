@@ -28,6 +28,7 @@ function update_budget_summary(rows) {
       <td>"+row["budget_name"]+"</td>\
       <td>"+row["starting_amount"]+"</td>\
       <td>"+row["spent"]+"</td>\
+      <td>"+row["remaining"]+"</td>\
     </tr>";
     table.append(str);
   });
@@ -64,6 +65,7 @@ $(document).ready(update_fy);
 
 </table>
 
+<h2>Budget Summary</h2>
 Fiscal Year:
 <select id="fy-select" oninput="update_fy()">
   {% for r in fyears %}
@@ -81,7 +83,8 @@ Fiscal Year:
     <tr>
       <th>Budget Name</th>
       <th>Starting Amount</th>
-      <th>Total Spent</th>
+      <th>Spent</th>
+      <th>Remaining</th>
     </tr>
   </thead>
 

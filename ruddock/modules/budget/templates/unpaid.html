@@ -10,6 +10,8 @@
 
 <h2>Unpaid Expenses</h2>
 <hr>
+No client side validation for now. If you submit an invalid request, you'll have to start again.
+<hr>
 {% if unpaid_expenses %}
 {% for payee_id, payee_name, total, expenses in unpaid_expenses %}
 <h3>{{ payee_name }}: ${{ total }}</h3>
