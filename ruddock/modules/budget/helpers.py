@@ -1,8 +1,9 @@
 import flask
 import sqlalchemy
 import enum
-import datetime
-import decimal
+
+from datetime import datetime #ugh
+from decimal import Decimal
 
 # Enum for payment types
 class PaymentType(enum.Enum):
@@ -33,6 +34,11 @@ def stringify(db_rows, cols):
 
 def get_payment_types():
   return [x.value for x in PaymentType]
+
+def is_delayed_type(val):
+  """Returns true if this is a kind of payment that doesn't take effect immediately.
+     In other words, is this a check?"""
+  return val == PaymentType.CHECK.value
 
 def get_fyears():
   """Gets list of all fiscal years."""
@@ -89,9 +95,7 @@ def get_expenses():
     ORDER BY expense_id DESC
     """)
 
-  results = flask.g.db.execute(query).fetchall()
-
-  return stringify(results, ['cost'])
+  return flask.g.db.execute(query).fetchall()
 
 def get_payments():
   """Gets list of all payments."""
@@ -103,9 +107,7 @@ def get_payments():
     ORDER BY payment_id DESC
     """)
 
-  results = flask.g.db.execute(query).fetchall()
-
-  return stringify(results, ['amount'])
+  return flask.g.db.execute(query).fetchall()
 
 def get_accounts():
   """Gets list of all accounts."""
@@ -139,9 +141,7 @@ def get_account_summary():
     ORDER BY account_name
     """)
 
-  results = flask.g.db.execute(query).fetchall()
-
-  return stringify(results, ['bal', 'post_bal'])
+  return flask.g.db.execute(query).fetchall()
 
 def get_budget_summary(fyear_id):
   """Gets the status of all budgets for the given fiscal year."""
@@ -157,9 +157,7 @@ def get_budget_summary(fyear_id):
     ORDER BY budget_name
     """)
 
-  results = flask.g.db.execute(query, f=fyear_id).fetchall()
-
-  return stringify(results, ['starting_amount', 'spent'])
+  return flask.g.db.execute(query, f=fyear_id).fetchall()
 
 def get_unpaid_expenses():
   """Gets all expenses without a corresponding payment."""
@@ -173,9 +171,22 @@ def get_unpaid_expenses():
     ORDER BY payee_id #change to name TODO
   """)
 
-  results = flask.g.db.execute(query).fetchall()
+  return flask.g.db.execute(query).fetchall()
 
-  return stringify(results, ['cost'])
+def get_unpaid_amount(payee_id):
+  """Returns the amount owed to the given payee, or None if they have no
+     outstanding expenses."""
+  query = sqlalchemy.text("""
+    SELECT SUM(cost) AS total
+    FROM budget_expenses
+    WHERE payee_id = (:p) AND ISNULL(payment_id)
+    GROUP BY NULL
+  """)
+
+  result = flask.g.db.execute(query, p=payee_id).first()
+  total = result["total"]
+
+  return total
 
 def record_expense(budget_id, date_incurred, description, amount, payment_id, payee_id):
   """Inserts a new expense into the database."""
@@ -251,14 +262,14 @@ def is_integer(x):
 
 def is_date(x):
   try:
-    y = datetime.datetime.strptime(x , '%Y-%m-%d')
+    y = datetime.strptime(x , '%Y-%m-%d')
   except ValueError:
     return False
   return True
 
 def is_currency(x):
   try:
-    y = decimal.Decimal(x)
+    y = Decimal(x)
   except ValueError:
     return False
   return True

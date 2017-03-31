@@ -2,6 +2,7 @@ import flask
 import httplib
 import json
 import itertools
+
 from decimal import Decimal
 
 from ruddock.resources import Permissions
@@ -106,7 +107,9 @@ def route_submit_expense():
         payee_id = helpers.record_new_payee(new_payee)
     else:
       payee_id = None
-      payment_id = helpers.record_payment(account_id, payment_type, amount, date_incurred, date_incurred, None, check_no)
+      date_written = date_incurred
+      date_posted = None if is_delayed_type(payment_type) else date_written
+      payment_id = helpers.record_payment(account_id, payment_type, amount, date_written, date_posted, payee_id, check_no)
 
     # Either way, record the expense
     helpers.record_expense(budget_id, date_incurred, description, amount, payment_id, payee_id)
@@ -158,14 +161,26 @@ def route_submit_unpaid():
   check_no = form["check-no"]
   date_written = form["date-written"]
 
-  #TODO validation!
+  # Server side validation
+  valid = True
+  db_amount = helpers.get_unpaid_amount(payee_id)
+  if not helpers.validate_payment(payment_type, account_id, check_no):
+    valid = False
+    flask.flash("Invalid payment.")
+  if db_amount is None:
+    valid = False
+    flask.flash("This payee has no expenses to reimburse.")
+  if Decimal(amount) != db_amount:
+    valid = False
+    flask.flash("Payment amount does not match records ({} vs. {})".format(amount, db_amount))
+
+  # If any of the validation failed
+  if not valid:
+    return flask.redirect(flask.url_for("budget.route_unpaid"))
 
   # The date posted is the same as the date written, unless we're using a check
-  # -- make sure to update this if adding a similar form of payment! --
-  if payment_type == helpers.PaymentType.CHECK.value:
-    date_posted = None
-  else:
-    date_posted = date_written
+  date_posted = None if is_delayed_type(payment_type) else date_written
+
 
   # We use a transaction to make sure we don't submit halfway.
   transaction = flask.g.db.begin()
@@ -187,15 +202,6 @@ def ajax_budget_summary():
     results = [["Error", "Error", "Error"]]
   else:
     results = helpers.get_budget_summary(fyear_id)
+    results = helpers.stringify(results, ['starting_amount', 'spent'])
 
   return json.dumps(results)
-
-
-
-
-
-
-
-
-
-
