@@ -50,7 +50,8 @@ def route_add_expense():
   # TODO allow for multiple years
 
   # Get the lists for the dropdown menus
-  budgets_list = helpers.get_budget_list(2) #TODO don't leave this
+  current_fyear_id = helpers.get_fyear_from_num(None)["fyear_id"]
+  budgets_list = helpers.get_budget_list(current_fyear_id)
   payment_types = helpers.get_payment_types()
   accounts = helpers.get_accounts()
   payees = helpers.get_payees()
@@ -114,12 +115,13 @@ def route_submit_expense():
     else:
       payee_id = None
       date_written = date_incurred
-      date_posted = None if is_delayed_type(payment_type) else date_written
+      date_posted = None if helpers.is_delayed_type(payment_type) else date_written
       payment_id = helpers.record_payment(account_id, payment_type, amount, date_written, date_posted, payee_id, check_no)
 
     # Either way, record the expense
     helpers.record_expense(budget_id, date_incurred, description, amount, payment_id, payee_id)
     transaction.commit()
+    flask.flash("Expense recorded successfully!")
   except Exception:
     transaction.rollback()
     flask.flash("An unexpected error occurred. Please find an IMSS rep.")
@@ -153,7 +155,8 @@ def route_unpaid():
   return flask.render_template('unpaid.html',
     payment_types=payment_types,
     accounts=accounts,
-    unpaid_expenses=unpaid_full)
+    unpaid_expenses=unpaid_full,
+    today=helpers.get_today())
 
 @blueprint.route('/unpaid/submit', methods=['POST'])
 @login_required(Permissions.BUDGET)
@@ -187,8 +190,7 @@ def route_submit_unpaid():
     return flask.redirect(flask.url_for("budget.route_unpaid"))
 
   # The date posted is the same as the date written, unless we're using a check
-  date_posted = None if is_delayed_type(payment_type) else date_written
-
+  date_posted = None if helpers.is_delayed_type(payment_type) else date_written
 
   # We use a transaction to make sure we don't submit halfway.
   transaction = flask.g.db.begin()
@@ -196,6 +198,7 @@ def route_submit_unpaid():
     payment_id = helpers.record_payment(account_id, payment_type, amount, date_written, date_posted, payee_id, check_no)
     helpers.mark_as_paid(payee_id, payment_id)
     transaction.commit()
+    flask.flash("Payment recorded successfully!")
   except Exception as e:
     transaction.rollback()
     flask.flash("An unexpected error occurred. Please find an IMSS rep.")

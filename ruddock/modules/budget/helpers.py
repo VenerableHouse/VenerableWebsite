@@ -14,6 +14,9 @@ class PaymentType(enum.Enum):
   TRANSFER = "Transfer"
   OTHER = "Other"
 
+def get_today():
+  return datetime.now().strftime("%Y-%m-%d")
+
 def stringify(db_rows):
   """Changes all columns to strings.
      This is especially useful when working with NUMERIC, because
@@ -287,7 +290,7 @@ def validate_payment(payment_type, account_id, check_no):
     (payment_type != PaymentType.CHECK.value or is_integer(check_no)))
 
 def validate_payee(payee_id, payee_name):
-  well_formed = is_integer(payee_id)
-  existing_payee = payee_id != 0
+  # TODO also check that the new payee isn't actually an old one...
+  existing_payee = is_integer(payee_id)
   new_payee = len(payee_name) > 0
-  return well_formed and (existing_payee != new_payee)
+  return (existing_payee != new_payee)
