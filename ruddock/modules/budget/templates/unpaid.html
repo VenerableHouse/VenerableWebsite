@@ -23,7 +23,7 @@ No client side validation for now. If you submit an invalid request, you'll have
   {{ forms.payment(payment_types, accounts) }}
   <br>
   <label for="date-written">Date Written:</label>
-  <input type="date" id="date-written" name="date-written">
+  <input type="date" id="date-written" name="date-written" value={{ today }}>
   <br>
   <label for="expense-list">Expenses:</label>
   <table id="expense-list">
