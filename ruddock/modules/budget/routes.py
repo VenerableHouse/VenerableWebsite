@@ -19,12 +19,14 @@ def route_portal():
 @login_required(Permissions.BUDGET)
 def route_summary():
   """Displays account and budget summaries."""
-  current_fyear = helpers.get_fyear_from_num(None)
+  current_fyear = helpers.get_current_fyear()
   fyears = helpers.get_fyears()
   a_summary = helpers.get_account_summary()
 
   return flask.render_template('summary.html',
-    a_summary=a_summary, fyears=fyears, current_fyear_id=current_fyear["fyear_id"])
+    a_summary=a_summary,
+    fyears=fyears,
+    current_fyear_id=current_fyear["fyear_id"])
 
 @blueprint.route('/expenses')
 @login_required(Permissions.BUDGET)
@@ -50,7 +52,7 @@ def route_add_expense():
   # TODO allow for multiple years
 
   # Get the lists for the dropdown menus
-  current_fyear_id = helpers.get_fyear_from_num(None)["fyear_id"]
+  current_fyear_id = helpers.get_current_fyear()["fyear_id"]
   budgets_list = helpers.get_budget_list(current_fyear_id)
   payment_types = helpers.get_payment_types()
   accounts = helpers.get_accounts()

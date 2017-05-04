@@ -212,8 +212,7 @@ CREATE TABLE rotation_move_history (
 -- Table of all accounts Ruddock owns.
 CREATE TABLE budget_accounts (
   account_id INTEGER NOT NULL AUTO_INCREMENT,
-  account_name VARCHAR(32) NOT NULL,
-  initial_balance NUMERIC(9,2) NOT NULL, -- this is sufficent to store up to 10 million
+  account_name VARCHAR(255) NOT NULL,
   PRIMARY KEY (account_id)
 );
 
