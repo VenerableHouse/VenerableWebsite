@@ -54,23 +54,27 @@ def get_fyears():
 
 def get_fyear_from_num(fyear_num):
   """Looks up the record for the given year.
-     If fyear_num is None, then this returns the current year.
      If no matching row is found, returns None."""
 
-  if fyear_num is None:
-    query = sqlalchemy.text("""
-      SELECT fyear_id, fyear_num
-      FROM budget_fyears
-      WHERE CURDATE() BETWEEN start_date AND end_date
-    """)
-    rp = flask.g.db.execute(query)
-  else:
-    query = sqlalchemy.text("""
-      SELECT fyear_id, fyear_num
-      FROM budget_fyears
-      WHERE fyear_num = (:f)
-    """)
-    rp = flask.g.db.execute(query, f=fyear_num)
+  query = sqlalchemy.text("""
+    SELECT fyear_id, fyear_num
+    FROM budget_fyears
+    WHERE fyear_num = (:f)
+  """)
+  rp = flask.g.db.execute(query, f=fyear_num)
+
+  return rp.first()
+
+def get_current_fyear():
+  """Looks up the record for the current year.
+     If no matching row is found, returns None."""
+
+  query = sqlalchemy.text("""
+    SELECT fyear_id, fyear_num
+    FROM budget_fyears
+    WHERE CURDATE() BETWEEN start_date AND end_date
+  """)
+  rp = flask.g.db.execute(query)
 
   return rp.first()
 
@@ -135,7 +139,7 @@ def get_account_summary():
   """Gets the status of all accounts."""
   query = sqlalchemy.text("""
     SELECT account_name,
-      initial_balance - IFNULL(SUM(IF(ISNULL(date_posted), 0, amount)), 0) AS bal
+      -IFNULL(SUM(IF(ISNULL(date_posted), 0, amount)), 0) AS bal
     FROM budget_accounts
       NATURAL LEFT JOIN budget_payments
     GROUP BY account_id
@@ -286,8 +290,10 @@ def validate_expense(budget_id, date_incurred, amount, description):
 
 def validate_payment(payment_type, account_id, check_no):
   valid_payment_type = payment_type in get_payment_types()
+  is_check = payment_type == PaymentType.CHECK.value
+
   return (valid_payment_type and is_integer(account_id) and
-    (payment_type != PaymentType.CHECK.value or is_integer(check_no)))
+    not(is_check and not is_integer(check_no)))
 
 def validate_payee(payee_id, payee_name):
   # TODO also check that the new payee isn't actually an old one...
