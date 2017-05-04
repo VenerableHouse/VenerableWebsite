@@ -197,6 +197,18 @@ def get_unpaid_amount(payee_id):
 
   return total
 
+def get_unposted_payments():
+  """Returns all payments that haven't been posted."""
+  query = sqlalchemy.text("""
+    SELECT payment_id, account_name, type, amount, date_written, date_posted, payee_name, check_no
+    FROM budget_payments
+      NATURAL JOIN budget_accounts
+      NATURAL JOIN budget_payees
+    WHERE ISNULL(date_posted)
+  """)
+
+  return flask.g.db.execute(query)
+
 def record_expense(budget_id, date_incurred, description, amount, payment_id, payee_id):
   """Inserts a new expense into the database."""
 

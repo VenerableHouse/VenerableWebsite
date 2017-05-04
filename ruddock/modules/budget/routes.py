@@ -207,6 +207,35 @@ def route_submit_unpaid():
 
   return flask.redirect(flask.url_for("budget.route_unpaid"))
 
+@blueprint.route('/checks')
+@login_required(Permissions.BUDGET)
+def route_checks():
+  """Displays all undeposited checks."""
+  checks = helpers.get_unposted_payments()
+
+  return flask.render_template('checks.html', checks=checks)
+
+@blueprint.route('/checks/submit', methods=["POST"])
+@login_required(Permissions.BUDGET)
+def route_process_check():
+  """Records a check as deposited."""
+
+  # Extract form data
+  form = flask.request.form
+  check_no = form["check-no"]
+  date_posted = form["date-posted"]
+  action = form["action"]
+
+  if action == "Post":
+    flask.flash("Recording a deposited check isn't implemented yet!")
+  elif action == "Void":
+    flask.flash("Voiding checks isn't implemented yet!")
+  else:
+    flask.flash("Not a legitimate action!")
+
+  return flask.redirect(flask.url_for("budget.route_checks"))
+
+
 @blueprint.route('/ajax/budget_summary')
 @login_required(Permissions.BUDGET)
 def ajax_budget_summary():
