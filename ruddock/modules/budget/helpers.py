@@ -139,9 +139,10 @@ def get_account_summary():
   """Gets the status of all accounts."""
   query = sqlalchemy.text("""
     SELECT account_name,
-      -IFNULL(SUM(IF(ISNULL(date_posted), 0, amount)), 0) AS bal
+      initial_balance - IFNULL(SUM(amount), 0) AS bal
     FROM budget_accounts
       NATURAL LEFT JOIN budget_payments
+    WHERE date_posted IS NOT NULL
     GROUP BY account_id
     ORDER BY account_name
     """)
@@ -205,6 +206,7 @@ def get_unposted_payments():
       NATURAL JOIN budget_accounts
       NATURAL JOIN budget_payees
     WHERE ISNULL(date_posted)
+    ORDER BY payment_id DESC
   """)
 
   return flask.g.db.execute(query)
@@ -272,6 +274,40 @@ def mark_as_paid(payee_id, payment_id):
 
   flask.g.db.execute(query, payment=payment_id, payee=payee_id)
 
+def post_payment(payment_id, date_posted):
+  """Marks the given payment as posted, with the given date."""
+  query = sqlalchemy.text("""
+    UPDATE budget_payments
+    SET date_posted = (:dp)
+    WHERE payment_id = (:pi)
+  """)
+
+  flask.g.db.execute(query, dp=date_posted, pi=payment_id)
+
+def void_payment(payment_id):
+  """Marks the given payment as posted, with the given date."""
+  transaction = flask.g.db.begin()
+
+  try:
+    query = sqlalchemy.text("""
+      UPDATE budget_expenses
+      SET payment_id = NULL
+      WHERE payment_id = (:pi)
+    """)
+
+    flask.g.db.execute(query, pi=payment_id)
+
+    query2 = sqlalchemy.text("""
+      DELETE FROM budget_payments
+      WHERE payment_id = (:pi)
+    """)
+
+    flask.g.db.execute(query2, pi=payment_id)
+
+    transaction.commit()
+  except Exception as e:
+    transaction.rollback()
+    flask.flash("An unexpected error occurred. Please find an IMSS rep.")
 
 # these should move to somewhere more global...
 def is_integer(x):

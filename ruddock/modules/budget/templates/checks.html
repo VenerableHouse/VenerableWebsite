@@ -3,15 +3,23 @@
 {% import "forms.html" as forms %}
 
 {% block head %}
-
 {% endblock head %}
 
 {% block body %}
+<hr>
+<p>This isn't the ideal input format, but until someone with more Javascript skills comes along, this is how it'll be.</p>
+
+<p>Check the table below for the payment IDs.</p>
+
+<p>Also, no client side validation for now. If you submit an invalid request, you'll have to start again.</p>
+<hr>
+
+<!-- TODO client side validation -->
 
 <h2>Process Check</h2>
 <form id="form" action="{{ url_for('budget.route_process_check') }}" method="POST">
-  <label for="check-no">Check #: </label>
-  <input id="check-no" name="check-no" type="text">
+  <label for="payment-id">Payment ID: </label>
+  <input id="payment-id" name="payment-id" type="text">
   <br>
   <label for="date-posted">Date Deposited: </label>
   <input id="date-posted" name="date-posted" type="date">
@@ -20,12 +28,14 @@
   <input type="submit" name="action" value="Void">
 </form>
 
-<h2>Unposted Payments</h2>
+<h2>Non-Deposited Checks</h2>
 <table>
   <thead>
     <tr>
-      <th>Account</th>  
+      <th>Payment ID</th>
+      <th>Account</th>
       <th>Type</th>
+      <th>Amount</th>
       <th>Date Written</th>
       <th>Payee</th>
       <th>Check #</th>
@@ -34,8 +44,10 @@
   <tbody>
     {% for r in checks %}
     <tr>
+      <td>{{ r["payment_id"] }}</td>
       <td>{{ r["account_name"] }}</td>
       <td>{{ r["type"] }}</td>
+      <td>${{ r["amount"] }}</td>
       <td>{{ r["date_written"] }}</td>
       <td>{{ r["payee_name"] }}</td>
       <td>{{ r["check_no"] }}</td>

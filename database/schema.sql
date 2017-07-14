@@ -213,6 +213,7 @@ CREATE TABLE rotation_move_history (
 CREATE TABLE budget_accounts (
   account_id INTEGER NOT NULL AUTO_INCREMENT,
   account_name VARCHAR(255) NOT NULL,
+  initial_balance NUMERIC(9,2) NOT NULL,
   PRIMARY KEY (account_id)
 );
 

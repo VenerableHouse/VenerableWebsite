@@ -215,21 +215,37 @@ def route_checks():
 
   return flask.render_template('checks.html', checks=checks)
 
-@blueprint.route('/checks/submit', methods=["POST"])
+@blueprint.route('/checks/submit', methods=['POST'])
 @login_required(Permissions.BUDGET)
 def route_process_check():
   """Records a check as deposited."""
 
   # Extract form data
   form = flask.request.form
-  check_no = form["check-no"]
+  payment_id = form["payment-id"]
   date_posted = form["date-posted"]
   action = form["action"]
 
+  # Server side validation
+  valid = True
+  unposted_ids = [str(x["payment_id"]) for x in helpers.get_unposted_payments()]
+  if payment_id not in unposted_ids:
+    valid = False
+    flask.flash("Not a valid payment!")
+  if action == "Post" and date_posted == "":
+    valid = False
+    flask.flash("No date entered!")
+
+  # If any of the validation failed
+  if not valid:
+    return flask.redirect(flask.url_for("budget.route_checks"))
+
   if action == "Post":
-    flask.flash("Recording a deposited check isn't implemented yet!")
+    helpers.post_payment(payment_id, date_posted)
+    flask.flash("Payment successfully posted!")
   elif action == "Void":
-    flask.flash("Voiding checks isn't implemented yet!")
+    helpers.void_payment(payment_id)
+    flask.flash("Payment successfully voided!")
   else:
     flask.flash("Not a legitimate action!")
 
