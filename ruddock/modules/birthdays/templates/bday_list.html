@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h2>Birthday List</h2>
+<table>
+
+  <thead>
+    <tr>
+      <th>Day</th>
+      <th>Name</th>
+      <th>Age</th>
+      <th>Born</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for r in bdays %}
+    <tr>
+      <td>{{ r["date"] }}</td>
+      <td>{{ r["name"] }}</td>
+      <td>{{ r["age"] }}</td>
+      <td>{{ r["byear"] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+
+</table>
+
+{% endblock body %}

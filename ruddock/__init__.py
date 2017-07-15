@@ -16,6 +16,7 @@ from ruddock import email_utils
 from ruddock.modules import account
 from ruddock.modules import admin
 from ruddock.modules import auth
+from ruddock.modules import birthdays
 from ruddock.modules import government
 from ruddock.modules import hassle
 from ruddock.modules import rotation
@@ -28,6 +29,7 @@ app.register_blueprint(account.blueprint, url_prefix="/account")
 app.register_blueprint(admin.blueprint, url_prefix="/admin")
 # Auth blueprint has no prefix, since not all endpoints have the same prefix.
 app.register_blueprint(auth.blueprint)
+app.register_blueprint(birthdays.blueprint, url_prefix="/birthdays")
 app.register_blueprint(government.blueprint, url_prefix="/government")
 app.register_blueprint(hassle.blueprint, url_prefix="/hassle")
 app.register_blueprint(rotation.blueprint, url_prefix="/rotation")
