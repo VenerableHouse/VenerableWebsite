@@ -13,7 +13,7 @@ from ruddock.modules.budget import blueprint, helpers
 @login_required(Permissions.BUDGET)
 def route_portal():
   """Displays the budget portal."""
-  return flask.render_template('portal.html')
+  return flask.render_template('budget_portal.html')
 
 @blueprint.route('/summary')
 @login_required(Permissions.BUDGET)

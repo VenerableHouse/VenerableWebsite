@@ -368,4 +368,7 @@ def generate_admin_links():
   if check_permission(Permissions.BIRTHDAYS):
     links.append(AdminLink('Birthday list',
       flask.url_for('birthdays.show_bdays', _external=True)))
+  if check_permission(Permissions.BUDGET):
+    links.append(AdminLink('Budget',
+      flask.url_for('budget.route_portal', _external=True)))
   return links
