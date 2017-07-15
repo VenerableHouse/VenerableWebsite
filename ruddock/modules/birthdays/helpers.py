@@ -1,7 +1,6 @@
 import flask
 import sqlalchemy
 
-#TODO fix!
 def fetch_birthdays():
   """Returns the birthdays of all current students."""
   query = sqlalchemy.text("""

@@ -365,4 +365,7 @@ def generate_admin_links():
     links.append(AdminLink('Mailing lists',
       # This one needs to be hard coded.
       "https://ruddock.caltech.edu/mailman/admin"))
+  if check_permission(Permissions.BIRTHDAYS):
+    links.append(AdminLink('Birthday list',
+      flask.url_for('birthdays.show_bdays', _external=True)))
   return links
