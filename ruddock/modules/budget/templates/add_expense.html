@@ -3,6 +3,9 @@
 {% import 'forms.html' as forms %}
 
 {% block head %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('budget.static', filename='css/forms.css') }}">
+
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script src="{{ url_for('budget.static', filename='js/validation.js') }}"></script>
 
@@ -57,7 +60,6 @@ $(document).ready(function() {
   $("#form")[0].addEventListener("submit", validate);
 });
 </script>
-
 {% endblock head %}
 
 {% block body %}
@@ -65,16 +67,19 @@ $(document).ready(function() {
 <p id="errorbox" style="color:red"></p>
 
 <form id="form" action="{{ url_for('budget.route_submit_expense') }}" method="POST">
+
   <h2>Expense Info</h2>
-  Fiscal Year: 2017
-  <input type="button" value="Need a different year?" onclick="change_year()">
-  <br>
+  <div class="input-row">
+    <label>Fiscal Year: 2017</label>
+    <input type="button" value="Need a different year?" onclick="change_year()">
+  </div>
   {{ forms.expense(budgets) }}
 
   <h2>Payment Info</h2>
-  <label for="defer-payment">Defer Payment?</label>
-  <input type="checkbox" id="defer-payment" name="defer-payment" onclick="dpayment_updated()">
-  <br><br>
+  <div class="input-row">
+    <label for="defer-payment">Defer Payment?</label>
+    <input type="checkbox" id="defer-payment" name="defer-payment" onclick="dpayment_updated()">
+  </div>
   <div id="direct-payment">
     {{ forms.payment(payment_types, accounts) }}
   </div>
@@ -82,7 +87,8 @@ $(document).ready(function() {
     {{ forms.payee(payees) }}
   </div>
 
-  <input type="submit" value="Record Expense">
+<input type="submit" value="Record Expense">
+
 </form>
 
 {% endblock body %}
