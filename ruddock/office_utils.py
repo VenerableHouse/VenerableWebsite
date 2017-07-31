@@ -11,7 +11,7 @@ FROM office_assignments
   NATURAL JOIN offices
   NATURAL JOIN members
   NATURAL JOIN members_extra
-  NATURAL JOIN users
+  NATURAL LEFT JOIN users
 {0}
 ORDER BY office_order, start_date, name
 """

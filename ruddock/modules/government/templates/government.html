@@ -15,7 +15,12 @@
       </tr></thead>
       {# Now, display each row #}
       {% for position in positions %}
+        {# Yes, jinja2 has a test called 'none' and it's not spelled 'None' #}
+        {% if position['username'] is not none %}
         <tr class="link" onclick="location.href='{{ url_for('users.view_profile', username=position['username']) }}'">
+        {% else %}
+        <tr>
+        {% endif %}
           <td>{{ position['office_name'] }}</td>
           <td>{{ position['name'] }}</td>
           <td>{{ position['office_email'] if position['office_email'] else '[None]' }}</td>
