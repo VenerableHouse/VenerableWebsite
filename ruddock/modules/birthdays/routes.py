@@ -41,7 +41,11 @@ def show_bdays():
 
   # Fetch rows, process them, and sort them by upcoming birthday
   db_rows = helpers.fetch_birthdays()
-  bdays = [process(r) for r in db_rows ]
+
+  bdays = [process(r) for r in db_rows if r["birthday"] is not None]
   bdays.sort(key=lambda x:x["date"])
 
-  return flask.render_template('bday_list.html', bdays=bdays)
+  unknowns = [r["name"] for r in db_rows if r["birthday"] is None]
+
+  return flask.render_template('bday_list.html', bdays=bdays,
+      unknowns=unknowns)

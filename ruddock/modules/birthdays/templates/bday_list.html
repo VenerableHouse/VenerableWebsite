@@ -26,4 +26,24 @@
 
 </table>
 
+<br>
+
+{% if unknowns %}
+<h2>Unknown Birthdays</h2>
+Contact these people and get them to add their birthdays!
+<table>
+
+  <thead>
+    <tr><th>Name</th></tr>
+  </thead>
+
+  <tbody>
+    {% for x in unknowns %}
+    <tr><td>{{ x }}</td></tr>
+    {% endfor %}
+  </tbody>
+
+</table>
+{% endif %}
+
 {% endblock body %}
