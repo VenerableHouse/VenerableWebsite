@@ -6,6 +6,8 @@ from datetime import datetime #ugh
 from decimal import Decimal
 
 # Enum for payment types
+# These are the strings that will be stored in the database!
+# TODO factor these out into a different table eventually...
 class PaymentType(enum.Enum):
   CASH = "Cash"
   CHECK = "Check"
@@ -38,8 +40,8 @@ def get_payment_types():
   return [x.value for x in PaymentType]
 
 def is_delayed_type(val):
-  """Returns true if this is a kind of payment that doesn't take effect immediately.
-     In other words, is this a check?"""
+  """Returns true if this is a kind of payment that doesn't take effect
+     immediately. In other words, is this a check?"""
   return val == PaymentType.CHECK.value
 
 def get_fyears():
@@ -93,7 +95,8 @@ def get_budget_list(fyear_id):
 def get_expenses():
   """Gets list of all expenses."""
   query = sqlalchemy.text("""
-    SELECT expense_id, budget_name, fyear_num, date_incurred, description, cost, payee_name, payment_id
+    SELECT expense_id, budget_name, fyear_num, date_incurred, description, cost,
+        payee_name, payment_id
     FROM budget_expenses
       NATURAL JOIN budget_budgets
       NATURAL JOIN budget_fyears
@@ -106,7 +109,8 @@ def get_expenses():
 def get_payments():
   """Gets list of all payments."""
   query = sqlalchemy.text("""
-    SELECT payment_id, account_name, type, amount, date_written, date_posted, payee_name, check_no
+    SELECT payment_id, account_name, type, amount, date_written, date_posted,
+        payee_name, check_no
     FROM budget_payments
       NATURAL JOIN budget_accounts
       NATURAL LEFT JOIN budget_payees
@@ -172,7 +176,8 @@ def get_budget_summary(fyear_id):
 def get_unpaid_expenses():
   """Gets all expenses without a corresponding payment."""
   query = sqlalchemy.text("""
-    SELECT payee_id, payee_name, budget_name, fyear_num, date_incurred, description, cost
+    SELECT payee_id, payee_name, budget_name, fyear_num, date_incurred,
+        description, cost
     FROM budget_expenses
       NATURAL JOIN budget_budgets
       NATURAL JOIN budget_fyears
@@ -201,7 +206,8 @@ def get_unpaid_amount(payee_id):
 def get_unposted_payments():
   """Returns all payments that haven't been posted."""
   query = sqlalchemy.text("""
-    SELECT payment_id, account_name, type, amount, date_written, date_posted, payee_name, check_no
+    SELECT payment_id, account_name, type, amount, date_written, date_posted,
+        payee_name, check_no
     FROM budget_payments
       NATURAL JOIN budget_accounts
       NATURAL JOIN budget_payees
@@ -211,7 +217,8 @@ def get_unposted_payments():
 
   return flask.g.db.execute(query)
 
-def record_expense(budget_id, date_incurred, description, amount, payment_id, payee_id):
+def record_expense(budget_id, date_incurred, description, amount, payment_id,
+    payee_id):
   """Inserts a new expense into the database."""
 
   query = sqlalchemy.text("""
@@ -231,7 +238,8 @@ def record_expense(budget_id, date_incurred, description, amount, payment_id, pa
     payee_id=payee_id
   )
 
-def record_payment(account_id, type, amount, date_written, date_posted, payee_id, check_no):
+def record_payment(account_id, type, amount, date_written, date_posted,
+    payee_id, check_no):
   """Inserts a new payment into the database, returning its ID."""
 
   query = sqlalchemy.text("""
@@ -348,3 +356,6 @@ def validate_payee(payee_id, payee_name):
   existing_payee = is_integer(payee_id)
   new_payee = len(payee_name) > 0
   return (existing_payee != new_payee)
+
+def test_predicates(triplets):
+  return [err for pred, guard, err in triplets if guard and not pred]
