@@ -4,7 +4,6 @@ import sqlalchemy
 from ruddock import auth_utils
 from ruddock import email_templates
 from ruddock import email_utils
-from ruddock import misc_utils
 from ruddock import validation_utils
 
 def get_user_data(user_id):

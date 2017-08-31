@@ -73,7 +73,7 @@ def new_hassle_participants():
 def new_hassle_participants_submit():
   """Submission endpoint for hassle participants. Redirects to next page."""
   # Get a list of all participants' user IDs.
-  participants = map(lambda x: int(x), flask.request.form.getlist('participants'))
+  participants = [int(x) for x in flask.request.form.getlist('participants')]
   # Update database with this hassle's participants.
   helpers.set_participants(participants)
   return flask.redirect(flask.url_for('hassle.new_hassle_rooms'))
@@ -92,7 +92,7 @@ def new_hassle_rooms():
 def new_hassle_rooms_submit():
   """Submission endpoint for hassle rooms. Redirects to next page."""
   # Get a list of all room numbers.
-  rooms = map(lambda x: int(x), flask.request.form.getlist('rooms'))
+  rooms = [int(x) for x in flask.request.form.getlist('rooms')]
   # Update database with participating rooms.
   helpers.set_rooms(rooms)
   return flask.redirect(flask.url_for('hassle.new_hassle_confirm'))
