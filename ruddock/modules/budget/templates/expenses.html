@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<h2>Expense List</h2>
+<table>
+
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Budget</th>
+      <th>FY</th>
+      <th>Date Incurred</th>
+      <th>Description</th>
+      <th>Amount</th>
+      <th>Payee</th>
+      <th>Payment ID</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for r in expenses %}
+    <tr>
+      <td>{{ r["expense_id"] }}</td>
+      <td>{{ r["budget_name"] }}</td>
+      <td>{{ r["fyear_num"] }}</td>
+      <td>{{ r["date_incurred"] }}</td>
+      <td>{{ r["description"].decode("utf8") }}</td>
+      <td>{{ r["cost"] }}</td>
+      <td>{{ r["payee_name"] }}</td>
+      <td>{{ r["payment_id"]}}
+    </tr>
+    {% endfor %}
+  </tbody>
+
+</table>
+
+{% endblock body %}

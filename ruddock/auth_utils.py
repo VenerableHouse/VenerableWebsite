@@ -365,4 +365,7 @@ def generate_admin_links():
     links.append(AdminLink('Mailing lists',
       # This one needs to be hard coded.
       "https://ruddock.caltech.edu/mailman/admin"))
+  if check_permission(Permissions.BUDGET):
+    links.append(AdminLink('Budget',
+      flask.url_for('budget.route_portal', _external=True)))
   return links

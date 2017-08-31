@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+
+{% import 'forms.html' as forms %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('budget.static', filename='css/forms.css') }}">
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="{{ url_for('budget.static', filename='js/validation.js') }}"></script>
+
+<script>
+function change_year() {
+  alert("Not implemented yet!")
+}
+
+function dpayment_updated() {
+
+  var deferred = $("#defer-payment").is(':checked');
+
+  $("#deferred-payment").toggle(deferred);
+  $("#direct-payment").toggle(!deferred);
+}
+
+function validate() {
+  var budget_id = $("#budget-id").val();
+  var amount = $("#amount").val();
+  var date = $("#date-incurred").val();
+  var description = $("#description").val();
+  var deferred = $("#defer-payment").is(':checked');
+  var payment_type = $("#payment-type").val();
+  var account_id = $("#account-id").val();
+  var check_no = $("#check-no").val();
+  var payee_id = $("#payee-id").val();
+  var new_payee = $("#new-payee").val();
+
+  var errors = [];
+
+  errors = errors.concat(validate_expense(budget_id, date, amount, description));
+  if (deferred) {
+    errors = errors.concat(validate_payee(payee_id, new_payee));
+  } else {
+    errors = errors.concat(validate_payment(payment_type, account_id, check_no));
+  }
+
+  var errorbox = $("#errorbox")[0];
+
+  errorbox.innerHTML = "";
+  for (var i = 0; i < errors.length; i++) {
+    errorbox.innerHTML += errors[i] + "<br>";
+  }
+
+  if(errorbox.innerHTML != "") {
+    event.preventDefault();
+  }
+}
+
+$(document).ready(function() {
+  dpayment_updated();
+  $("#form")[0].addEventListener("submit", validate);
+});
+</script>
+{% endblock head %}
+
+{% block body %}
+
+<p id="errorbox" style="color:red"></p>
+
+<form id="form" action="{{ url_for('budget.route_submit_expense') }}" method="POST">
+
+  <h2>Expense Info</h2>
+  <div class="input-row">
+    <label>Fiscal Year: 2017</label>
+    <input type="button" value="Need a different year?" onclick="change_year()">
+  </div>
+  {{ forms.expense(budgets) }}
+
+  <h2>Payment Info</h2>
+  <div class="input-row">
+    <label for="defer-payment">Defer Payment?</label>
+    <input type="checkbox" id="defer-payment" name="defer-payment" onclick="dpayment_updated()">
+  </div>
+  <div id="direct-payment">
+    {{ forms.payment(payment_types, accounts) }}
+  </div>
+  <div id="deferred-payment">
+    {{ forms.payee(payees) }}
+  </div>
+
+<input type="submit" value="Record Expense">
+
+</form>
+
+{% endblock body %}
