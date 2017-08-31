@@ -21,6 +21,8 @@ class Permissions(enum.IntEnum):
   EMAIL = 4
   # Run rotation meetings
   ROTATION = 5
+  # See birthday list
+  BIRTHDAYS = 7
 
 # Enum for search modes.
 class MemberSearchMode(enum.IntEnum):

@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h2>Birthday List</h2>
+<table>
+
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Name</th>
+      <th>Age</th>
+      <th>Born</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for r in bdays %}
+    <tr>
+      <td>{{ r["date"] }}</td>
+      <td>{{ r["name"] }}</td>
+      <td>{{ r["age"] }}</td>
+      <td>{{ r["byear"] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+
+</table>
+
+<br>
+
+{% if unknowns %}
+<h2>Unknown Birthdays</h2>
+Contact these people and get them to add their birthdays!
+<table>
+
+  <thead>
+    <tr><th>Name</th></tr>
+  </thead>
+
+  <tbody>
+    {% for x in unknowns %}
+    <tr><td>{{ x }}</td></tr>
+    {% endfor %}
+  </tbody>
+
+</table>
+{% endif %}
+
+{% endblock body %}
