@@ -86,30 +86,33 @@ def route_submit_expense():
   # TODO clear check number if payment isn't check? same in unpaid too
 
   # Server side validation
-  valid = True
-  if not helpers.validate_expense(budget_id, date_incurred, amount, description):
-    valid = False
-    flask.flash("Invalid expense.")
-  if not defer_payment and not helpers.validate_payment(payment_type, account_id, check_no):
-    valid = False
-    flask.flash("Invalid payment.")
-  if defer_payment and not helpers.validate_payee(payee_id, new_payee):
-    valid = False
-    flask.flash("Invalid payee.")
+  valid_expense = helpers.validate_expense(budget_id, date_incurred, amount,
+      description)
+  valid_payment = defer_payment or helpers.validate_payment(payment_type,
+      account_id, check_no)
+  valid_payee = not defer_payment or helpers.validate_payee(payee_id, new_payee)
 
-  # If any of the validation failed
-  if not valid:
+  errs = helpers.test_predicates(
+    (valid_expense, True,              "Invalid expense.")
+    (valid_payment, not defer_payment, "Invalid payment.")
+    (valid_payee,   defer_payment,     "Invalid payee."  )
+  )
+
+  for e in errs:
+    flask.flash(e)
+
+  if errs:
     return flask.redirect(flask.url_for("budget.route_add_expense"))
 
   # We use a transaction to make sure we don't submit halfway.
   transaction = flask.g.db.begin()
   try:
     # This next part depends on whether we are deferring payment or not.
-    # If so, then we leave the payment ID null, cause it the corresponding payment
-    # hasn't been made yet. However, we require the payee. If it's a new payee,
-    # we have to insert it into the database first.
-    # If not, then we need to make a new payment, and use its ID. Payee ID is not
-    # needed.
+    # If so, then we leave the payment ID null, cause it the corresponding
+    # payment hasn't been made yet. However, we require the payee. If it's a new
+    # payee, we have to insert it into the database first.
+    # If not, then we need to make a new payment, and use its ID. Payee ID is
+    # not needed.
     if defer_payment:
       payment_id = None
       if new_payee:
@@ -117,11 +120,15 @@ def route_submit_expense():
     else:
       payee_id = None
       date_written = date_incurred
-      date_posted = None if helpers.is_delayed_type(payment_type) else date_written
-      payment_id = helpers.record_payment(account_id, payment_type, amount, date_written, date_posted, payee_id, check_no)
+      date_posted = None if helpers.is_delayed_type(payment_type) \
+          else date_written
+      payment_id = helpers.record_payment(account_id, payment_type, amount,
+          date_written, date_posted, payee_id, check_no)
 
     # Either way, record the expense
-    helpers.record_expense(budget_id, date_incurred, description, amount, payment_id, payee_id)
+    helpers.record_expense(budget_id, date_incurred, description, amount,
+        payment_id, payee_id)
+
     transaction.commit()
     flask.flash("Expense recorded successfully!")
   except Exception:
@@ -133,8 +140,10 @@ def route_submit_expense():
 @blueprint.route('/unpaid')
 @login_required(Permissions.BUDGET)
 def route_unpaid():
-  """Displays unpaid expenses, and allows the user to create payments for them."""
+  """Displays unpaid expenses, and allows the user to create payments for them.
+  """
 
+  # Get all unpaid expenses and group them by the payee
   # Wow, I love itertools
   unpaid = helpers.get_unpaid_expenses()
   unpaid_groups = itertools.groupby(unpaid, lambda x : x["payee_id"])
@@ -142,14 +151,15 @@ def route_unpaid():
   # Convert to list so we don't exhaust the iterator
   unpaid_groups = [list(expenses) for _, expenses in unpaid_groups]
 
-  # TODO rename!
-  def foo(expense_list):
-    payee_id = expense_list[0]["payee_id"]
-    payee_name = expense_list[0]["payee_name"]
-    total = sum(Decimal(e["cost"]) for e in expense_list)
-    return payee_id, payee_name, total, expense_list
+  # Given a group of expenses, sums the costs and returns a tuple of ID, name,
+  # total, and the original group
+  def compute_totals(expenses):
+    payee_id = expenses[0]["payee_id"]
+    payee_name = expenses[0]["payee_name"]
+    total = sum(Decimal(e["cost"]) for e in expenses)
+    return payee_id, payee_name, total, expenses
 
-  unpaid_full = [foo(expense_list) for expense_list in unpaid_groups]
+  unpaid_full = [compute_totals(expenses) for expenses in unpaid_groups]
 
   payment_types = helpers.get_payment_types()
   accounts = helpers.get_accounts()
@@ -175,29 +185,33 @@ def route_submit_unpaid():
   date_written = form["date-written"]
 
   # Server side validation
-  valid = True
   db_amount = helpers.get_unpaid_amount(payee_id)
-  if not helpers.validate_payment(payment_type, account_id, check_no):
-    valid = False
-    flask.flash("Invalid payment.")
-  if db_amount is None:
-    valid = False
-    flask.flash("This payee has no expenses to reimburse.")
-  if Decimal(amount) != db_amount:
-    valid = False
-    flask.flash("Payment amount does not match records ({} vs. {})".format(amount, db_amount))
+  valid_payment = helpers.validate_payment(payment_type, account_id, check_no)
+  has_expenses = (db_amount is not None)
+  amounts_match = (Decimal(amount) != db_amount)
 
-  # If any of the validation failed
-  if not valid:
+  errs = helpers.test_predicates(
+    (valid_payment, True, "Invalid payment.")
+    (has_expenses,  True, "This payee has no expenses to reimburse.")
+    (amounts_match, True,
+        "Payment amount does not match records ({} vs. {})".format(
+            amount, db_amount))
+  )
+
+  for e in errs:
+    flask.flash(e)
+
+  if errs:
     return flask.redirect(flask.url_for("budget.route_unpaid"))
-
-  # The date posted is the same as the date written, unless we're using a check
-  date_posted = None if helpers.is_delayed_type(payment_type) else date_written
 
   # We use a transaction to make sure we don't submit halfway.
   transaction = flask.g.db.begin()
   try:
-    payment_id = helpers.record_payment(account_id, payment_type, amount, date_written, date_posted, payee_id, check_no)
+    # The date posted is the same as the date written unless we're using a check
+    date_posted = None if helpers.is_delayed_type(payment_type) \
+        else date_written
+    payment_id = helpers.record_payment(account_id, payment_type, amount,
+        date_written, date_posted, payee_id, check_no)
     helpers.mark_as_paid(payee_id, payment_id)
     transaction.commit()
     flask.flash("Payment recorded successfully!")
@@ -227,19 +241,21 @@ def route_process_check():
   action = form["action"]
 
   # Server side validation
-  valid = True
   unposted_ids = [str(x["payment_id"]) for x in helpers.get_unposted_payments()]
-  if payment_id not in unposted_ids:
-    valid = False
-    flask.flash("Not a valid payment!")
-  if action == "Post" and date_posted == "":
-    valid = False
-    flask.flash("No date entered!")
+
+  errs = helpers.test_predicates(
+    (payment_id in unposted_ids, True,             "Not a valid payment!")
+    (date_posted == "",          action == "Post", "No date entered!"    )
+  )
+
+  for e in errs:
+    flask.flash(e)
 
   # If any of the validation failed
-  if not valid:
+  if errs:
     return flask.redirect(flask.url_for("budget.route_checks"))
 
+  # Decide what to do
   if action == "Post":
     helpers.post_payment(payment_id, date_posted)
     flask.flash("Payment successfully posted!")
