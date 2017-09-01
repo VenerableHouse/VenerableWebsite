@@ -22,9 +22,11 @@ def get_upstream_constitution():
   """
   response = requests.get(UPSTREAM_API_PATH)
   if response.status_code == httplib.OK:
-    upstream_url = [x[BROWSER_DOWNLOAD_URL_PROPERTY] \
-                    for x in json.loads(response.content)[ASSETS_PROPERTY] \
-                    if x[NAME_PROPERTY] == FILE_NAME][0]
+    result_dict = json.loads(response.content)
+    assets = result_dict[ASSETS_PROPERTY]
+    # extract URL for filename
+    upstream_url = [x[BROWSER_DOWNLOAD_URL_PROPERTY]
+                    for x in assets if x[NAME_PROPERTY] == FILE_NAME][0]
     pdf_response = requests.get(upstream_url)
     if pdf_response.status_code == httplib.OK:
       return pdf_response.content
