@@ -6,18 +6,30 @@ import hashlib
 import httplib
 import requests
 import sys
+import json
 
-UPSTREAM_URL = "https://github.com/RuddockHouse/RuddockConstitution/raw/master/constitution.pdf"
-LOCAL_PATH = "ruddock/static/constitution/constitution.pdf"
+FILE_NAME = "constitution.pdf"
+UPSTREAM_API_PATH = "https://api.github.com/repos/RuddockHouse/RuddockConstitution/releases/latest"
+LOCAL_PATH = "ruddock/static/constitution/" + FILE_NAME
+BROWSER_DOWNLOAD_URL_PROPERTY = "browser_download_url"
+ASSETS_PROPERTY = "assets"
+NAME_PROPERTY = "name"
 
 def get_upstream_constitution():
   """
   Retrieves a copy of the constitution from the master branch of the upstream
   repository. Returns a string in binary format.
   """
-  response = requests.get(UPSTREAM_URL)
+  response = requests.get(UPSTREAM_API_PATH)
   if response.status_code == httplib.OK:
-    return response.content
+    upstream_url = [x[BROWSER_DOWNLOAD_URL_PROPERTY] \
+                    for x in json.loads(response.content)[ASSETS_PROPERTY] \
+                    if x[NAME_PROPERTY] == FILE_NAME][0]
+    pdf_response = requests.get(upstream_url)
+    if pdf_response.status_code == httplib.OK:
+      return pdf_response.content
+    else:
+      return None
   else:
     return None
 
