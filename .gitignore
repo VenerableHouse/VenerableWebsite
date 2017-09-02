@@ -75,3 +75,6 @@ target/
 # OS X generated files
 .DS_Store
 ._*
+
+# Vim swp files
+*.swp
