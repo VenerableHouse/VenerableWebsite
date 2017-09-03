@@ -99,11 +99,11 @@ def route_submit_expense():
       account_id, check_no)
   valid_payee = not defer_payment or helpers.validate_payee(payee_id, new_payee)
 
-  errs = helpers.test_predicates(
-    (valid_expense, True,              "Invalid expense.")
-    (valid_payment, not defer_payment, "Invalid payment.")
+  errs = helpers.test_predicates((
+    (valid_expense, True,              "Invalid expense."),
+    (valid_payment, not defer_payment, "Invalid payment."),
     (valid_payee,   defer_payment,     "Invalid payee."  )
-  )
+  ))
 
   for e in errs:
     flask.flash(e)
@@ -197,15 +197,15 @@ def route_submit_unpaid():
   db_amount = helpers.get_unpaid_amount(payee_id)
   valid_payment = helpers.validate_payment(payment_type, account_id, check_no)
   has_expenses = (db_amount is not None)
-  amounts_match = (Decimal(amount) != db_amount)
+  amounts_match = (Decimal(amount) == db_amount)
 
-  errs = helpers.test_predicates(
-    (valid_payment, True, "Invalid payment.")
-    (has_expenses,  True, "This payee has no expenses to reimburse.")
+  errs = helpers.test_predicates((
+    (valid_payment, True, "Invalid payment."),
+    (has_expenses,  True, "This payee has no expenses to reimburse."),
     (amounts_match, True,
         "Payment amount does not match records ({} vs. {})".format(
             amount, db_amount))
-  )
+  ))
 
   for e in errs:
     flask.flash(e)
@@ -254,10 +254,10 @@ def route_process_check():
   # Server side validation
   unposted_ids = [str(x["payment_id"]) for x in helpers.get_unposted_payments()]
 
-  errs = helpers.test_predicates(
-    (payment_id in unposted_ids, True,             "Not a valid payment!")
-    (date_posted == "",          action == "Post", "No date entered!"    )
-  )
+  errs = helpers.test_predicates((
+    (payment_id in unposted_ids, True,             "Not a valid payment!"),
+    (date_posted != "",          action == "Post", "No date entered!"    )
+  ))
 
   for e in errs:
     flask.flash(e)
