@@ -15,10 +15,13 @@ def route_portal():
   """Displays the budget portal."""
   return flask.render_template('budget_portal.html')
 
+
 @blueprint.route('/summary')
 @login_required(Permissions.BUDGET)
 def route_summary():
   """Displays account and budget summaries."""
+
+  #TODO add a feature that gives you account summary as of X date
   current_fyear = helpers.get_current_fyear()
   fyears = helpers.get_fyears()
   a_summary = helpers.get_account_summary()
@@ -28,6 +31,7 @@ def route_summary():
     fyears=fyears,
     current_fyear_id=current_fyear["fyear_id"])
 
+
 @blueprint.route('/expenses')
 @login_required(Permissions.BUDGET)
 def route_expenses():
@@ -36,6 +40,7 @@ def route_expenses():
 
   return flask.render_template('expenses.html', expenses=expenses)
 
+
 @blueprint.route('/payments')
 @login_required(Permissions.BUDGET)
 def route_payments():
@@ -43,6 +48,7 @@ def route_payments():
   payments = helpers.get_payments()
 
   return flask.render_template('payments.html', payments=payments)
+
 
 @blueprint.route('/add_expense')
 @login_required(Permissions.BUDGET)
@@ -63,6 +69,7 @@ def route_add_expense():
     payment_types=payment_types,
     accounts=accounts,
     payees=payees)
+
 
 @blueprint.route('/add_expense/submit', methods=['POST'])
 @login_required(Permissions.BUDGET)
@@ -137,6 +144,7 @@ def route_submit_expense():
 
   return flask.redirect(flask.url_for("budget.route_add_expense"))
 
+
 @blueprint.route('/unpaid')
 @login_required(Permissions.BUDGET)
 def route_unpaid():
@@ -169,6 +177,7 @@ def route_unpaid():
     accounts=accounts,
     unpaid_expenses=unpaid_full,
     today=helpers.get_today())
+
 
 @blueprint.route('/unpaid/submit', methods=['POST'])
 @login_required(Permissions.BUDGET)
@@ -221,6 +230,7 @@ def route_submit_unpaid():
 
   return flask.redirect(flask.url_for("budget.route_unpaid"))
 
+
 @blueprint.route('/checks')
 @login_required(Permissions.BUDGET)
 def route_checks():
@@ -228,6 +238,7 @@ def route_checks():
   checks = helpers.get_unposted_payments()
 
   return flask.render_template('checks.html', checks=checks)
+
 
 @blueprint.route('/checks/submit', methods=['POST'])
 @login_required(Permissions.BUDGET)
