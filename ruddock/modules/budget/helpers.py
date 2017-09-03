@@ -16,8 +16,10 @@ class PaymentType(enum.Enum):
   TRANSFER = "Transfer"
   OTHER = "Other"
 
+
 def get_today():
   return datetime.now().strftime("%Y-%m-%d")
+
 
 def stringify(db_rows):
   """Changes all columns to strings.
@@ -36,13 +38,16 @@ def stringify(db_rows):
 
   return rows
 
+
 def get_payment_types():
   return [x.value for x in PaymentType]
+
 
 def is_delayed_type(val):
   """Returns true if this is a kind of payment that doesn't take effect
      immediately. In other words, is this a check?"""
   return val == PaymentType.CHECK.value
+
 
 def get_fyears():
   """Gets list of all fiscal years."""
@@ -53,6 +58,7 @@ def get_fyears():
     """)
 
   return flask.g.db.execute(query).fetchall()
+
 
 def get_fyear_from_num(fyear_num):
   """Looks up the record for the given year.
@@ -67,6 +73,7 @@ def get_fyear_from_num(fyear_num):
 
   return rp.first()
 
+
 def get_current_fyear():
   """Looks up the record for the current year.
      If no matching row is found, returns None."""
@@ -80,6 +87,7 @@ def get_current_fyear():
 
   return rp.first()
 
+
 def get_budget_list(fyear_id):
   """Gets list of all budgets in the given year."""
   query = sqlalchemy.text("""
@@ -91,6 +99,7 @@ def get_budget_list(fyear_id):
     """)
 
   return flask.g.db.execute(query, f=fyear_id).fetchall()
+
 
 def get_expenses():
   """Gets list of all expenses."""
@@ -106,6 +115,7 @@ def get_expenses():
 
   return flask.g.db.execute(query).fetchall()
 
+
 def get_payments():
   """Gets list of all payments."""
   query = sqlalchemy.text("""
@@ -119,6 +129,7 @@ def get_payments():
 
   return flask.g.db.execute(query).fetchall()
 
+
 def get_accounts():
   """Gets list of all accounts."""
   query = sqlalchemy.text("""
@@ -129,6 +140,7 @@ def get_accounts():
 
   return flask.g.db.execute(query).fetchall()
 
+
 def get_payees():
   """Gets list of all payees."""
   query = sqlalchemy.text("""
@@ -138,6 +150,7 @@ def get_payees():
     """)
 
   return flask.g.db.execute(query).fetchall()
+
 
 def get_account_summary():
   """Gets the status of all accounts."""
@@ -152,6 +165,7 @@ def get_account_summary():
     """)
 
   return flask.g.db.execute(query).fetchall()
+
 
 def get_budget_summary(fyear_id):
   """Gets the status of all budgets for the given fiscal year."""
@@ -173,6 +187,7 @@ def get_budget_summary(fyear_id):
 
   return flask.g.db.execute(query, f=fyear_id).fetchall()
 
+
 def get_unpaid_expenses():
   """Gets all expenses without a corresponding payment."""
   query = sqlalchemy.text("""
@@ -187,6 +202,7 @@ def get_unpaid_expenses():
   """)
 
   return flask.g.db.execute(query).fetchall()
+
 
 def get_unpaid_amount(payee_id):
   """Returns the amount owed to the given payee, or None if they have no
@@ -203,6 +219,7 @@ def get_unpaid_amount(payee_id):
 
   return total
 
+
 def get_unposted_payments():
   """Returns all payments that haven't been posted."""
   query = sqlalchemy.text("""
@@ -216,6 +233,7 @@ def get_unposted_payments():
   """)
 
   return flask.g.db.execute(query)
+
 
 def record_expense(budget_id, date_incurred, description, amount, payment_id,
     payee_id):
@@ -237,6 +255,7 @@ def record_expense(budget_id, date_incurred, description, amount, payment_id,
     p_id=payment_id,
     payee_id=payee_id
   )
+
 
 def record_payment(account_id, type, amount, date_written, date_posted,
     payee_id, check_no):
@@ -262,6 +281,7 @@ def record_payment(account_id, type, amount, date_written, date_posted,
 
   return result.lastrowid
 
+
 def record_new_payee(payee_name):
   """Inserts a new payee into the database, returning its ID."""
   query = sqlalchemy.text("""
@@ -271,6 +291,7 @@ def record_new_payee(payee_name):
 
   result = flask.g.db.execute(query, p=payee_name)
   return result.lastrowid
+
 
 def mark_as_paid(payee_id, payment_id):
   """Assigns the given payment id to all expenses from the given payee."""
@@ -282,6 +303,7 @@ def mark_as_paid(payee_id, payment_id):
 
   flask.g.db.execute(query, payment=payment_id, payee=payee_id)
 
+
 def post_payment(payment_id, date_posted):
   """Marks the given payment as posted, with the given date."""
   query = sqlalchemy.text("""
@@ -291,6 +313,7 @@ def post_payment(payment_id, date_posted):
   """)
 
   flask.g.db.execute(query, dp=date_posted, pi=payment_id)
+
 
 def void_payment(payment_id):
   """Marks the given payment as posted, with the given date."""
@@ -317,6 +340,7 @@ def void_payment(payment_id):
     transaction.rollback()
     flask.flash("An unexpected error occurred. Please find an IMSS rep.")
 
+
 # these should move to somewhere more global...
 def is_integer(x):
   try:
@@ -325,12 +349,14 @@ def is_integer(x):
     return False
   return True
 
+
 def is_date(x):
   try:
     y = datetime.strptime(x , '%Y-%m-%d')
   except ValueError:
     return False
   return True
+
 
 def is_currency(x):
   try:
@@ -339,10 +365,12 @@ def is_currency(x):
     return False
   return True
 
+
 #TODO length contraints?
 def validate_expense(budget_id, date_incurred, amount, description):
   return (is_integer(budget_id) and is_date(date_incurred) and
     is_currency(amount) and len(description) > 0)
+
 
 def validate_payment(payment_type, account_id, check_no):
   valid_payment_type = payment_type in get_payment_types()
@@ -351,11 +379,13 @@ def validate_payment(payment_type, account_id, check_no):
   return (valid_payment_type and is_integer(account_id) and
     not(is_check and not is_integer(check_no)))
 
+
 def validate_payee(payee_id, payee_name):
   # TODO also check that the new payee isn't actually an old one...
   existing_payee = is_integer(payee_id)
   new_payee = len(payee_name) > 0
   return (existing_payee != new_payee)
+
 
 def test_predicates(triplets):
   return [err for pred, guard, err in triplets if guard and not pred]

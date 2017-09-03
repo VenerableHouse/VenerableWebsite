@@ -3,41 +3,26 @@
 
 {% block body %}
 
-<!--
+<h2>Budget Tools</h2>
 
-Access entries were:
-  Account Summary
-  Add Expense
-  Budget Summary
-  Check Summary
-  Term Report
-  Uncashed Checks
-  Write Checks
-  Year Report
+<h3>Inspect</h3>
 
-Pages should be:
-  Add expense
-  do payments
-  view expenses
-  view payments
-  view budget/account summaries
-  record check deposits
+<ul>
+  <li><a href="{{ url_for('budget.route_summary') }}">Accounts/Budgets</a></li>
+  <li><a href="{{ url_for('budget.route_expenses') }}">Expenses</a></li>
+  <li><a href="{{ url_for('budget.route_payments') }}">Payments</a></li>
+  <!-- TODO year summary? -->
+  <!-- TODO term report! -->
+</ul>
 
-  make new fiscal year / budgets
-  edit budget amounts
+<h3>Modify</h3>
 
--->
-
-<a href="{{ url_for('budget.route_add_expense') }}">Add Expense</a>
-<br>
-<a href="{{ url_for('budget.route_unpaid') }}">Do Payments</a>
-<br>
-<a href="{{ url_for('budget.route_expenses') }}">View Expenses</a>
-<br>
-<a href="{{ url_for('budget.route_payments') }}">View Payments</a>
-<br>
-<a href="{{ url_for('budget.route_summary') }}">View Account/Budget Summaries</a>
-<br>
-<a href="{{ url_for('budget.route_checks') }}">Post/Void Non-Deposited Checks</a>
+<ul>
+  <li><a href="{{ url_for('budget.route_add_expense') }}">Add Expenses</a></li>
+  <li><a href="{{ url_for('budget.route_unpaid') }}">Do Payments</a></li>
+  <li><a href="{{ url_for('budget.route_checks') }}">Non-Deposited Checks</a></li>
+  <!-- make new fiscal year -->
+  <!-- edit budget amounts -->
+</ul>
 
 {% endblock body %}
