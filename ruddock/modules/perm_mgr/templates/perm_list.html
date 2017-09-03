@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<style>
+.perm-container {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: stretch;
+  align-items: stretch;
+  justify-content: space-between   
+}
+</style>
+{% endblock head %}
+
+{% block body %}
+<div class="perm-container">
+  {% if office_perms %}
+  <div>
+    <h2>Office Permissions</h2>
+    Click an office to edit its permissions.
+    <table>
+
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Permissions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for r in office_perms %}
+        <tr>
+          <td>{{ r["name"] }}</td>
+          <td>{{ ", ".join(r["perms"]) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+  {% endif %}
+
+  {% if user_perms %}
+  <div>
+    <h2>User Permissions</h2>
+    Click a user to edit their permissions.
+    <table>
+
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Permissions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for r in user_perms %}
+        <tr>
+          <td>{{ r["name"] }}</td>
+          <td>{{ ", ".join(r["perms"]) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock body %}
