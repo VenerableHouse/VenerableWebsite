@@ -53,6 +53,12 @@ def update_comment(prefrosh_id):
   helpers.update_votes(prefrosh_id, flask.request.form)
   return flask.redirect(flask.url_for("rotation.show_prefrosh", prefrosh_id=prefrosh_id))
 
+@blueprint.route('/compute_buckets', methods=['POST'])
+@login_required(Permissions.ROTATION)
+def compute_buckets():
+  helpers.compute_buckets()
+  return flask.redirect(flask.url_for("rotation.show_portal"))
+
 @blueprint.route('/move')
 @login_required(Permissions.ROTATION)
 def move():

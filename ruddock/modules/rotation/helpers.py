@@ -3,7 +3,7 @@ import sqlalchemy
 import cgi
 
 DINNERS = range(1, 9)
-BUCKETS = ['000', '-2', '-1', '0', '0.5', '1', '1.5', '2', '3']
+BUCKETS = ['-2', '-1', '0', '0.5', '1', '1.5', '2', '3']
 VOTE_TUPLES = [
   {'vote_value': -2, 'vote_string': 'votes_neg_two'},
   {'vote_value': -1, 'vote_string': 'votes_neg_one'},
@@ -30,6 +30,7 @@ def get_prefrosh_by_dinner(dinner_id):
       bucket_name, votes_neg_two, votes_neg_one, votes_zero,
       votes_plus_one, votes_plus_two, votes_plus_three, comments
     FROM rotation_prefrosh NATURAL JOIN rotation_buckets WHERE dinner = (:d)
+    ORDER BY last_name
     """)
   raw = flask.g.db.execute(query, d=dinner_id).fetchall()
   return postprocess_prefrosh_data(raw)
@@ -40,6 +41,7 @@ def get_prefrosh_by_bucket(bucket_name):
     bucket_name, votes_neg_two, votes_neg_one, votes_zero,
       votes_plus_one, votes_plus_two, votes_plus_three, comments
     FROM rotation_prefrosh NATURAL JOIN rotation_buckets WHERE bucket_name = (:b)
+    ORDER BY last_name
     """)
   raw = flask.g.db.execute(query, b=bucket_name).fetchall()
   return postprocess_prefrosh_data(raw)
@@ -50,6 +52,7 @@ def get_all_prefrosh():
       bucket_name, votes_neg_two, votes_neg_one, votes_zero,
       votes_plus_one, votes_plus_two, votes_plus_three, comments
     FROM rotation_prefrosh NATURAL JOIN rotation_buckets
+    ORDER BY last_name
     """)
   raw = flask.g.db.execute(query).fetchall()
   return postprocess_prefrosh_data(raw)
@@ -89,6 +92,61 @@ def update_votes(prefrosh_id, votes):
     p3=votes['votes_plus_three'],
     pid=prefrosh_id
   )
+
+def smoothed_average(row):
+    sum_votes = 0
+    num_votes = 0
+
+    for t in VOTE_TUPLES:
+      val = t['vote_value']
+      num = row[t['vote_string']]
+      sum_votes += val * num
+      num_votes += num
+
+    # By adding constants to the numerator and denominator, we smooth out the
+    # distribution of prefrosh ratings, as well as avoid dividing by zero.
+    return (sum_votes + 1.0) / (num_votes + 1.0)
+
+def compute_buckets():
+  query = sqlalchemy.text("""
+    SELECT prefrosh_id,
+           votes_neg_two,
+           votes_neg_one,
+           votes_zero,
+           votes_plus_one,
+           votes_plus_two,
+           votes_plus_three
+    FROM rotation_prefrosh
+  """)
+  results = flask.g.db.execute(query).fetchall()
+
+  query2 = sqlalchemy.text("""
+    SELECT bucket_id, bucket_name
+    FROM rotation_buckets
+  """)
+  buckets = flask.g.db.execute(query2).fetchall()
+  buckets = {r['bucket_id']:float(r['bucket_name']) for r in buckets}
+
+  update = sqlalchemy.text("""
+    UPDATE rotation_prefrosh
+    SET bucket_id=(:bid)
+    WHERE prefrosh_id=(:pid)
+  """)
+  # TODO this _cannot_ be efficient... how can I do a bulk insert in SQL Alchemy?
+  for r in results:
+    pid = r['prefrosh_id']
+    avg = smoothed_average(r)
+
+    best_match_idx = 0
+    best_error = 100000
+    for i in buckets:
+      error = abs(avg - buckets[i])
+      # The second case is for breaking an exact tie, like 2.5 between 2 and 3
+      if (error < best_error) or (error == best_error and avg < buckets[i]):
+        best_error = error
+        best_match_idx = i
+
+    flask.g.db.execute(update, bid=best_match_idx, pid=pid)
 
 def format_name(first, last, preferred):
   name_parts = []

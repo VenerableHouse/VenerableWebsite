@@ -16,6 +16,11 @@
     <a href="{{ url_for('rotation.show_prefrosh_list') }}">All Prefrosh</a>
   </div>
   <div class="menuItem">
+    <h2>Compute Buckets</h2>
+    <form action = "{{ url_for('rotation.compute_buckets') }}" method = "post">
+        <input type="submit" value="Go!">
+    </form>
+    <br>
     <h2>Move Prefrosh</h2>
     <form action="{{ url_for('rotation.move') }}" method="get" id="bucket_form">
       <label>Old Bucket:</label>
@@ -32,7 +37,7 @@
         {% endfor %}
       </select>
       <br>
-      <input type="submit">
+      <input type="submit" value="Compare Buckets">
     </form>
   </div>
 </div>
