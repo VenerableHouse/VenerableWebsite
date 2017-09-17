@@ -1,6 +1,8 @@
 """Default website configurations, used only for testing.
 """
 
+import os
+
 from ruddock import environment
 
 TEST = environment.Environment(
@@ -10,4 +12,7 @@ TEST = environment.Environment(
     db_password="public",
     debug=True,
     testing=True,
-    secret_key="1234567890")
+    secret_key="1234567890",
+    media_folder=os.path.abspath("media"))
+
+#TODO is there a better way of getting media_folder?

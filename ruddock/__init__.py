@@ -63,6 +63,7 @@ def init(environment_name):
   app.config["DEBUG"] = environment.debug
   app.config["TESTING"] = environment.testing
   app.config["SECRET_KEY"] = environment.secret_key
+  app.config["MEDIA_FOLDER"] = environment.media_folder;
 
   # Maximum file upload size, in bytes.
   app.config["MAX_CONTENT_LENGTH"] = constants.MAX_CONTENT_LENGTH

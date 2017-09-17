@@ -30,9 +30,10 @@ def show_prefrosh_list():
 @blueprint.route('/images/<int:prefrosh_id>')
 @login_required(Permissions.ROTATION)
 def serve_image(prefrosh_id):
-  img_contents = helpers.get_image_contents(prefrosh_id)
-  return flask.Response(response=io.BytesIO(img_contents), status='200 OK',
-            headers=None, mimetype='image/jpeg', content_type='image/jpeg')
+  """Retrieves a prefrosh's picture."""
+  img_name = helpers.get_image_name(prefrosh_id)
+  dir_name = flask.current_app.config["MEDIA_FOLDER"] + "/prefrosh_pics"
+  return flask.send_from_directory(dir_name, img_name);
 
 @blueprint.route('/prefrosh/<int:prefrosh_id>')
 @login_required(Permissions.ROTATION)

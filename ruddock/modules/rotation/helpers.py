@@ -54,11 +54,13 @@ def get_all_prefrosh():
   raw = flask.g.db.execute(query).fetchall()
   return postprocess_prefrosh_data(raw)
 
-def get_image_contents(prefrosh_id):
+
+def get_image_name(prefrosh_id):
+  """Return the filename of the image for the specified prefrosh."""
   query = sqlalchemy.text("""
-    SELECT image FROM rotation_prefrosh WHERE prefrosh_id = (:pid)
+    SELECT image_name FROM rotation_prefrosh WHERE prefrosh_id = (:pid)
     """)
-  return flask.g.db.execute(query, pid=prefrosh_id).first()['image']
+  return flask.g.db.execute(query, pid=prefrosh_id).first()['image_name']
 
 def update_comments(prefrosh_id, comments):
   query = sqlalchemy.text("""
