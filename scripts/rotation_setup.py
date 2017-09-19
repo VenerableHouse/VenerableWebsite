@@ -10,9 +10,10 @@ the dinner values for each prefrosh.
 usage: python rotation_setup.py --env ENV /path/to/images/
 """
 
-import sqlalchemy
-import os
 import argparse
+import csv
+import os
+import sqlalchemy
 try:
   from ruddock import config
 except ImportError:
@@ -26,10 +27,13 @@ parser.add_argument("--env", default="dev",
   help="Environment to run application in. Can be 'prod', 'dev', or 'test'. "
       + "Default is 'dev'.")
 parser.add_argument('imgpath', metavar='imgpath', type=str,
-  help="Image path to pull prefrosh images from.")
+  help="Image path to pull prefrosh images from. Must be an exact copy of the"
+       "MEDIA_FOLDER/prefrosh folder.")
+parser.add_argument('csvfile', metavar='csvfile', type=str,
+  help="CSV file to pull prefrosh information from.")
 
 
-if __name__ == "__main__":
+def main():
   args = parser.parse_args()
   if args.env == "prod" and hasattr(config, "PROD"):
     db_uri = config.PROD.db_uri
@@ -59,20 +63,75 @@ if __name__ == "__main__":
     """)
     db.execute(query, b=bucket)
 
-  # grab the bucket_id for the 000 bucket, since this is the default bucket
+  # grab the bucket_id for the 1 bucket, since this is the default bucket
+  # due to our smoothing method
   query = sqlalchemy.text("""
-    SELECT bucket_id FROM rotation_buckets WHERE bucket_name = '000'
+    SELECT bucket_id FROM rotation_buckets WHERE bucket_name = '1'
     """)
   bucket_id = db.execute(query).first()['bucket_id']
 
-  # import the prefrosh from the image directory
-  for filename in os.listdir(args.imgpath):
-    full_name = os.path.splitext(filename)
-    last, dash, first = full_name[0].partition('-')
-    with open(args.imgpath + filename, 'rb') as f:
-      img_data = f.read()
-    query = sqlalchemy.text("""
-    INSERT INTO rotation_prefrosh (first_name, last_name, image, bucket_id)
-    VALUES (:first, :last, :img_data, :bid)
-    """)
-    db.execute(query, first=first, last=last, img_data=img_data, bid=bucket_id)
+  # import the prefrosh from the csv
+  with open(args.csvfile, 'rb') as csvfile:
+    reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+    reader.next()  # skip the header row
+    for row in reader:
+        # DEAR FUTURE READER: when the columns change, just edit this
+        last_name = row[0]
+        first_name = row[1]
+        preferred_name = row[2] if row[2] != "" else None
+        dinners = row[3:11]
+        dinners = [d.lower() for d in dinners]
+
+        try:
+            ruddock_dinner = dinners.index('ruddock')
+        except ValueError:
+            ruddock_dinner = ask_for_dinner(first_name, last_name)
+
+        # Add more escaping as necessary
+        # TODO if you're feeling fancy, suggest something with low
+        # Levenshtein distance
+        image_name = "{}-{}.jpg".format(last_name, first_name)
+        image_name = image_name.lower().replace(' ', '-')
+
+        if not os.path.isfile(args.imgpath + '/' + image_name):
+            image_name = ask_for_image(last_name, first_name, args.imgpath)
+
+        query = sqlalchemy.text("""
+          INSERT INTO rotation_prefrosh (first_name, last_name,
+            preferred_name, dinner, bucket_id, image_name)
+          VALUES (:first, :last, :pref, :dinner, :bid, :img)
+        """)
+
+        db.execute(query, first=first_name, last=last_name,
+            pref=preferred_name, dinner=ruddock_dinner, bid=bucket_id,
+            img=image_name)
+
+
+def ask_for_dinner(last_name, first_name):
+    print("Could not determine which dinner {} {} is supposed to "
+          "attend.".format(first_name, last_name))
+    while True:
+        resp = raw_input("Please enter a dinner (1-8): ")
+        try:
+            dinner = int(resp)
+            if dinner < 1 or dinner > 8:
+                print("Integer must be between 1 and 8, inclusive.")
+            else:
+                return dinner
+        except ValueError:
+            print("Please enter an integer between 1 and 8, inclusive.")
+
+
+def ask_for_image(last_name, first_name, imgpath):
+    print("Could not determine the name of the image for "
+          "{} {}".format(first_name, last_name))
+    while True:
+        resp = raw_input("Please enter the image name, or NULL if there is "
+                         "no image available: ")
+        if resp == "NULL" or os.path.isfile(imgpath + '/' + resp):
+            return resp
+        else:
+            print("That file does not exist; please try again.")
+
+if __name__ == "__main__":
+    main()
