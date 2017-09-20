@@ -30,7 +30,7 @@
       <tbody>
         {% for r in office_perms %}
         <tr>
-          <td>{{ r["name"] }}</td>
+          <td><a href={{ url_for("perm_mgr.edit_office_permissions", office_id=r["id"]) }}>{{ r["name"] }}</a></td>
           <td>{{ ", ".join(r["perms"]) }}</td>
         </tr>
         {% endfor %}
@@ -56,7 +56,7 @@
       <tbody>
         {% for r in user_perms %}
         <tr>
-          <td>{{ r["name"] }}</td>
+          <td><a href={{ url_for("perm_mgr.edit_user_permissions", user_id=r["id"]) }}>{{ r["name"] }}</a></td>
           <td>{{ ", ".join(r["perms"]) }}</td>
         </tr>
         {% endfor %}
