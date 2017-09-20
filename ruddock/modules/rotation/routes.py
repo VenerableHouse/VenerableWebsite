@@ -6,6 +6,7 @@ from ruddock.resources import Permissions
 from ruddock.decorators import login_required
 from ruddock.modules.rotation import blueprint, helpers
 
+PREFROSH_SUBDIR = "prefrosh_pics"
 
 @blueprint.route('/')
 @login_required(Permissions.ROTATION)
@@ -30,9 +31,10 @@ def show_prefrosh_list():
 @blueprint.route('/images/<int:prefrosh_id>')
 @login_required(Permissions.ROTATION)
 def serve_image(prefrosh_id):
-  img_contents = helpers.get_image_contents(prefrosh_id)
-  return flask.Response(response=io.BytesIO(img_contents), status='200 OK',
-            headers=None, mimetype='image/jpeg', content_type='image/jpeg')
+  """Retrieves a prefrosh's picture."""
+  img_name = helpers.get_image_name(prefrosh_id)
+  dir_name = flask.current_app.config["MEDIA_FOLDER"] + '/' + PREFROSH_SUBDIR
+  return flask.send_from_directory(dir_name, img_name);
 
 @blueprint.route('/prefrosh/<int:prefrosh_id>')
 @login_required(Permissions.ROTATION)
@@ -51,6 +53,12 @@ def update_comment(prefrosh_id):
   helpers.update_comments(prefrosh_id, flask.request.form.get("comments", ""))
   helpers.update_votes(prefrosh_id, flask.request.form)
   return flask.redirect(flask.url_for("rotation.show_prefrosh", prefrosh_id=prefrosh_id))
+
+@blueprint.route('/compute_buckets', methods=['POST'])
+@login_required(Permissions.ROTATION)
+def compute_buckets():
+  helpers.compute_buckets()
+  return flask.redirect(flask.url_for("rotation.show_portal"))
 
 @blueprint.route('/move')
 @login_required(Permissions.ROTATION)

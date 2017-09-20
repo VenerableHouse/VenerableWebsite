@@ -180,7 +180,6 @@ CREATE TABLE rotation_prefrosh (
   first_name VARCHAR(255) NOT NULL,
   last_name VARCHAR(255) NOT NULL,
   preferred_name VARCHAR(255),
-  image LONGBLOB,
   bucket_id INTEGER,
   votes_neg_two INTEGER NOT NULL DEFAULT 0,
   votes_neg_one INTEGER NOT NULL DEFAULT 0,
@@ -191,6 +190,7 @@ CREATE TABLE rotation_prefrosh (
   dinner INTEGER, -- defined in rotation/helpers.py (1-8)
   attended_dinner BOOLEAN,
   comments VARCHAR(60000),
+  image_name VARCHAR(255),
   PRIMARY KEY (prefrosh_id),
   FOREIGN KEY (bucket_id) REFERENCES rotation_buckets (bucket_id)
 );
