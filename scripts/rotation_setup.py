@@ -84,7 +84,7 @@ def main():
 
         try:
             # Dinners are 1-indexed, but the array is 0-indexed
-            ruddock_dinner = dinners.index('ruddock') - 1
+            ruddock_dinner = dinners.index('ruddock') + 1
         except ValueError:
             ruddock_dinner = ask_for_dinner(first_name, last_name)
 
