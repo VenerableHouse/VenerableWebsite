@@ -6,6 +6,7 @@ from ruddock.resources import Permissions
 from ruddock.decorators import login_required
 from ruddock.modules.rotation import blueprint, helpers
 
+PREFROSH_SUBDIR = "prefrosh_pics"
 
 @blueprint.route('/')
 @login_required(Permissions.ROTATION)
@@ -32,7 +33,7 @@ def show_prefrosh_list():
 def serve_image(prefrosh_id):
   """Retrieves a prefrosh's picture."""
   img_name = helpers.get_image_name(prefrosh_id)
-  dir_name = flask.current_app.config["MEDIA_FOLDER"] + "/prefrosh_pics"
+  dir_name = flask.current_app.config["MEDIA_FOLDER"] + '/' + PREFROSH_SUBDIR
   return flask.send_from_directory(dir_name, img_name);
 
 @blueprint.route('/prefrosh/<int:prefrosh_id>')
