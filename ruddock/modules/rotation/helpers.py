@@ -20,6 +20,7 @@ def get_dinner_prefrosh_by_prefrosh_id(prefrosh_id):
     votes_plus_two, votes_plus_three, comments
     FROM rotation_prefrosh NATURAL JOIN rotation_buckets WHERE dinner IN
       (SELECT dinner FROM rotation_prefrosh WHERE prefrosh_id = :pid)
+    ORDER BY last_name
     """)
   raw = flask.g.db.execute(query, pid=prefrosh_id).fetchall()
   return postprocess_prefrosh_data(raw)
