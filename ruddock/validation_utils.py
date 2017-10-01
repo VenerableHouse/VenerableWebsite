@@ -7,7 +7,7 @@ from ruddock import constants
 
 username_regex = re.compile(r'^[a-z][a-z0-9_-]*$', re.I)
 name_regex = re.compile(r"^[a-z][a-z '-]{0,30}[a-z]$", re.I)
-uid_regex = re.compile(r'^[0-9]{7}$')
+uid_regex = re.compile(r'^[0-9]{7,8}$')
 year_regex = re.compile(r'^[0-9]{4}$')
 email_regex = re.compile(r'^[a-z0-9\.\_\%\+\-]+@[a-z0-9\.\-]+\.[a-z]+$', re.I)
 
