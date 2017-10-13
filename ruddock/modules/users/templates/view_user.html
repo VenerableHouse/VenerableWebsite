@@ -67,5 +67,8 @@
       <td>{{ info["membership_desc"] }}</td>
     </tr>
   </table>
+  {% if edit_permission %}
+    <!-- add a link to the edit/remove page !-->
+  {% endif %}
 </center>
 {% endblock body %}
