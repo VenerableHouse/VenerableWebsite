@@ -29,14 +29,31 @@ def show_memberlist(search_type):
 @blueprint.route('/view/<username>')
 @login_required()
 def view_profile(username):
-  """Procedure to show a user's profile and membership details."""
-  user_info = helpers.get_user_info(username)
-  offices = helpers.get_office_info(username)
+  """Procedure to show a member's profile and membership details."""
+  if username is not None:
+    user_info = helpers.get_user_info(username)
+    offices = helpers.get_office_info(username)
 
-  if user_info is not None:
-    return flask.render_template('view_user.html',
-        info=user_info,
-        offices=offices,
+    if user_info is not None:
+      return flask.render_template('view_user.html',
+          info=user_info,
+          offices=offices,
+          strftime=time.strftime)
+  flask.abort(httplib.NOT_FOUND)
+
+@blueprint.route('/view_member/<user_id>')
+@login_required()
+def view_member(user_id):
+  """Procedure to show a member's profile and membership details if they have
+  no user account on the website."""
+  member_info = helpers.get_member_info(user_id)
+  if member_info is not None:
+    return flask.render_template(
+        'view_user.html',
+        info=member_info,
+        # No user account means we can't call helpers.get_office_info().
+        # All officers should definitely have an account anyways.
+        offices=[],
         strftime=time.strftime)
   else:
     flask.abort(httplib.NOT_FOUND)

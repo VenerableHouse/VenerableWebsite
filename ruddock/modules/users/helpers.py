@@ -66,3 +66,29 @@ def get_office_info(username):
     ORDER BY start_date, end_date, office_name
   """)
   return flask.g.db.execute(query, u=username).fetchall()
+
+def get_member_info(user_id):
+  """Retrieves a member's info. Intended to be used in the case of a member not
+  having an account on the website, which would make get_user_info
+  impossible."""
+  query = sqlalchemy.text("""
+    SELECT
+      user_id,
+      uid,
+      first_name,
+      last_name,
+      preferred_name,
+      email,
+      member_type,
+      birthday,
+      matriculation_year,
+      graduation_year,
+      msc,
+      phone,
+      building,
+      room_number,
+      major
+    FROM members
+    WHERE user_id=:user_id
+    """)
+  return flask.g.db.execute(query, user_id=user_id).first()

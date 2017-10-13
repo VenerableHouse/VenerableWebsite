@@ -37,6 +37,9 @@ Click on the columns to sort.
     {% if member['username'] is not none %}
     <tr class="link" onclick="location.href='{{ url_for('users.view_profile',
       username=member['username']) }}'">
+    {% elif member['user_id'] is not none %}
+    <tr class="link" onclick="location.href='{{ url_for('users.view_member',
+      user_id=member['user_id']) }}'">
     {% else %}
     <tr>
     {% endif %}
