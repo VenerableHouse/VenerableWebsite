@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<h2>Account Summary</h2>
+<table>
+
+  <thead>
+    <tr>
+      <th>Account Name</th>
+      <th>Current Balance</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for r in a_summary %}
+    <tr>
+      <td>{{ r["account_name"] }}</td>
+      <td>${{ r["bal"] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+
+</table>
+
+
+<h2>Budget Summary</h2>
+
+<table>
+
+  <thead>
+    <tr>
+      <th>Budget Name</th>
+      <th>Starting Amount</th>
+      <th>Spent</th>
+      <th>Remaining</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for r in b_summary %}
+    <tr>
+      <td>{{ r["budget_name"] }}</td>
+      <td>${{ r["starting_amount"] }}</td>
+      <td>${{ r["spent"] }}</td>
+      <td>${{ r["remaining"] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+
+</table>
+
+{% endblock body %}

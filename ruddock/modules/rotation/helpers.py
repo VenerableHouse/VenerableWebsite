@@ -14,6 +14,7 @@ VOTE_TUPLES = [
 ]
 
 def get_dinner_prefrosh_by_prefrosh_id(prefrosh_id):
+  """Returns the prefrosh with the given ID."""
   query = sqlalchemy.text("""
     SELECT prefrosh_id, first_name, preferred_name, last_name, dinner,
     bucket_name, votes_neg_two, votes_neg_one, votes_zero, votes_plus_one,
@@ -25,6 +26,7 @@ def get_dinner_prefrosh_by_prefrosh_id(prefrosh_id):
   return postprocess_prefrosh_data(raw)
 
 def get_prefrosh_by_dinner(dinner_id):
+  """Returns a list of prefrosh attending a particular dinner."""
   query = sqlalchemy.text("""
     SELECT prefrosh_id, first_name, preferred_name, last_name, dinner,
       bucket_name, votes_neg_two, votes_neg_one, votes_zero,
@@ -36,6 +38,7 @@ def get_prefrosh_by_dinner(dinner_id):
   return postprocess_prefrosh_data(raw)
 
 def get_prefrosh_by_bucket(bucket_name):
+  """Returns a list of prefrosh in a particular bucket."""
   query = sqlalchemy.text("""
     SELECT prefrosh_id, first_name, preferred_name, last_name, dinner,
     bucket_name, votes_neg_two, votes_neg_one, votes_zero,
@@ -47,6 +50,7 @@ def get_prefrosh_by_bucket(bucket_name):
   return postprocess_prefrosh_data(raw)
 
 def get_all_prefrosh():
+  """Returns the list of all prefrosh."""
   query = sqlalchemy.text("""
   SELECT prefrosh_id, first_name, preferred_name, last_name, dinner,
       bucket_name, votes_neg_two, votes_neg_one, votes_zero,
@@ -57,7 +61,6 @@ def get_all_prefrosh():
   raw = flask.g.db.execute(query).fetchall()
   return postprocess_prefrosh_data(raw)
 
-
 def get_image_name(prefrosh_id):
   """Return the filename of the image for the specified prefrosh."""
   query = sqlalchemy.text("""
@@ -66,12 +69,14 @@ def get_image_name(prefrosh_id):
   return flask.g.db.execute(query, pid=prefrosh_id).first()['image_name']
 
 def update_comments(prefrosh_id, comments):
+  """Updates the database with new comments."""
   query = sqlalchemy.text("""
     UPDATE rotation_prefrosh SET comments = (:c) WHERE prefrosh_id = (:pid)
     """)
   flask.g.db.execute(query, c=comments, pid=prefrosh_id)
 
 def update_votes(prefrosh_id, votes):
+  """Updates the database with new votes."""
   query = sqlalchemy.text("""
     UPDATE rotation_prefrosh SET
       votes_neg_two = (:m2),
@@ -149,6 +154,7 @@ def compute_buckets():
     flask.g.db.execute(update, bid=best_match_idx, pid=pid)
 
 def format_name(first, last, preferred):
+  """Sticks together the parts of a prefrosh's name, including preferred."""
   name_parts = []
   name_parts.append(first)
   if preferred is not None:
@@ -157,6 +163,7 @@ def format_name(first, last, preferred):
   return " ".join(name_parts)
 
 def get_prefrosh_and_adjacent(prefrosh_id, prefrosh_list):
+  """Returns a prefrosh and the IDs of the neighboring two frosh in the provided list."""
   idx, prefrosh = ((idx, pf) for idx, pf in enumerate(prefrosh_list)
               if pf['prefrosh_id'] == prefrosh_id).next()
   prev_id = prefrosh_list[idx - 1]['prefrosh_id'] if idx > 0 else None
@@ -164,6 +171,7 @@ def get_prefrosh_and_adjacent(prefrosh_id, prefrosh_list):
   return [prefrosh, prev_id, next_id]
 
 def postprocess_prefrosh_data(ls):
+  """Formats names and escapes comments for a prefrosh."""
   prefrosh_list = [dict(pf.items()) for pf in ls]
   for prefrosh in prefrosh_list:
     prefrosh['full_name'] = format_name(
@@ -172,6 +180,7 @@ def postprocess_prefrosh_data(ls):
   return prefrosh_list
 
 def change_bucket(prefrosh_id, new_bucket_name):
+  """Moves a prefrosh to the specified bucket."""
   query = sqlalchemy.text("""
     UPDATE rotation_prefrosh SET bucket_id =
       (SELECT bucket_id FROM rotation_buckets WHERE bucket_name = (:b))
@@ -180,6 +189,7 @@ def change_bucket(prefrosh_id, new_bucket_name):
   flask.g.db.execute(query, b=new_bucket_name, pid=prefrosh_id)
 
 def escape_comments(str):
+  """Escapes comments so they don't mess with HTML formatting."""
   if str is not None:
     # cgi.escape escapes '<', '>', and '&'
     # unicode.escape escapes newlines to '\n'

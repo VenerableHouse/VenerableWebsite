@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+
+{% block body %}
+
+<h2>Process Check</h2>
+<form id="form" action="{{ url_for('budget.route_process_check') }}" method="POST">
+  <label for="payment-id">Payment ID: </label>
+  <input id="payment-id" name="payment-id" type="text">
+  <label for="date-posted">Date Deposited: </label>
+  <input id="date-posted" name="date-posted" type="date">
+  <input type="submit" name="action" value="Post">
+  <input type="submit" name="action" value="Void">
+</form>
+
+<h2>Non-Deposited Checks</h2>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Account</th>
+      <th>Type</th>
+      <th>Amount</th>
+      <th>Date Written</th>
+      <th>Payee</th>
+      <th>Check #</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in checks %}
+    <tr>
+      <td>{{ r["payment_id"] }}</td>
+      <td>{{ r["account_name"] }}</td>
+      <td>{{ ptypes[r["payment_type"]] }}</td>
+      <td>${{ r["amount"] }}</td>
+      <td>{{ r["date_written"] }}</td>
+      <td>{{ r["payee_name"] }}</td>
+      <td>{{ r["check_no"] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock body %}
