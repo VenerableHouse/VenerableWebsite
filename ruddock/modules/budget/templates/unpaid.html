@@ -19,6 +19,10 @@ No client side validation for now. If you submit an invalid request, you'll have
   {% for payee_id, payee_name, total, expenses in expense_groups %}
     <h3>{{ payee_name }}: ${{ total }}</h3>
     <form action="{{ url_for('budget.route_submit_unpaid') }}" method="POST">
+      <!-- hidden input tags so that POST sends this -->
+      <input type="hidden" id="payee-id" name="payee-id" value="{{ payee_id }}">
+      <input type="hidden" name="total" value="{{ total }}">
+      <!-- visible stuff -->
       {{ forms.payment(payment_types, accounts) }}
       <div class="form-row">
         <label for="date-written">Date Written:</label>

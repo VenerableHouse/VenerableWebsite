@@ -1,6 +1,7 @@
 import httplib
 import functools
 import flask
+import inspect
 
 from ruddock import auth_utils
 
@@ -25,5 +26,26 @@ def login_required(permission=None):
           # Abort with an access forbidden HTTP code.
           flask.abort(httplib.FORBIDDEN)
       return fn(*args, **kwargs)
+    return functools.update_wrapper(wrapped_function, fn)
+  return decorator
+
+
+def get_args_from_form():
+  """
+  Extracts arguments from flask.request.form and puts them into the wrapped
+  function as keyword arguments.
+  """
+  def decorator(fn):
+    def wrapped_function():
+
+      # We might need to change the form keys a bit
+      form = flask.request.form
+      modified_form = {k.replace('-', '_'): v for k, v in form.items()}
+
+      # Get function arguments
+      fn_args = inspect.getargspec(fn)[0]
+      kwargs = {k: modified_form.get(k, None) for k in fn_args}
+
+      return fn(**kwargs)
     return functools.update_wrapper(wrapped_function, fn)
   return decorator

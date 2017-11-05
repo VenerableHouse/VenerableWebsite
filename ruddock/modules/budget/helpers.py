@@ -2,7 +2,7 @@ import flask
 import sqlalchemy
 import enum
 
-class PaymentTypes(enum.IntEnum):
+class PaymentType(enum.IntEnum):
   CASH = 1
   CHECK = 2
   DEBIT = 3
@@ -187,3 +187,113 @@ def get_unposted_payments():
   """)
 
   return flask.g.db.execute(query)
+
+# ==== SQL UPDATES ====
+
+def record_expense(budget_id, date_incurred, description, amount, payment_id,
+    payee_id):
+  """Inserts a new expense into the database."""
+
+  query = sqlalchemy.text("""
+    INSERT INTO budget_expenses
+      (budget_id, date_incurred, description, cost, payment_id, payee_id)
+    VALUES
+      ((:b_id), (:d_inc), (:descr), (:cost), (:p_id), (:payee_id))
+  """)
+
+  flask.g.db.execute(
+    query,
+    b_id=budget_id,
+    d_inc=date_incurred,
+    descr=description,
+    cost=amount,
+    p_id=payment_id,
+    payee_id=payee_id
+  )
+
+
+def record_payment(account_id, payment_type, amount, date_written, date_posted,
+    payee_id, check_no):
+  """Inserts a new payment into the database, returning its ID."""
+
+  query = sqlalchemy.text("""
+    INSERT INTO budget_payments
+      (account_id, payment_type, amount, date_written, date_posted, payee_id,
+      check_no)
+    VALUES
+      ((:a_id), (:t), (:amount), (:d_writ), (:d_post), (:payee_id), (:check_no))
+  """)
+
+  result = flask.g.db.execute(
+    query,
+    a_id=account_id,
+    t=payment_type,
+    amount=amount,
+    d_writ=date_written,
+    d_post=date_posted,
+    payee_id=payee_id,
+    check_no=check_no
+  )
+
+  return result.lastrowid
+
+
+def record_new_payee(payee_name):
+  """Inserts a new payee into the database, returning its ID."""
+  query = sqlalchemy.text("""
+    INSERT INTO budget_payees (payee_name)
+    VALUES (:p)
+  """)
+
+  result = flask.g.db.execute(query, p=payee_name)
+  return result.lastrowid
+
+
+def mark_as_paid(payee_id, payment_id):
+  """
+  Assigns the given payment id to all unpaid expenses from the given payee.
+  """
+  query = sqlalchemy.text("""
+    UPDATE budget_expenses
+    SET payment_id = (:payment)
+    WHERE ISNULL(payment_id) AND payee_id = (:payee)
+  """)
+
+  flask.g.db.execute(query, payment=payment_id, payee=payee_id)
+
+
+def post_payment(payment_id, date_posted):
+  """Marks the given payment as posted, with the given date."""
+  query = sqlalchemy.text("""
+    UPDATE budget_payments
+    SET date_posted = (:dp)
+    WHERE payment_id = (:pi)
+  """)
+
+  flask.g.db.execute(query, dp=date_posted, pi=payment_id)
+
+
+def void_payment(payment_id):
+  """Marks the given payment as posted, with the given date."""
+  transaction = flask.g.db.begin()
+  try:
+    # Wipe payment ID from expenses
+    query = sqlalchemy.text("""
+      UPDATE budget_expenses
+      SET payment_id = NULL
+      WHERE payment_id = (:pi)
+    """)
+
+    # Delete payment
+    query2 = sqlalchemy.text("""
+      DELETE FROM budget_payments
+      WHERE payment_id = (:pi)
+    """)
+
+    flask.g.db.execute(query, pi=payment_id)
+    flask.g.db.execute(query2, pi=payment_id)
+    transaction.commit()
+
+  except Exception:
+    transaction.rollback()
+    flask.flash("An unexpected error occurred. Please find an IMSS rep.")

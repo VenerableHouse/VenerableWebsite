@@ -3,8 +3,9 @@ import flask
 from datetime import datetime  # ugh
 
 from ruddock.resources import Permissions
-from ruddock.decorators import login_required
+from ruddock.decorators import login_required, get_args_from_form
 from ruddock.modules.budget import blueprint, helpers
+from helpers import PaymentType
 
 
 @blueprint.route('/')
@@ -68,10 +69,45 @@ def route_add_expense():
 
 @blueprint.route('/add_expense/submit', methods=['POST'])
 @login_required(Permissions.BUDGET)
-def route_submit_expense():
+@get_args_from_form()
+def route_submit_expense(budget_id, date_incurred, amount, description,
+    payee_id, new_payee, payment_type, account_id, check_no, defer_payment):
   """Sends the expense to the database."""
 
-  flask.flash("Not implemented yet, but this didn't crash!")
+  # Checkboxes aren't sent as bools... :(
+  defer_payment = defer_payment is not None
+
+  # TODO validation in an if-else
+
+  transaction = flask.g.db.begin()
+  try:
+    # This next part depends on whether we are deferring payment or not.
+    # If so, then we leave the payment ID null, cause it the corresponding
+    # payment hasn't been made yet. However, we require the payee. If it's a new
+    # payee, we have to insert it into the database first.
+    # If not, then we need to make a new payment, and use its ID. Payee ID is
+    # not needed.
+    if defer_payment:
+      payee_id = payee_id or helpers.record_new_payee(new_payee)
+      payment_id = None
+    else:
+      date_written = date_incurred  # non-deferred payments are instant
+      date_posted = None if payment_type == PaymentType.CHECK else date_written
+
+      payee_id = None
+      payment_id = helpers.record_payment(
+        account_id, payment_type, amount, date_written, date_posted,
+        payee_id, check_no)
+
+    # Either way, record the expense
+    helpers.record_expense(
+        budget_id, date_incurred, description, amount, payment_id, payee_id)
+    transaction.commit()
+    flask.flash("Expense recorded successfully!")
+
+  except Exception:
+      transaction.rollback()
+      flask.flash("An unexpected error occurred. Please find an IMSS rep.")
 
   return flask.redirect(flask.url_for("budget.route_add_expense"))
 
@@ -97,10 +133,29 @@ def route_unpaid():
 
 @blueprint.route('/unpaid/submit', methods=['POST'])
 @login_required(Permissions.BUDGET)
-def route_submit_unpaid():
+@get_args_from_form()
+def route_submit_unpaid(payee_id, total, payment_type, account_id, check_no,
+    date_written):
   """Sends the payment to the database."""
 
-  flask.flash("Not implemented yet, but this didn't crash!")
+  # TODO validation
+
+  # The date posted is the same as the date written unless we're using a check
+  date_posted = None if (payment_type != PaymentType.CHECK) else date_written
+
+  # We use a transaction to make sure we don't submit halfway.
+  transaction = flask.g.db.begin()
+  try:
+    payment_id = helpers.record_payment(
+        account_id, payment_type, total, date_written, date_posted,
+        payee_id, check_no)
+    helpers.mark_as_paid(payee_id, payment_id)
+    transaction.commit()
+    flask.flash("Payment recorded successfully!")
+
+  except Exception:
+    transaction.rollback()
+    flask.flash("An unexpected error occurred. Please find an IMSS rep.")
 
   return flask.redirect(flask.url_for("budget.route_unpaid"))
 
@@ -116,9 +171,20 @@ def route_checks():
 
 @blueprint.route('/checks/submit', methods=['POST'])
 @login_required(Permissions.BUDGET)
-def route_process_check():
-  """Records a check as deposited or voided."""
+@get_args_from_form()
+def route_process_check(payment_id, date_posted, action):
+  """Records a check as deposited."""
 
-  flask.flash("Not implemented yet, but this didn't crash!")
+  # TODO validation
+
+  # Decide what to do
+  if action == "Post":
+    helpers.post_payment(payment_id, date_posted)
+    flask.flash("Payment successfully posted!")
+  elif action == "Void":
+    helpers.void_payment(payment_id)
+    flask.flash("Payment successfully voided!")
+  else:
+    flask.flash("Not a legitimate action!")
 
   return flask.redirect(flask.url_for("budget.route_checks"))
