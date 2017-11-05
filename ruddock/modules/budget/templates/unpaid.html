@@ -2,6 +2,13 @@
 
 {% import "forms.html" as forms %}
 
+
+{% block head %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('budget.static', filename='css/forms.css') }}">
+{% endblock head %}
+
+
 {% block body %}
 
 <h2>Unpaid Expenses</h2>
@@ -13,11 +20,12 @@ No client side validation for now. If you submit an invalid request, you'll have
     <h3>{{ payee_name }}: ${{ total }}</h3>
     <form action="{{ url_for('budget.route_submit_unpaid') }}" method="POST">
       {{ forms.payment(payment_types, accounts) }}
-      <label for="date-written">Date Written:</label>
-      <input type="date" id="date-written" name="date-written" value={{ today }}>
+      <div class="form-row">
+        <label for="date-written">Date Written:</label>
+        <input type="date" id="date-written" name="date-written" value={{ today }}>
+      </div>
 
       <table>
-
         <thead>
           <tr>
             <th>ID</th>
@@ -28,7 +36,6 @@ No client side validation for now. If you submit an invalid request, you'll have
             <th>Amount</th>
           </tr>
         </thead>
-
         <tbody>
           {% for r in expenses %}
             <tr>

@@ -2,8 +2,12 @@
 
 {% import 'forms.html' as forms %}
 
+
 {% block head %}
+
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('budget.static', filename='css/forms.css') }}">
 
 <script>
 function toggle_defer() {
@@ -18,15 +22,19 @@ $(document).ready(function() {
   toggle_defer();
 });
 </script>
+
 {% endblock head %}
+
 
 {% block body %}
 
 <form action="{{ url_for('budget.route_submit_expense') }}" method="POST">
 
   <h2>Expense Info</h2>
-  <label>Fiscal Year: 2018</label>
-  <input type="button" value="Need a different year?" onclick="change_year()">
+  <div class="form-row">
+    <label>Fiscal Year: 2018</label>
+    <input type="button" value="Need a different year?" onclick="change_year()">
+  </div>
   {{ forms.expense(budgets) }}
 
   <h2>Payment Info</h2>

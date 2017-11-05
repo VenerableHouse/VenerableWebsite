@@ -1,16 +1,28 @@
 {% extends "layout.html" %}
 
 
+{% block head %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('budget.static', filename='css/forms.css') }}">
+{% endblock head %}
+
+
 {% block body %}
 
 <h2>Process Check</h2>
 <form id="form" action="{{ url_for('budget.route_process_check') }}" method="POST">
-  <label for="payment-id">Payment ID: </label>
-  <input id="payment-id" name="payment-id" type="text">
-  <label for="date-posted">Date Deposited: </label>
-  <input id="date-posted" name="date-posted" type="date">
-  <input type="submit" name="action" value="Post">
-  <input type="submit" name="action" value="Void">
+  <div class="form-row">
+    <label for="payment-id">Payment ID: </label>
+    <input id="payment-id" name="payment-id" type="text">
+  </div>
+  <div class="form-row">
+    <label for="date-posted">Date Deposited: </label>
+    <input id="date-posted" name="date-posted" type="date">
+  </div>
+  <div class="form-row">
+    <input type="submit" name="action" value="Post">
+    <input type="submit" name="action" value="Void">
+  </div>
 </form>
 
 <h2>Non-Deposited Checks</h2>

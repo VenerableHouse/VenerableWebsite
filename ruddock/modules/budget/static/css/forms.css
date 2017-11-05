@@ -1,0 +1,14 @@
+.form-row {
+	margin: 5px 0px;
+}
+
+.form-row label {
+	width: 8em;
+	float: left;
+	text-align: right;
+	margin-right: 0.5em;
+}
+
+.form-row input, textarea, select {
+	clear: both;
+}

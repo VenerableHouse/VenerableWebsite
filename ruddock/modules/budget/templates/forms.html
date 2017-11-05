@@ -1,19 +1,27 @@
 <!-- Fields for an expense: budget, date incurred, amount, description -->
 {% macro expense(budgets) %}
 
-<label for="budget-id">Budget: </label>
-<select id="budget-id" name="budget-id">
-  <option value="" selected="selected">-- Select Budget --</option>
-  {% for row in budgets %}
-  <option value="{{ row["budget_id"] }}">{{ row["budget_name"] }}</option>
-  {% endfor %}}
-</select>
-<label for="date-incurred">Date Incurred: </label>
-<input type="date" id="date-incurred" name="date-incurred">
-<label for="amount">Amount: </label>
-<input type="text" id="amount" name="amount">
-<label for="description">Description: </label>
-<textarea id="description" name="description"></textarea>
+<div class="form-row">
+  <label for="budget-id">Budget: </label>
+  <select id="budget-id" name="budget-id">
+    <option value="" selected="selected">-- Select Budget --</option>
+    {% for row in budgets %}
+      <option value="{{ row["budget_id"] }}">{{ row["budget_name"] }}</option>
+    {% endfor %}}
+  </select>
+</div>
+<div class="form-row">
+  <label for="date-incurred">Date Incurred: </label>
+  <input type="date" id="date-incurred" name="date-incurred">
+</div>
+<div class="form-row">
+  <label for="amount">Amount: </label>
+  <input type="text" id="amount" name="amount">
+</div>
+<div class="form-row">
+  <label for="description">Description: </label>
+  <textarea id="description" name="description"></textarea>
+</div>
 
 {% endmacro %}
 
@@ -21,22 +29,28 @@
 <!-- Fields for a payment: type, account, check # -->
 {% macro payment(payment_types, accounts) %}
 
-<label for="payment-type">Payment Type: </label>
-<select id="payment-type" name="payment-type">
-  <option value="" selected="selected">-- Select Type --</option>
-  {% for i, t in payment_types.items() %}
-  <option value={{i}}>{{t}}</option>
-  {% endfor %}
-</select>
-<label for="account-id">Account: </label>
-<select id="account-id" name="account-id">
-  <option value="" selected="selected">-- Select Account --</option>
-  {% for row in accounts %}
-  <option value="{{ row["account_id"] }}">{{ row["account_name"] }}</option>
-  {% endfor %}
-</select>
-<label for="check-no">Check #: </label>
-<input type="number" id="check-no" name="check-no">
+<div class="form-row">
+  <label for="payment-type">Payment Type: </label>
+  <select id="payment-type" name="payment-type">
+    <option value="" selected="selected">-- Select Type --</option>
+    {% for i, t in payment_types.items() %}
+      <option value={{i}}>{{t}}</option>
+    {% endfor %}
+  </select>
+</div>
+<div class="form-row">
+  <label for="account-id">Account: </label>
+  <select id="account-id" name="account-id">
+    <option value="" selected="selected">-- Select Account --</option>
+    {% for row in accounts %}
+      <option value="{{ row["account_id"] }}">{{ row["account_name"] }}</option>
+    {% endfor %}
+  </select>
+</div>
+<div class="form-row">
+  <label for="check-no">Check #: </label>
+  <input type="number" id="check-no" name="check-no">
+</div>
 
 {% endmacro %}
 
@@ -44,15 +58,18 @@
 <!-- Fields for payee input, existing or new -->
 {% macro payee(payees) %}
 
-<label for="payee-id">Existing Payee: </label>
-<select id="payee-id" name="payee-id">
-  <option value="" selected="selected">-- Select Payee --</option>
-  {% for row in payees %}
-  <option value="{{ row["payee_id"] }}">{{ row["payee_name"] }}</option>
-  {% endfor %}
-</select>
-<p>OR</p>
-<label for="new-payee">Add a new one: </label>
-<input type="text" id="new-payee" name="new-payee">
+<div class="form-row">
+  <label for="payee-id">Existing Payee: </label>
+  <select id="payee-id" name="payee-id">
+    <option value="" selected="selected">-- Select Payee --</option>
+    {% for row in payees %}
+      <option value="{{ row["payee_id"] }}">{{ row["payee_name"] }}</option>
+    {% endfor %}
+  </select>
+</div>
+<div class="form-row">
+  <label for="new-payee">or add a new one: </label>
+  <input type="text" id="new-payee" name="new-payee">
+</div>
 
 {% endmacro %}
