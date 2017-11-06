@@ -106,11 +106,15 @@ def get_account_summary():
     SELECT account_name,
       initial_balance - IFNULL(SUM(amount), 0) AS bal
     FROM budget_accounts
-      NATURAL LEFT JOIN budget_payments
-    WHERE date_posted IS NOT NULL
+      NATURAL LEFT JOIN (
+        SELECT account_id, amount
+        FROM budget_payments
+        WHERE date_posted IS NOT NULL) AS t
     GROUP BY account_id
     ORDER BY account_name
     """)
+  # you can't pull the WHERE outside the join, because if no payments
+  # have posted, the account won't show up
 
   return flask.g.db.execute(query).fetchall()
 
