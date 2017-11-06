@@ -77,7 +77,22 @@ def route_submit_expense(budget_id, date_incurred, amount, description,
   # Checkboxes aren't sent as bools... :(
   defer_payment = defer_payment is not None
 
-  # TODO validation in an if-else
+  # Server side validation
+  valid_expense = helpers.validate_expense(budget_id, date_incurred, amount,
+      description)
+  valid_payment = helpers.validate_payment(payment_type,
+      account_id, check_no)
+  valid_payee = helpers.validate_payee(payee_id, new_payee)
+
+  errs = helpers.test_predicates((
+    (valid_expense, True,              "Invalid expense."),
+    (valid_payment, not defer_payment, "Invalid payment."),
+    (valid_payee,   defer_payment,     "Invalid payee."  )
+  ))
+
+  if errs:
+    return flask.redirect(flask.url_for("budget.route_add_expense"))
+
 
   transaction = flask.g.db.begin()
   try:
@@ -134,14 +149,26 @@ def route_unpaid():
 @blueprint.route('/unpaid/submit', methods=['POST'])
 @login_required(Permissions.BUDGET)
 @get_args_from_form()
-def route_submit_unpaid(payee_id, total, payment_type, account_id, check_no,
+def route_submit_unpaid(payee_id, payment_type, account_id, check_no,
     date_written):
   """Sends the payment to the database."""
 
-  # TODO validation
-
   # The date posted is the same as the date written unless we're using a check
   date_posted = None if (payment_type != PaymentType.CHECK) else date_written
+
+  # Server side validation
+  amount = helpers.get_unpaid_amount(payee_id)
+  valid_payment = helpers.validate_payment(payment_type, account_id, check_no)
+  has_expenses = (amount is not None)
+
+  errs = helpers.test_predicates((
+    (valid_payment, True, "Invalid payment."),
+    (has_expenses,  True, "This payee has no expenses to reimburse."),
+  ))
+
+  if errs:
+    return flask.redirect(flask.url_for("budget.route_unpaid"))
+
 
   # We use a transaction to make sure we don't submit halfway.
   transaction = flask.g.db.begin()
@@ -175,7 +202,18 @@ def route_checks():
 def route_process_check(payment_id, date_posted, action):
   """Records a check as deposited."""
 
-  # TODO validation
+  # Server side validation
+  unposted_ids = [str(x["payment_id"]) for x in helpers.get_unposted_payments()]
+
+  errs = helpers.test_predicates((
+    (payment_id in unposted_ids, True,             "Not a valid payment ID!"),
+    (date_posted != "",          action == "Post", "No date entered!"       )
+  ))
+
+  # If any of the validation failed
+  if errs:
+    return flask.redirect(flask.url_for("budget.route_checks"))
+
 
   # Decide what to do
   if action == "Post":

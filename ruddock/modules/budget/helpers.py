@@ -2,6 +2,8 @@ import flask
 import sqlalchemy
 import enum
 
+import ruddock.validation_utils as vu
+
 class PaymentType(enum.IntEnum):
   CASH = 1
   CHECK = 2
@@ -9,6 +11,10 @@ class PaymentType(enum.IntEnum):
   ONLINE = 4
   TRANSFER = 5
   OTHER = 6
+
+  @classmethod
+  def has_value(cls, value):
+    return value in [x.value for x in cls]
 
 __PTYPE_STRS = ['Cash', 'Check', 'Debit', 'Online', 'Transfer', 'Other']
 
@@ -178,6 +184,22 @@ def get_unpaid_expenses():
   return map(make_tuple, unpaid_payees)
 
 
+def get_unpaid_amount(payee_id):
+  """Returns the amount owed to the given payee, or None if they have no
+     outstanding expenses."""
+  query = sqlalchemy.text("""
+    SELECT SUM(cost) AS total
+    FROM budget_expenses
+    WHERE payee_id = (:p) AND ISNULL(payment_id)
+    GROUP BY NULL
+  """)
+
+  result = flask.g.db.execute(query, p=payee_id).first()
+  total = result["total"]
+
+  return total
+
+
 def get_unposted_payments():
   """Returns all payments that haven't been posted."""
   query = sqlalchemy.text("""
@@ -301,3 +323,43 @@ def void_payment(payment_id):
   except Exception:
     transaction.rollback()
     flask.flash("An unexpected error occurred. Please find an IMSS rep.")
+
+# ==== VALIDATION ====
+
+def test_predicates(triplets, flash=True):
+  """Makes validation methods more readable."""
+  errs = [err for pred, guard, err in triplets if guard and not pred]
+
+  if flash:
+    for e in errs:
+      flask.flash(e)
+
+  return errs
+
+
+def validate_expense(budget_id, date_incurred, amount, description):
+  valid = True
+  valid &= vu.validate_integer(budget_id, flash_errors=False)
+  valid &= vu.validate_date(date_incurred, flash_errors=False)
+  valid &= vu.validate_currency(amount, flash_errors=False)
+  valid &= len(description) > 0
+
+  return valid
+
+
+def validate_payment(payment_type, account_id, check_no):
+  valid = True
+  valid &= PaymentType.has_value(payment_type)
+  valid &= vu.validate_integer(account_id, flash_errors=False)
+  if payment_type == PaymentType.CHECK:
+    valid &= vu.validate_integer(check_no, flash_errors=False)
+
+  return valid
+
+
+def validate_payee(payee_id, payee_name):
+  # TODO also check that the new payee isn't actually an old one...
+  # This one's a bit unusual, we want a valid old payee XOR a valid new one
+  existing_payee = vu.validate_integer(payee_id, flash_errors=False)
+  new_payee = len(payee_name) > 0
+  return (existing_payee != new_payee)
