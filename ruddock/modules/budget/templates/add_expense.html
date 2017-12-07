@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% import 'forms.html' as forms %}
+
+
+{% block head %}
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('budget.static', filename='css/forms.css') }}">
+
+<script>
+function toggle_defer() {
+
+  var deferred = $("#defer-payment").is(':checked');
+
+  $("#deferred-payment").toggle(deferred);
+  $("#direct-payment").toggle(!deferred);
+}
+
+$(document).ready(function() {
+  toggle_defer();
+});
+</script>
+
+{% endblock head %}
+
+
+{% block body %}
+
+<form action="{{ url_for('budget.route_submit_expense') }}" method="POST">
+
+  <h2>Expense Info</h2>
+  <div class="form-row">
+    <label>Fiscal Year: 2018</label>
+    <input type="button" value="Need a different year?" onclick="change_year()">
+  </div>
+  {{ forms.expense(budgets) }}
+
+  <h2>Payment Info</h2>
+    <label for="defer-payment">Defer Payment?</label>
+    <input type="checkbox" id="defer-payment" name="defer-payment" onclick="toggle_defer()">
+  <div id="direct-payment">
+    {{ forms.payment(payment_types, accounts) }}
+  </div>
+  <div id="deferred-payment">
+    {{ forms.payee(payees) }}
+  </div>
+
+<input type="submit" value="Record Expense">
+
+</form>
+
+{% endblock body %}

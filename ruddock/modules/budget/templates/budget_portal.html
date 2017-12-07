@@ -1,0 +1,28 @@
+<!-- TODO this is conflicting with the rotation portal! what gives? -->
+{% extends "layout.html" %}
+
+{% block body %}
+
+<h2>Budget Tools</h2>
+
+<h3>Inspect</h3>
+
+<ul>
+  <li><a href="{{ url_for('budget.route_summary') }}">Accounts/Budgets</a></li>
+  <li><a href="{{ url_for('budget.route_expenses') }}">Expenses</a></li>
+  <li><a href="{{ url_for('budget.route_payments') }}">Payments</a></li>
+  <!-- TODO year summary? -->
+  <!-- TODO term report! -->
+</ul>
+
+<h3>Modify</h3>
+
+<ul>
+  <li><a href="{{ url_for('budget.route_add_expense') }}">Add Expenses</a></li>
+  <li><a href="{{ url_for('budget.route_unpaid') }}">Do Payments</a></li>
+  <li><a href="{{ url_for('budget.route_checks') }}">Non-Deposited Checks</a></li>
+  <!-- make new fiscal year -->
+  <!-- edit budget amounts -->
+</ul>
+
+{% endblock body %}

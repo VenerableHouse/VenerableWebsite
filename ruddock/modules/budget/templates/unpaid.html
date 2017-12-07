@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+
+{% import "forms.html" as forms %}
+
+
+{% block head %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('budget.static', filename='css/forms.css') }}">
+{% endblock head %}
+
+
+{% block body %}
+
+<h2>Unpaid Expenses</h2>
+<hr>
+No client side validation for now. If you submit an invalid request, you'll have to start again.
+<hr>
+{% if expense_groups %}
+  {% for payee_id, payee_name, total, expenses in expense_groups %}
+    <h3>{{ payee_name }}: ${{ total }}</h3>
+    <form action="{{ url_for('budget.route_submit_unpaid') }}" method="POST">
+      <!-- hidden input tags so that POST sends this -->
+      <input type="hidden" id="payee-id" name="payee-id" value="{{ payee_id }}">
+      <!-- visible stuff -->
+      {{ forms.payment(payment_types, accounts) }}
+      <div class="form-row">
+        <label for="date-written">Date Written:</label>
+        <input type="date" id="date-written" name="date-written" value={{ today }}>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Budget</th>
+            <th>FY</th>
+            <th>Date Incurred</th>
+            <th>Description</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in expenses %}
+            <tr>
+              <td>{{ r["expense_id"] }}</td>
+              <td>{{ r["budget_name"] }}</td>
+              <td>{{ r["fyear_num"] }}</td>
+              <td>{{ r["date_incurred"] }}</td>
+              <td>{{ r["description"].decode("utf8") }}</td>
+              <td>${{ r["cost"] }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <input type="submit" value="Record Payment">
+    </form>
+    <hr>
+  {% endfor %}
+{% else %}
+  <h3>All expenses have been paid!</h3>
+{% endif %}
+
+{% endblock body %}

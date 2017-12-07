@@ -2,6 +2,7 @@ import re
 import datetime
 import flask
 import sqlalchemy
+import decimal
 
 from ruddock import constants
 
@@ -126,5 +127,30 @@ def validate_date(date, flash_errors=True):
   except ValueError:
     if flash_errors:
       flask.flash('Invalid date provided. Make sure dates are in YYYY-MM-DD format.')
+    return False
+  return True
+
+def validate_integer(x, flash_errors=True):
+  """
+  Validates integer string.
+  """
+  try:
+    int(x)
+  except ValueError:
+    if flash_errors:
+      flask.flash('Invalid integer provided.')
+    return False
+  return True
+
+def validate_currency(curr, flash_errors=True):
+  """
+  Validates currency string. Should be a decimal with at most 2 digits after
+  the point.
+  """
+  try:
+    decimal.Decimal(curr)
+  except decimal.InvalidOperation:
+    if flash_errors:
+      flask.flash('Invalid currency provided.')
     return False
   return True

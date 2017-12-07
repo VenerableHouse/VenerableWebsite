@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<h2>Payment List</h2>
+<table>
+
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Account</th>
+      <th>Type</th>
+      <th>Amount</th>
+      <th>Date Written</th>
+      <th>Date Posted</th>
+      <th>Payee</th>
+      <th>Check #</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for r in payments %}
+    <tr>
+      <td>{{ r["payment_id"] }}</td>
+      <td>{{ r["account_name"] }}</td>
+      <td>{{ ptypes[r["payment_type"]] }}</td>
+      <td>${{ r["amount"] }}</td>
+      <td>{{ r["date_written"] }}</td>
+      <td>{{ r["date_posted"] }}</td>
+      <td>{{ r["payee_name"] }}</td>
+      <td>{{ r["check_no"] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+
+</table>
+
+{% endblock body %}
