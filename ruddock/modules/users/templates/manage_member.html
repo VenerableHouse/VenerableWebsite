@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+
+{% block body %}
+ <h1>Member: {{ info["name"] }}</h1>
+
+<h3>Edit</h3>
+To edit this member, fill in the fields that should be changed below and then
+click submit.
+<form action="{{ url_for('users.manage_member', user_id=user_id) }}" method="post">
+  <table>
+    <tr>
+      <td>UID</td>
+      <td><input type="text" name="uid"></td>
+    </tr>
+    <tr>
+      <td>First Name</td>
+      <td><input type="text" name="first_name"></td>
+    </tr>
+    <tr>
+      <td>Last Name</td>
+      <td><input type="text" name="last_name"></td>
+    </tr>
+    <tr>
+      <td>Preferred Name</td>
+      <td><input type="text" name="preferred_name"></td>
+    </tr>
+    <tr>
+      <td>Email</td>
+      <td><input type="text" name="email"></td>
+    </tr>
+    <tr>
+      <td>Membership Type</td>
+      <td>
+        <select name="member_type">
+          <!-- The default value of empty string is important because unchanged
+               values are detected as empty strings behind the scenes. -->
+          <option value=""></option>
+          <option value="1">Full Member</option>
+          <option value="2">Social Member</option>
+          <option value="3">Associate Member</option>
+          <option value="4">Resident Associate (RA)</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Birthday</td>
+      <td><input type="date" name="birthday"></td>
+    </tr>
+    <tr>
+      <td>Matriculation Year</td>
+      <!-- For years, we can actually kind of validate input at this stage
+          by using input type="number" and doing a range check. -->
+      <td><input type="number" min="1900" max="3000" step="1" name="matriculation_year"></td>
+    </tr>
+    <tr>
+      <td>Graduation Year</td>
+      <td><input type="number" min="1900" max="3000" step="1" name="graduation_year"></td>
+    </tr>
+    <tr>
+      <td>Mail Stop Code (MSC)</td>
+      <td><input type="number" min="0" step="1" name="msc"></td>
+    </tr>
+    <tr>
+      <td>Phone Number</td>
+      <td><input type="text" name="phone"></td>
+    </tr>
+    <tr>
+      <td>Building</td>
+      <td><input type="text" name="building"></td>
+    </tr>
+    <tr>
+      <td>Room Number</td>
+      <td><input type="text" name="room_number"></td>
+    </tr>
+    <tr>
+      <td>Major</td>
+      <td><input type="text" name="major"></td>
+    </tr>
+  </table>
+  <br>
+  <input name="edit" type="submit" value="Submit">
+</form>
+<br>
+
+<h3>Remove</h3>
+To remove this member, click the button below.
+<br>
+<form action="{{ url_for('users.manage_member', user_id=user_id) }}" method="post">
+    <br>
+    <input name="remove" type="submit" value="Remove">
+</form>
+{% endblock body %}

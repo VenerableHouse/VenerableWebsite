@@ -67,8 +67,12 @@
       <td>{{ info["membership_desc"] }}</td>
     </tr>
   </table>
+  <br>
+  <br>
   {% if edit_permission %}
-    <!-- add a link to the edit/remove page !-->
+  <form action="{{ url_for('users.manage_member', user_id=user_id) }}">
+  <button type="submit">Edit/Remove Member</button>
+  </form>
   {% endif %}
 </center>
 {% endblock body %}
