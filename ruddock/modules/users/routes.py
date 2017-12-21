@@ -28,44 +28,26 @@ def show_memberlist(search_type):
       memberlist=memberlist,
       search_type=search_type)
 
-@blueprint.route('/view/<username>')
-@login_required()
-def view_profile(username):
-  """Procedure to show a member's profile and membership details."""
-  if username is not None:
-    user_info = helpers.get_user_info(username)
-    offices = helpers.get_office_info(username)
-
-    if user_info is not None:
-      return flask.render_template('view_user.html',
-          info=user_info,
-          offices=offices,
-          strftime=time.strftime,
-          edit_permission=auth_utils.check_permission(Permissions.USERS),
-          user_id=helpers.get_user_id_from_username(username))
-  flask.abort(httplib.NOT_FOUND)
-
-@blueprint.route('/view_member/<user_id>')
+@blueprint.route('/view/user_id=<user_id>')
 @login_required()
 def view_member(user_id):
   """Procedure to show a member's profile and membership details if they have
   no user account on the website."""
-  member_info = helpers.get_member_info(user_id)
-  if member_info is not None:
-    return flask.render_template(
-        'view_user.html',
-        info=member_info,
-        # No user account means we can't call helpers.get_office_info().
-        # Hopefully, all officers have an account, although I still think
-        # this is something worth changing.
-        offices=[],
-        strftime=time.strftime,
-        edit_permission=auth_utils.check_permission(Permissions.USERS),
-        user_id=user_id)
-  else:
-    flask.abort(httplib.NOT_FOUND)
+  if user_id is not None:
+    member_info = helpers.get_member_info(user_id)
+    offices = helpers.get_office_info(user_id)
 
-@blueprint.route('/manage_member/user_id=<user_id>', methods=['GET', 'POST'])
+    if member_info is not None:
+      return flask.render_template(
+          'view_user.html',
+          info=member_info,
+          offices=offices,
+          strftime=time.strftime,
+          edit_permission=auth_utils.check_permission(Permissions.USERS),
+          user_id=user_id)
+  flask.abort(httplib.NOT_FOUND)
+
+@blueprint.route('/manage/user_id=<user_id>', methods=['GET', 'POST'])
 @login_required(Permissions.USERS)
 def manage_member(user_id):
   """Procedure to edit a member in the database if the user browsing the

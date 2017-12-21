@@ -16,8 +16,8 @@
       {# Now, display each row #}
       {% for position in positions %}
         {# Yes, jinja2 has a test called 'none' and it's not spelled 'None' #}
-        {% if position['username'] is not none %}
-        <tr class="link" onclick="location.href='{{ url_for('users.view_profile', username=position['username']) }}'">
+        {% if position['user_id'] is not none %}
+        <tr class="link" onclick="location.href='{{ url_for('users.view_member', user_id=position['user_id']) }}'">
         {% else %}
         <tr>
         {% endif %}

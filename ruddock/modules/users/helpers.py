@@ -41,15 +41,15 @@ def get_user_info(username):
   else:
     return None
 
-def get_office_info(username):
+def get_office_info(user_id):
   """Procedure to get a user's officer info."""
   query = sqlalchemy.text("""
     SELECT office_name, start_date, end_date
-    FROM office_assignments NATURAL JOIN users NATURAL JOIN offices
-    WHERE username = :u
+    FROM office_assignments NATURAL JOIN members NATURAL JOIN offices
+    WHERE user_id = :u
     ORDER BY start_date, end_date, office_name
   """)
-  return flask.g.db.execute(query, u=username).fetchall()
+  return flask.g.db.execute(query, u=user_id).fetchall()
 
 def get_user_id_from_username(username):
   """

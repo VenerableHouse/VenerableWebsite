@@ -18,6 +18,7 @@ def login_submit():
     user_id = helpers.authenticate(username, password)
     if user_id is not None:
       permissions = auth_utils.get_permissions(username)
+      flask.session['user_id'] = user_id
       flask.session['username'] = username
       flask.session['permissions'] = permissions
       # True if there's any reason to show a link to the admin interface.

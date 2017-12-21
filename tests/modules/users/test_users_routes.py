@@ -16,11 +16,11 @@ def test_show_memberlist(client):
   response = client.get(flask.url_for('users.show_memberlist'))
   assert response.status_code == httplib.OK
 
-def test_view_profile(client):
+def test_view_member(client):
   """Tests that viewing a user works."""
-  username = "twilight"
+  user_id = 1
   with client.session_transaction() as session:
     utils.login(session)
   response = client.get(
-      flask.url_for('users.view_profile', username=username))
+      flask.url_for('users.view_member', user_id=user_id))
   assert response.status_code == httplib.OK
