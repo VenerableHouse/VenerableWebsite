@@ -33,14 +33,6 @@ def get_memberlist(search_type):
     """.format(tables))
   return flask.g.db.execute(query).fetchall()
 
-def get_user_info(username):
-  """Retrieves a user's info from their username."""
-  user_id = get_user_id_from_username(username)
-  if user_id is not None:
-    return get_member_info(user_id)
-  else:
-    return None
-
 def get_office_info(user_id):
   """Procedure to get a user's officer info."""
   query = sqlalchemy.text("""

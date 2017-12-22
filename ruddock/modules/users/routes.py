@@ -2,7 +2,6 @@ import time
 import httplib
 import flask
 import sqlalchemy
-import sys
 
 from ruddock import auth_utils
 from ruddock.decorators import login_required
