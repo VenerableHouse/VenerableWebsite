@@ -2,13 +2,10 @@ import tempfile
 import httplib
 import flask
 import json
-import sqlalchemy # unnecessary once removing members is done with
-                  # the actual member object instead of just UID.
 
 from ruddock import auth_utils
 from ruddock import office_utils
 from ruddock import member_utils
-from ruddock import validation_utils # just for check_uid for now
 from ruddock.resources import Permissions
 from ruddock.decorators import login_required
 from ruddock.modules.admin import blueprint
@@ -92,23 +89,6 @@ def add_members_confirm_submit():
       return flask.redirect(flask.url_for('admin.add_members'))
   # An error happened somewhere.
   flask.flash("An unexpected error was encountered. Please find an IMSS rep.")
-  return flask.redirect(flask.url_for('admin.add_members'))
-
-@blueprint.route('/members/add/remove/confirm', methods=['POST'])
-@login_required(Permissions.USERS)
-def remove_members_single_confirm():
-  """Submission endpoint for removing a single member."""
-  uid = flask.request.form.get('uid', '')
-  # Check that the UID exists.
-  # TODO Find the member object from the UID and use that instead.
-  # Once the member object is found, the method NewMember.remove_member
-  # can be used instead of the jank way of just executing the query here.
-  if validation_utils.check_uid_exists(uid):
-      # TODO: confirmation page with members to be removed.
-      query = sqlalchemy.text("""DELETE FROM members WHERE uid = :uid""")
-      flask.g.db.execute(query, uid=uid)
-      return flask.redirect(flask.url_for('admin.add_members'))
-  flask.flash("Invalid UID error.")
   return flask.redirect(flask.url_for('admin.add_members'))
 
 @blueprint.route('/positions/assignments')

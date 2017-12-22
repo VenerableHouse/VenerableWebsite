@@ -50,10 +50,4 @@ Please upload the completed csv file here.
   <br>
   <button type="submit">Submit</button>
 </form>
-<h2>Delete members</h2>
-To delete a member from the website, enter their UID in the field below.<br>
-<form action="{{ url_for('admin.remove_members_single_confirm') }}" method="post">
-    <input type="text" name="uid" /><br><br>
-    <button type="submit">Submit</button>
-</form>
 {% endblock body %}

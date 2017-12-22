@@ -86,17 +86,6 @@ class NewMember:
     email_utils.send_email(to, msg, subject)
     return True
 
-  def remove_member(self):
-    """
-    Removes this member from the database.
-    Returns True if successful, otherwise False.
-    """
-    # Check to make sure the user is in the database.
-    if validation_utils.check_uid_exists(self.uid):
-      query = sqlalchemy.text("""DELETE FROM members WHERE uid = :uid""")
-      flask.g.db.execute(query, uid=self.uid)
-    return False
-
   def set_member_type(self):
     """
     Takes a membership description (full, social, RA, etc) and sets the
