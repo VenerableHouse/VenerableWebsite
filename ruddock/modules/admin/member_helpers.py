@@ -36,8 +36,8 @@ class NewMember:
     is_valid = True
     if not validation_utils.validate_name(self.first_name, flash_errors):
       is_valid = False
-    if not validation_utils.validate_name(self.last_name, flash_errors):
-      is_valid = False
+    # validate_name just checks for empty string. Last name is allowed to be
+    # empty since people are given only one name in some cultures.
     if not validation_utils.validate_year(self.matriculation_year, flash_errors):
       is_valid = False
     if not validation_utils.validate_year(self.graduation_year, flash_errors):

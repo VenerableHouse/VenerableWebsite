@@ -7,7 +7,6 @@ import decimal
 from ruddock import constants
 
 username_regex = re.compile(r'^[a-z][a-z0-9_-]*$', re.I)
-name_regex = re.compile(r"^[a-z][a-z '-]{0,30}[a-z]$", re.I)
 uid_regex = re.compile(r'^[0-9]{7,8}$')
 year_regex = re.compile(r'^[0-9]{4}$')
 email_regex = re.compile(r'^[a-z0-9\.\_\%\+\-]+@[a-z0-9\.\-]+\.[a-z]+$', re.I)
@@ -73,11 +72,13 @@ def validate_password(password, password2, flash_errors=True):
 
 def validate_name(name, flash_errors=True):
   """Validates a name. Flashes errors if flash_errors is True."""
-  # Allow letters, spaces, hyphens, and apostrophes.
-  # First and last characters must be letters.
-  if not name_regex.match(name):
+  # Allow anything besides empty string. Input will be sanitized by
+  # SQLAlchemy.execute() when entered into the database, so as long as
+  # we use that everywhere, we're okay.
+  # http://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/
+  if name == '':
     if flash_errors:
-      flask.flash("'{0}' is not a valid name.".format(name))
+      flask.flash(u"'{0}' is not a valid name.".format(name))
     return False
   return True
 
@@ -85,7 +86,7 @@ def validate_uid(uid, flash_errors=True):
   """Validates a UID. Flashes errors if flash_errors is True."""
   if not uid_regex.match(uid):
     if flash_errors:
-      flask.flash("'{0}' is not a valid UID.".format(uid))
+      flask.flash(u"'{0}' is not a valid UID.".format(uid))
     return False
   return True
 
@@ -106,14 +107,14 @@ def validate_year(year, flash_errors=True):
       and int(year) <= 2155:
     return True
   if flash_errors:
-    flask.flash("'{0}' is not a valid year.".format(year))
+    flask.flash(u"'{0}' is not a valid year.".format(year))
   return False
 
 def validate_email(email, flash_errors=True):
   """Validates an email. Flashes errrors if flash_errors is True."""
   if not email_regex.match(email):
     if flash_errors:
-      flask.flash("'{0}' is not a valid email.".format(email))
+      flask.flash(u"'{0}' is not a valid email.".format(email))
     return False
   return True
 
