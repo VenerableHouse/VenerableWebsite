@@ -27,64 +27,62 @@ def show_memberlist(search_type):
       memberlist=memberlist,
       search_type=search_type)
 
-@blueprint.route('/view/user_id=<user_id>')
+@blueprint.route('/view/<user_id>')
 @login_required()
 def view_member(user_id):
-  """Procedure to show a member's profile and membership details if they have
-  no user account on the website."""
-  if user_id is not None:
-    member_info = helpers.get_member_info(user_id)
-    offices = helpers.get_office_info(user_id)
+  """Procedure to show a member's profile and membership details."""
+  member_info = helpers.get_member_info(user_id)
+  offices = helpers.get_office_info(user_id)
 
-    if member_info is not None:
-      return flask.render_template(
-          'view_user.html',
-          info=member_info,
-          offices=offices,
-          strftime=time.strftime,
-          edit_permission=auth_utils.check_permission(Permissions.USERS),
-          user_id=user_id)
+  # member_info will return None if the user_id was invalid
+  if member_info is not None:
+    return flask.render_template(
+        'view_user.html',
+        info=member_info,
+        offices=offices,
+        strftime=time.strftime,
+        edit_permission=auth_utils.check_permission(Permissions.USERS),
+        user_id=user_id)
   flask.abort(httplib.NOT_FOUND)
 
-@blueprint.route('/manage/user_id=<user_id>', methods=['GET', 'POST'])
+@blueprint.route('/manage/<user_id>', methods=['GET', 'POST'])
 @login_required(Permissions.USERS)
 def manage_member(user_id):
   """Procedure to edit a member in the database if the user browsing the
   website has the permissions necessary to edit users (USERS or ADMIN)."""
   member_info = helpers.get_member_info(user_id)
-  if flask.request.method == 'GET':
-    if user_id is not None:
+
+  if member_info is not None:
+    if flask.request.method == 'GET':
       return flask.render_template(
           'manage_member.html',
           user_id=user_id,
           info=member_info)
-  else: # POST request, so they're submitting a form to edit/remove a user.
-    if 'remove' in flask.request.form:
-      if helpers.remove_member(user_id):
-        flask.flash('Success!')
-      else:
-        flask.flash('An error occurred trying to perform your operation. '
-                    'Please contact an IMSS Rep!')
-    elif 'edit' in flask.request.form:
-      # Everything comes back from the web page as a unicode string, but
-      # when we input the database query, some of these need to be passed
-      # as numbers instead. Note that user_id is stored in the database as
-      # an int as well, but it's not part of the dictionary, so we just cast
-      # it manually when we call helpers.edit_member_column.
-      stored_as_int = ('member_type', 'msc', 'room_number')
-      success = True
+    elif flask.request.method == 'POST':
+      if 'remove' in flask.request.form:
+        if helpers.remove_member(user_id):
+          flask.flash('Success!')
+        else:
+          flask.flash('An error occurred trying to perform your operation. '
+                      'Please contact an IMSS Rep!')
+      elif 'edit' in flask.request.form:
+        success = True
 
-      # use dict.items() instead in Python 3
-      for key, value in flask.request.form.iteritems():
-        if value != '' and key != 'edit':
-          if key in stored_as_int:
-            value = int(value)
-          if not helpers.edit_member_column(int(user_id), key, value):
-            success = False
-      if success:
-        flask.flash('Success!')
-      else:
-        flask.flash('An error occurred trying to perform your operation. '
-                    'Please contact an IMSS Rep!')
-    return show_memberlist('all')
+        # Use dict.items() instead in Python 3.
+        for key, value in flask.request.form.iteritems():
+          # Check that the user wants to change the value, check that this is a
+          # part of the form we care about, and check that the column name
+          # is safe, respectively. Checking that the key is part of the result
+          # of member_info works since SQLAlchemy's RowProxy behaves like
+          # an ordered dictionary and it will always give us all the column
+          # names hard-coded in get_member_info as keys.
+          if value != '' and key != 'edit' and key in member_info:
+            if not helpers.edit_member_column(user_id, key, value):
+              success = False
+        if success:
+          flask.flash('Success!')
+        else:
+          flask.flash('An error occurred trying to perform your operation. '
+                      'Please contact an IMSS Rep!')
+      return flask.redirect(flask.url_for('users.view_member', user_id=user_id))
   flask.abort(httplib.NOT_FOUND)

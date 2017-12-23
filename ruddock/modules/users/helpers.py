@@ -49,9 +49,9 @@ def get_user_id_from_username(username):
   with this username exists.
   """
   query = sqlalchemy.text('SELECT user_id FROM users WHERE username=:u')
-  user_id = flask.g.db.execute(query, u=username).first()['user_id']
-  if user_id is not None:
-    return int(user_id)
+  result = flask.g.db.execute(query, u=username).first()
+  if result is not None:
+    return result['user_id']
   else:
     return None
 
