@@ -349,7 +349,8 @@ def validate_expense(budget_id, date_incurred, amount, description):
 
 def validate_payment(payment_type, account_id, check_no):
   valid = True
-  valid &= PaymentType.has_value(payment_type)
+  valid &= vu.validate_integer(payment_type, flash_errors=False) and \
+      PaymentType.has_value(int(payment_type))
   valid &= vu.validate_integer(account_id, flash_errors=False)
   if payment_type == PaymentType.CHECK:
     valid &= vu.validate_integer(check_no, flash_errors=False)
