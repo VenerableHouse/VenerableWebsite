@@ -157,9 +157,9 @@ def route_submit_unpaid(payee_id, payment_type, account_id, check_no,
   date_posted = None if (payment_type != PaymentType.CHECK) else date_written
 
   # Server side validation
-  amount = helpers.get_unpaid_amount(payee_id)
+  total = helpers.get_unpaid_amount(payee_id)
   valid_payment = helpers.validate_payment(payment_type, account_id, check_no)
-  has_expenses = (amount is not None)
+  has_expenses = (total is not None)
 
   errs = helpers.test_predicates((
     (valid_payment, True, "Invalid payment."),
