@@ -75,6 +75,7 @@ def get_member_info(user_id):
       matriculation_year,
       graduation_year,
       major,
+      member_type,
       membership_desc,
       building,
       room_number
