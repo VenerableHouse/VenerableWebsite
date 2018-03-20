@@ -99,8 +99,8 @@ def handle_request_account(uid, last_name):
     WHERE uid = :uid
     """)
   result = flask.g.db.execute(query, uid=uid).first()
-  name_match = result["last_name"].decode('utf-8').lower() == last_name.lower()
-  if result is None or not name_match:
+  if (result is None or
+      result["last_name"].decode('utf-8').lower() != last_name.lower()):
     return (False, "Incorrect UID and/or name.")
   if result["username"] is not None:
     return (False, "You already have an account. Try recovering it?")

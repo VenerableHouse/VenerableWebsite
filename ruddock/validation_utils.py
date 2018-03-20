@@ -78,7 +78,7 @@ def validate_name(name, flash_errors=True):
   # http://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/
   if name == '':
     if flash_errors:
-      flask.flash(u"'{0}' is not a valid name.".format(name))
+      flask.flash("Name cannot be empty.")
     return False
   return True
 
