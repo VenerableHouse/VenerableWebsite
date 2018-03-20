@@ -72,7 +72,7 @@ Select everyone who will be participating in this room hassle.<br><br>
             value="{{ member['user_id'] }}"
             {{ 'checked' if member['participating'] }} />
         </td>
-        <td>{{ member['name'] }}</td>
+        <td>{{ member['name'].decode('utf-8') }}</td>
         <td>{{ member['graduation_year'] }}</td>
         <td>{{ member['membership_desc'] }}</td>
       </tr>

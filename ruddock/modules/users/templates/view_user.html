@@ -3,7 +3,7 @@
 {% block body %}
 <center>
   {# Name and subtitle #}
-  <h2>{{ info["name"] }}</h2>
+  <h2>{{ info["name"].decode('utf-8') }}</h2>
   <h3>
     {% if info["major"] is not none and info["major"]|length > 0 %}
       {{ info["major"] }}
@@ -21,8 +21,8 @@
 
   {# Contact Information #}
   <div id="view_user_contact">
-    <a href="&#109;&#097;&#105;&#108;&#116;&#111;:{{ info["email"] }}">
-      {{ info["email"] }}
+    <a href="&#109;&#097;&#105;&#108;&#116;&#111;:{{ info["email"].decode('utf-8') }}">
+      {{ info["email"].decode('utf-8') }}
     </a>
     {% if info["msc"] is not none %}
     &#8226; MSC {{ info["msc"] }}

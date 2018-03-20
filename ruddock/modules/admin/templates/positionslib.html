@@ -18,7 +18,7 @@
       {% for assignment in assignments %}
         <tr>
           <td>{{ assignment['office_name'] }}</td>
-          <td>{{ assignment['name'] }}</td>
+          <td>{{ assignment['name'].decode('utf-8') }}</td>
           <td>{{ assignment['start_date'] }}</td>
           <td>{{ assignment['end_date'] }}</td>
           <td>

@@ -22,7 +22,7 @@ function updateComment(name, comment) {
           <img src="{{ url_for('rotation.serve_image', prefrosh_id=prefrosh['prefrosh_id']) }}"
         height = "300">
           <a class="prefroshName" href="{{ url_for('rotation.show_prefrosh',
-        prefrosh_id=prefrosh['prefrosh_id']) }}">{{ prefrosh['full_name'] }}</a>
+        prefrosh_id=prefrosh['prefrosh_id']) }}">{{ prefrosh['full_name'].decode('utf-8') }}</a>
           <div class="container">
             <table>
               <thead>
@@ -40,7 +40,7 @@ function updateComment(name, comment) {
                 </tr>
               </tbody>
             </table>
-            <button onclick="updateComment('{{ prefrosh['first_name'] }}',
+            <button onclick="updateComment('{{ prefrosh['first_name'].decode('utf-8') }}',
                               '{{ prefrosh['escaped_comments'] }}')">Comments</button>
             <form action="{{ url_for('rotation.change_bucket', prefrosh_id=prefrosh['prefrosh_id']) }}"
               method="post" id="change_bucket_form">
@@ -67,7 +67,7 @@ function updateComment(name, comment) {
           <img src="{{ url_for('rotation.serve_image', prefrosh_id=prefrosh['prefrosh_id']) }}"
         height = "300">
           <a class="prefroshName" href="{{ url_for('rotation.show_prefrosh',
-        prefrosh_id=prefrosh['prefrosh_id']) }}">{{ prefrosh['full_name'] }}</a>
+        prefrosh_id=prefrosh['prefrosh_id']) }}">{{ prefrosh['full_name'].decode('utf-8') }}</a>
           <div class="container">
             <table>
               <thead>

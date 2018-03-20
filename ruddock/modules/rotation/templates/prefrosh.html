@@ -27,7 +27,7 @@
   <a href ="{{ url_for('rotation.show_prefrosh', prefrosh_id=next_id) }}">Next</a>
 {% endif %}
 
-<h1>{{ full_name }}</h1>
+<h1>{{ full_name.decode('utf-8') }}</h1>
 <div class="container">
   <div>
     <img src="{{ url_for('rotation.serve_image', prefrosh_id=prefrosh['prefrosh_id']) }}"

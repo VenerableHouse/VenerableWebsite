@@ -26,7 +26,7 @@
       <img src="{{ url_for('rotation.serve_image', prefrosh_id=prefrosh['prefrosh_id']) }}"
       height = "200">
     </td>
-    <td>{{ prefrosh['full_name'] }}</td>
+    <td>{{ prefrosh['full_name'].decode('utf-8') }}</td>
     <td>{{ prefrosh['bucket_name'] }}</td>
     <td>{{ prefrosh['votes_neg_two'] }}</td>
     <td>{{ prefrosh['votes_neg_one'] }}</td>

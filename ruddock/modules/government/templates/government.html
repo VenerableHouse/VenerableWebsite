@@ -4,7 +4,7 @@
   {% for name, email, positions in assignment_data %}
     {# Display name and email of group #}
     <h2>{{ name }}</h2>
-    <h3>{{ "[" + email + " at ruddock.caltech.edu" + "]" if email }}</h3>
+    <h3>{{ "[" + email.decode('utf-8') + " at ruddock.caltech.edu" + "]" if email }}</h3>
     <br>
     <table class="userlist" id="sort-{{ name }}">
     {# First display header #}
@@ -22,7 +22,7 @@
         <tr>
         {% endif %}
           <td>{{ position['office_name'] }}</td>
-          <td>{{ position['name'] }}</td>
+          <td>{{ position['name'].decode('utf-8') }}</td>
           <td>{{ position['office_email'] if position['office_email'] else '[None]' }}</td>
         </tr>
       {% endfor %}

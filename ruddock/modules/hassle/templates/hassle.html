@@ -99,7 +99,7 @@ $(document).ready(function() {
             <select id="name_select" name="user_id">
               {% for participant in available_participants %}
               <option value="{{ participant['user_id'] }}">
-              {{ participant['name'] }}
+              {{ participant['name'].decode('utf-8') }}
               </option>
               {% endfor %}
             </select>
@@ -112,7 +112,7 @@ $(document).ready(function() {
               <option value="none">-- No roommate --</option>
               {% for participant in available_participants %}
               <option value="{{ participant['user_id'] }}">
-              {{ participant['name'] }}
+              {{ participant['name'].decode('utf-8') }}
               </option>
               {% endfor %}
             </select>
@@ -125,7 +125,7 @@ $(document).ready(function() {
               <option value="none">-- Not a triple --</option>
               {% for participant in available_participants %}
               <option value="{{ participant['user_id'] }}">
-              {{ participant['name'] }}
+              {{ participant['name'].decode('utf-8') }}
               </option>
               {% endfor %}
             </select>

@@ -41,9 +41,9 @@ Click on the columns to sort.
     <tr>
     {% endif %}
     {# Display data #}
-    <td>{{ member['first_name'] }}</td>
-    <td>{{ member['last_name'] }}</td>
-    <td>{{ member['email'] }}</td>
+    <td>{{ member['first_name'].decode('utf-8') }}</td>
+    <td>{{ member['last_name'].decode('utf-8') }}</td>
+    <td>{{ member['email'].decode('utf-8') }}</td>
     {# Matriculation and graduation year might not be set. #}
     <td>{{ member['matriculation_year'] if member['matriculation_year'] is not none else '' }}</td>
     <td>{{ member['graduation_year'] if member['graduation_year'] is not none else '' }}</td>

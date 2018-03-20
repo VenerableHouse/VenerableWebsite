@@ -19,19 +19,19 @@ Are you sure you want to add the following members?
     <tbody>
       {% for new_member in new_member_list.new_member_list %}
       <tr>
-        <td>{{ new_member.first_name }}</td>
-        <td>{{ new_member.last_name }}</td>
+        <td>{{ new_member.first_name.decode('utf-8') }}</td>
+        <td>{{ new_member.last_name.decode('utf-8') }}</td>
         <td>{{ new_member.matriculation_year }}</td>
         <td>{{ new_member.graduation_year }}</td>
         <td>{{ new_member.uid }}</td>
-        <td>{{ new_member.email }}</td>
+        <td>{{ new_member.email.decode('utf-8') }}</td>
         <td>{{ new_member.membership_desc }}</td>
       {% endfor %}
     </tbody>
   </table>
   <br>
   {# Pass along the actual data as a string. #}
-  <input type="hidden" name="new_member_data" value="{{ data_string }}" />
+  <input type="hidden" name="new_member_data" value="{{ data_string.decode('utf-8') }}" />
   <button type="button"
     onclick="location.href='{{ url_for('admin.add_members') }}'">No</button>
   <button type="submit">Yes</button>

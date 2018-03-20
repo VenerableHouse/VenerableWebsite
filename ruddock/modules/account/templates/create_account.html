@@ -24,11 +24,11 @@
   <table class="form">
     <tr>
       <td>First Name</td>
-      <td>{{ user_data['first_name'] }}</td>
+      <td>{{ user_data['first_name'].decode('utf-8') }}</td>
     </tr>
     <tr>
       <td>Last Name</td>
-      <td>{{ user_data['last_name'] }}</td>
+      <td>{{ user_data['last_name'].decode('utf-8') }}</td>
     </tr>
     <tr>
       <td>Matriculation Year</td>
@@ -40,7 +40,7 @@
     </tr>
     <tr>
       <td>Email</td>
-      <td>{{ user_data['email'] }}</td>
+      <td>{{ user_data['email'].decode('utf-8') }}</td>
     </tr>
     <tr>
       <td>Birthday</td>

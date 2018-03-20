@@ -13,9 +13,9 @@ Do you want to send a reminder email to these people?<br><br>
     </tr></thead>
     {% for member in data %}
     <tr>
-      <td>{{ member['fname'] }}</td>
-      <td>{{ member['lname'] }}</td>
-      <td>{{ member['email'] }}</td>
+      <td>{{ member['fname'].decode('utf-8') }}</td>
+      <td>{{ member['lname'].decode('utf-8') }}</td>
+      <td>{{ member['email'].decode('utf-8') }}</td>
     </tr>
     {% endfor %}
   </table><br>

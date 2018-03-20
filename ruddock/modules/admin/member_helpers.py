@@ -10,14 +10,14 @@ class NewMember:
   """Class containing data for adding a single new member."""
   def __init__(self, first_name, last_name, matriculation_year, graduation_year,
       uid, email, membership_desc):
-    self.first_name = first_name
-    self.last_name = last_name
-    self.name = first_name + ' ' + last_name
-    self.matriculation_year = matriculation_year
-    self.graduation_year = graduation_year
-    self.uid = uid
-    self.email = email
-    self.membership_desc = membership_desc
+    self.first_name = first_name.encode('utf-8')
+    self.last_name = last_name.encode('utf-8')
+    self.name = (first_name + ' ' + last_name).encode('utf-8')
+    self.matriculation_year = matriculation_year.encode('utf-8')
+    self.graduation_year = graduation_year.encode('utf-8')
+    self.uid = uid.encode('utf-8')
+    self.email = email.encode('utf-8')
+    self.membership_desc = membership_desc.encode('utf-8')
     # Membership type is set from the membership desc.
     self.member_type = None
     self.set_member_type()

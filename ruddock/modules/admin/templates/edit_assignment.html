@@ -22,7 +22,7 @@ Edit an existing assignment. Start/end dates should default to Feb 1 for elected
     </tr>
     <tr>
       <td>Name:</td>
-      <td>{{ assignment['name'] }}</td>
+      <td>{{ assignment['name'].decode('utf-8') }}</td>
     </tr>
     <tr>
       <td>Start date:</td>

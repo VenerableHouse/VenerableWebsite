@@ -17,7 +17,7 @@
     {% for r in bdays %}
     <tr>
       <td>{{ r["date"] }}</td>
-      <td>{{ r["name"] }}</td>
+      <td>{{ r["name"].decode('utf-8') }}</td>
       <td>{{ r["age"] }}</td>
       <td>{{ r["byear"] }}</td>
     </tr>
@@ -39,7 +39,7 @@ Contact these people and get them to add their birthdays!
 
   <tbody>
     {% for x in unknowns %}
-    <tr><td>{{ x }}</td></tr>
+    <tr><td>{{ x.decode('utf-8') }}</td></tr>
     {% endfor %}
   </tbody>
 
