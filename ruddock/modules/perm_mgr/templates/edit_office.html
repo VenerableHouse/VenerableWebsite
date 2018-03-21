@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<center>
+  {# Name and subtitle #}
+  <h2>{{ info["name"] }}</h2>
+  <h3>
+    Editing office permissions.
+  </h3>
+
+  <br>
+  <table>
+    <thead>
+      <tr>
+        <th>Permissions</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for perm in info["perms"] %}
+      <tr>
+        <form action={{ url_for("perm_mgr.delete_office_perm", office_id=info["id"]) }} method="post">
+        <input type="hidden" name="perm_id" value={{ perm["id"] }}>
+        <td>{{ perm["name"] }}</td>
+        <td>
+          <input type="submit" value="Delete">
+        </td>
+        </form>
+      </tr>
+      {% endfor %}
+      <tr>
+        <form action={{ url_for("perm_mgr.add_office_perm", office_id=info["id"]) }} method="post">
+        <td>Add: 
+          <select name="perm_id">
+            {% for perm in all_perms %}
+            <option value={{ perm["id"] }}>{{ perm["name"] }}</option>
+            {% endfor %}
+          </select>    
+        </td>
+        <td>
+          <input type="submit" value="Submit">
+        </td>
+        </form>
+      </tr>
+    </tbody>
+  </table>
+</center>
+{% endblock body %}
