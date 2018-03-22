@@ -104,6 +104,44 @@ def fetch_user_permissions():
 
   return flask.g.db.execute(query).fetchall()
 
+def fetch_specific_user_permissions(user_id):
+  """Returns the name and permissions of the specified user.
+     May be none."""
+  if type(user_id) is not int:
+      raise TypeError("Must pass user id number to fetch user permissions.")
+  query = sqlalchemy.text("""
+    SELECT GROUP_CONCAT(permission_id) AS permissions, name, user_id
+    FROM user_permissions 
+      NATURAL JOIN members_extra 
+    WHERE user_id = :id
+    GROUP BY user_id
+  """)
+  return flask.g.db.execute(query, id=user_id).fetchone()
+
+def delete_user_permission(user_id, perm_id):
+    """Deletes the specified permission from the user."""
+    if type(perm_id) is str or type(perm_id) is unicode:
+        perm_id = int(perm_id)
+    if type(user_id) is not int or type(perm_id) is not int:
+        raise TypeError("Must pass user id number and permission id to fetch user permissions.")
+    query = sqlalchemy.text("""
+        DELETE FROM user_permissions
+        WHERE user_id = :o_id
+        AND permission_id = :p_id
+    """)
+    return flask.g.db.execute(query, o_id=user_id, p_id=perm_id)
+
+def insert_user_permission(user_id, perm_id):
+    """Inserts the specified permission for the user."""
+    if type(perm_id) is str or type(perm_id) is unicode:
+        perm_id = int(perm_id)
+    if type(user_id) is not int or type(perm_id) is not int:
+        raise TypeError("Must pass user id number and permission id to fetch user permissions.")
+    query = sqlalchemy.text("""
+        INSERT INTO user_permissions VALUES (:o_id, :p_id)
+    """)
+    return flask.g.db.execute(query, o_id=user_id, p_id=perm_id)
+
 def decode_perm_string(string, sep=","):
   """Decodes a `sep`-separated string of permissions."""
   if string is None:

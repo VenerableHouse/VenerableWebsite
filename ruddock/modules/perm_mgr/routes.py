@@ -25,7 +25,14 @@ def show_permissions():
 @blueprint.route('/edit_user/<int:user_id>')
 @login_required(Permissions.PERMISSION_MANAGER)
 def edit_user_permissions(user_id):
-    pass
+  x = helpers.fetch_specific_user_permissions(user_id)
+  user_perms = {"name": x["name"], 
+                "perms": helpers.decode_perm_string_with_id(x['permissions']),
+                "id": x["user_id"]} 
+  all_perms = helpers.get_all_perms()
+  diff_perms = [p for p in all_perms if not any(p["id"] == u["id"] for u in user_perms["perms"])]
+  return flask.render_template('edit_user.html', info=user_perms,
+      all_perms=diff_perms)
 
 @blueprint.route('/edit_office/<int:office_id>')
 @login_required(Permissions.PERMISSION_MANAGER)
@@ -43,6 +50,7 @@ def edit_office_permissions(office_id):
 @login_required(Permissions.PERMISSION_MANAGER)
 def delete_user_perm(user_id):
     perm_id = flask.request.form.get("perm_id")
+    helpers.delete_user_permission(user_id, perm_id)
     return flask.redirect(flask.url_for("perm_mgr.edit_user_permissions", user_id=user_id))
 
 @blueprint.route('/delete_office_perm/<int:office_id>', methods=["POST"])
@@ -56,6 +64,7 @@ def delete_office_perm(office_id):
 @login_required(Permissions.PERMISSION_MANAGER)
 def add_user_perm(user_id):
     perm_id = flask.request.form.get("perm_id")
+    helpers.insert_user_permission(user_id, perm_id)
     return flask.redirect(flask.url_for("perm_mgr.edit_user_permissions", user_id=user_id))
 
 @blueprint.route('/add_office_perm/<int:office_id>', methods=["POST"])
