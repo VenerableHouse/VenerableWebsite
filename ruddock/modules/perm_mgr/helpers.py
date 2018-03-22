@@ -43,7 +43,7 @@ def fetch_specific_office_permissions(office_id):
     SELECT GROUP_CONCAT(permission_id) AS permissions, 
            office_name, office_id
     FROM office_permissions
-      NATURAL JOIN offices
+      NATURAL RIGHT JOIN offices
     WHERE office_id = :id
     GROUP BY office_id
   """)
@@ -112,7 +112,8 @@ def fetch_specific_user_permissions(user_id):
   query = sqlalchemy.text("""
     SELECT GROUP_CONCAT(permission_id) AS permissions, name, user_id
     FROM user_permissions 
-      NATURAL JOIN members_extra 
+      NATURAL RIGHT JOIN members_current 
+        NATURAL JOIN members_extra 
     WHERE user_id = :id
     GROUP BY user_id
   """)

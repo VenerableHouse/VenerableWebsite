@@ -21,9 +21,19 @@
       <tr>
         <form action={{ url_for("perm_mgr.delete_user_perm", user_id=info["id"]) }} method="post">
         <input type="hidden" name="perm_id" value={{ perm["id"] }}>
-        <td>{{ perm["name"] }}</td>
         <td>
+            {% if perm["id"] == 0 %}
+            <em>
+            {% endif %}
+            {{ perm["name"] }}
+            {% if perm["id"] == 0 %}
+            </em>
+            {% endif %}
+        </td>
+        <td>
+          {% if perm["id"] != 0 %}
           <input type="submit" value="Delete">
+          {% endif %}
         </td>
         </form>
       </tr>
