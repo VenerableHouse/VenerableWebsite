@@ -82,6 +82,7 @@ def fetch_user_permissions():
     SELECT GROUP_CONCAT(permission_id) AS permissions, name, user_id
     FROM user_permissions 
       NATURAL RIGHT JOIN members_current 
+      NATURAL JOIN users
       NATURAL JOIN members_extra 
     GROUP BY user_id
 
@@ -112,7 +113,7 @@ def fetch_specific_user_permissions(user_id):
   query = sqlalchemy.text("""
     SELECT GROUP_CONCAT(permission_id) AS permissions, name, user_id
     FROM user_permissions 
-      NATURAL RIGHT JOIN members_current 
+      NATURAL RIGHT JOIN users 
         NATURAL JOIN members_extra 
     WHERE user_id = :id
     GROUP BY user_id
