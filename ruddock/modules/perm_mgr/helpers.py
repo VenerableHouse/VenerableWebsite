@@ -47,8 +47,32 @@ def fetch_specific_office_permissions(office_id):
     WHERE office_id = :id
     GROUP BY office_id
   """)
-
   return flask.g.db.execute(query, id=office_id).fetchone()
+
+def delete_office_permission(office_id, perm_id):
+    """Deletes the specified permission from the office."""
+    if type(perm_id) is str or type(perm_id) is unicode:
+        perm_id = int(perm_id)
+    if type(office_id) is not int or type(perm_id) is not int:
+        raise TypeError("Must pass office id number and permission id to fetch office permissions.")
+    query = sqlalchemy.text("""
+        DELETE FROM office_permissions
+        WHERE office_id = :o_id
+        AND permission_id = :p_id
+    """)
+    return flask.g.db.execute(query, o_id=office_id, p_id=perm_id)
+
+def insert_office_permission(office_id, perm_id):
+    """Inserts the specified permission for the office."""
+    if type(perm_id) is str or type(perm_id) is unicode:
+        perm_id = int(perm_id)
+    if type(office_id) is not int or type(perm_id) is not int:
+        raise TypeError("Must pass office id number and permission id to fetch office permissions.")
+    query = sqlalchemy.text("""
+        INSERT INTO office_permissions VALUES (:o_id, :p_id)
+    """)
+    return flask.g.db.execute(query, o_id=office_id, p_id=perm_id)
+
 
 def fetch_user_permissions():
   """Returns the user's name and permissions of all users.
