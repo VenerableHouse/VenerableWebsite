@@ -119,5 +119,5 @@ def get_all_perms():
     """Gets a list of all permissions possible to assign."""
     x = []
     for p in Permissions:
-        x.append({"name": get_perm_name(p.value), "id": p.value})
+        x.append({"name": get_perm_name(p.value), "id": str(p.value)})
     return x

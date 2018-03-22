@@ -35,8 +35,9 @@ def edit_office_permissions(office_id):
                    "perms": helpers.decode_perm_string_with_id(x['permissions']),
                    "id": x["office_id"]} 
   all_perms = helpers.get_all_perms()
+  diff_perms = [p for p in all_perms if not any(p["id"] == o["id"] for o in office_perms["perms"])]
   return flask.render_template('edit_office.html', info=office_perms,
-      all_perms=all_perms)
+      all_perms=diff_perms)
 
 @blueprint.route('/delete_user_perm/<int:user_id>', methods=["POST"])
 @login_required(Permissions.PERMISSION_MANAGER)
