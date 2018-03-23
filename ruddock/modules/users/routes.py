@@ -62,6 +62,7 @@ def manage_member(user_id):
       if 'remove' in flask.request.form:
         if helpers.remove_member(user_id):
           flask.flash('Success!')
+          return flask.redirect(flask.url_for('users.show_memberlist'))
         else:
           flask.flash('An error occurred trying to perform your operation. '
                       'Please contact an IMSS Rep!')
