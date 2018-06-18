@@ -189,7 +189,7 @@ CREATE TABLE rotation_prefrosh (
   votes_plus_three INTEGER NOT NULL DEFAULT 0,
   dinner INTEGER, -- defined in rotation/helpers.py (1-8)
   attended_dinner BOOLEAN,
-  comments VARCHAR(60000),
+  comments BLOB,
   image_name VARCHAR(255),
   PRIMARY KEY (prefrosh_id),
   FOREIGN KEY (bucket_id) REFERENCES rotation_buckets (bucket_id)
@@ -202,9 +202,9 @@ CREATE TABLE rotation_move_history (
   new_bucket INTEGER NOT NULL,
   PRIMARY KEY (event_id),
   UNIQUE (prefrosh_id, old_bucket, new_bucket),
-  FOREIGN KEY (prefrosh_id) REFERENCES rotation_prefrosh (prefrosh_id),
-  FOREIGN KEY (old_bucket) REFERENCES rotation_buckets (bucket_id),
-  FOREIGN KEY (new_bucket) REFERENCES rotation_buckets (bucket_id)
+  FOREIGN KEY (prefrosh_id) REFERENCES rotation_prefrosh (prefrosh_id)
+  -- FOREIGN KEY (old_bucket) REFERENCES rotation_buckets (bucket_id),
+  -- FOREIGN KEY (new_bucket) REFERENCES rotation_buckets (bucket_id)
 );
 
 -- BUDGET TABLES

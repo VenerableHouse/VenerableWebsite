@@ -5,7 +5,7 @@ from datetime import datetime  # ugh
 from ruddock.resources import Permissions
 from ruddock.decorators import login_required, get_args_from_form
 from ruddock.modules.budget import blueprint, helpers
-from helpers import PaymentType
+from .helpers import PaymentType
 
 
 @blueprint.route('/')

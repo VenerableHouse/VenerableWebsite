@@ -84,7 +84,7 @@ class PasswordHashParser:
       return None
 
     algorithms = self.algorithms
-    rounds = map(lambda x: str(x) if x is not None else '', self.rounds)
+    rounds = [str(x) if x is not None else '' for x in self.rounds]
     salts = self.salts
 
     algorithm_str = '|'.join(algorithms)
@@ -158,7 +158,7 @@ class PasswordHashParser:
 
     test_hash = password
     true_hash = self.password_hash
-    for i in xrange(len(self.algorithms)):
+    for i in range(len(self.algorithms)):
       algorithm = self.algorithms[i]
       rounds = self.rounds[i]
       salt = self.salts[i]
@@ -187,12 +187,18 @@ def hash_password(password, salt, rounds, algorithm):
   Algorithms using the passlib library are returned in base64 format.
   Algorithms using the hashlib library are returned in hex format.
   """
+  # Dirty hack to get Py3 to work properly. The hashlib functions we use here
+  # require its inputs to be 'bytes', not 'str'.
+  if type(password) is str:
+    password = str.encode(password)
+  if type(salt) is str:
+    salt = str.encode(salt)
   if algorithm == 'pbkdf2_sha256':
     # Rounds must be set.
     if rounds is None:
       return None
     result = hashlib.pbkdf2_hmac('sha256', password, salt, rounds)
-    return binascii.hexlify(result)
+    return binascii.hexlify(result).decode()
   elif algorithm == 'md5':
     # Rounds is ignored.
     return hashlib.md5(salt + password).hexdigest()

@@ -1,5 +1,5 @@
 import time
-import httplib
+import http.client
 import flask
 import sqlalchemy
 
@@ -18,7 +18,7 @@ def show_memberlist(search_type):
   # If search_type is not a valid value (someone is messing with the URL),
   # abort the request.
   if search_type not in ['all', 'current', 'alumni']:
-    flask.abort(httplib.NOT_FOUND)
+    flask.abort(http.client.NOT_FOUND)
 
   memberlist = helpers.get_memberlist(search_type)
   return flask.render_template(
@@ -39,4 +39,4 @@ def view_profile(username):
         offices=offices,
         strftime=time.strftime)
   else:
-    flask.abort(httplib.NOT_FOUND)
+    flask.abort(http.client.NOT_FOUND)

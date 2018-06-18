@@ -15,13 +15,15 @@ def test_hash_password():
   Tests each hash algorithm implemented by hash_password().
   """
   PWD_LENGTH = 64
-  password = misc_utils.generate_random_string(PWD_LENGTH)
-  salt = auth_utils.generate_salt()
+
+  # Encode these as utf-8 to use hashlib.
+  password = str.encode(misc_utils.generate_random_string(PWD_LENGTH))
+  salt = str.encode(auth_utils.generate_salt())
 
   # PBKDF2_SHA256
   rounds = 100000
   expected_result = binascii.hexlify(
-      hashlib.pbkdf2_hmac('sha256', password, salt, rounds))
+      hashlib.pbkdf2_hmac('sha256', password, salt, rounds)).decode()
   result = auth_utils.hash_password(password, salt, rounds, 'pbkdf2_sha256')
   assert result == expected_result
 
@@ -35,8 +37,9 @@ def test_parser():
   Tests PasswordHashParser implementation.
   """
   PWD_LENGTH = 64
-  password = misc_utils.generate_random_string(PWD_LENGTH)
-  wrong_password = misc_utils.generate_random_string(PWD_LENGTH)
+
+  password = str.encode(misc_utils.generate_random_string(PWD_LENGTH))
+  wrong_password = str.encode(misc_utils.generate_random_string(PWD_LENGTH))
   assert password != wrong_password
 
   # Test pbkdf2_sha256(md5(password)).

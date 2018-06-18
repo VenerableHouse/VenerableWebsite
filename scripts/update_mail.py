@@ -9,7 +9,7 @@ ERROR_SUBJ = '[RuddWeb] THE EMAIL SCRIPT IS BROKEN'
 SYNC_MEMBERS_PATH = "/usr/lib/mailman/bin/sync_members"
 
 def updateFromList(results, lst):
-  print "Updating list: " + lst
+  print("Updating list: " + lst)
 
   # write emails to flat file
   if len(results) <= 0:
