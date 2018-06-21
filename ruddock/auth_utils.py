@@ -187,21 +187,16 @@ def hash_password(password, salt, rounds, algorithm):
   Algorithms using the passlib library are returned in base64 format.
   Algorithms using the hashlib library are returned in hex format.
   """
-  # Dirty hack to get Py3 to work properly. The hashlib functions we use here
-  # require its inputs to be 'bytes', not 'str'.
-  if type(password) is str:
-    password = str.encode(password)
-  if type(salt) is str:
-    salt = str.encode(salt)
   if algorithm == 'pbkdf2_sha256':
     # Rounds must be set.
     if rounds is None:
       return None
-    result = hashlib.pbkdf2_hmac('sha256', password, salt, rounds)
+    result = hashlib.pbkdf2_hmac(
+      'sha256', password.encode(), salt.encode(), rounds)
     return binascii.hexlify(result).decode()
   elif algorithm == 'md5':
     # Rounds is ignored.
-    return hashlib.md5(salt + password).hexdigest()
+    return hashlib.md5(salt.encode() + password.encode()).hexdigest()
   return None
 
 def set_password(username, password):

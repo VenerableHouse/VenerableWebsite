@@ -17,18 +17,19 @@ def test_hash_password():
   PWD_LENGTH = 64
 
   # Encode these as utf-8 to use hashlib.
-  password = str.encode(misc_utils.generate_random_string(PWD_LENGTH))
-  salt = str.encode(auth_utils.generate_salt())
+  password = misc_utils.generate_random_string(PWD_LENGTH)
+  salt = auth_utils.generate_salt()
 
   # PBKDF2_SHA256
   rounds = 100000
   expected_result = binascii.hexlify(
-      hashlib.pbkdf2_hmac('sha256', password, salt, rounds)).decode()
+      hashlib.pbkdf2_hmac(
+          'sha256', password.encode(), salt.encode(), rounds)).decode()
   result = auth_utils.hash_password(password, salt, rounds, 'pbkdf2_sha256')
   assert result == expected_result
 
   # MD5
-  expected_result = hashlib.md5(salt + password).hexdigest()
+  expected_result = hashlib.md5(salt.encode() + password.encode()).hexdigest()
   result = auth_utils.hash_password(password, salt, None, 'md5')
   assert result == expected_result
 
@@ -38,8 +39,8 @@ def test_parser():
   """
   PWD_LENGTH = 64
 
-  password = str.encode(misc_utils.generate_random_string(PWD_LENGTH))
-  wrong_password = str.encode(misc_utils.generate_random_string(PWD_LENGTH))
+  password = misc_utils.generate_random_string(PWD_LENGTH)
+  wrong_password = misc_utils.generate_random_string(PWD_LENGTH)
   assert password != wrong_password
 
   # Test pbkdf2_sha256(md5(password)).
