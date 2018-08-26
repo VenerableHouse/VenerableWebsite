@@ -11,19 +11,20 @@ class PaymentType(enum.IntEnum):
   ONLINE = 4
   TRANSFER = 5
   OTHER = 6
+  INCOME = 7
 
   @classmethod
   def has_value(cls, value):
     return value in [x.value for x in cls]
 
-__PTYPE_STRS = ['Cash', 'Check', 'Debit', 'Online', 'Transfer', 'Other']
+__PTYPE_STRS = ['Cash', 'Check', 'Debit', 'Online', 'Transfer', 'Other', "Income"]
 
 # ==== SQL QUERIES ====
 
 def get_payment_types():
   """Returns a dict of string representations for payment types."""
   # TODO probably a better way...
-  return { i: __PTYPE_STRS[i-1] for i in range(1, 7) }
+  return { i+1: x for i, x in enumerate(__PTYPE_STRS) }
 
 
 def get_current_fyear():
