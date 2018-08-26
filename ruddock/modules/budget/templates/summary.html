@@ -2,6 +2,19 @@
 
 {% block body %}
 
+<h2>Fiscal Year: {{ fyear_num }}</h2>
+
+<form method="get">
+  <select id="fyear_select" name="fyear">
+    <option selected disabled hidden>--</option>
+    {% for num, id in fyear_options %}
+    <option id=id>{{ num }}</option>
+    {% endfor %}
+  </select>
+  <input type="submit" value="Change Year">
+</form>
+
+<!-- These might look nice side-by-side! -->
 <h2>Account Summary</h2>
 <table>
 
@@ -24,7 +37,7 @@
 </table>
 
 
-<h2>Budget Summary</h2>
+<h2>Budget Summary ({{ fyear_num }})</h2>
 
 <table>
 

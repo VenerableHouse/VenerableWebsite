@@ -88,6 +88,17 @@ def get_transactions():
   return flask.g.db.execute(query).fetchall()
 
 
+def get_fyears():
+  """Gets list of all available fiscal years."""
+  query = sqlalchemy.text("""
+    SELECT fyear_id, fyear_num
+    FROM budget_fyears
+    ORDER BY fyear_id DESC
+    """)
+
+  return flask.g.db.execute(query).fetchall()
+
+
 def get_budget_list(fyear_id):
   """Gets list of all budgets in the given year."""
   query = sqlalchemy.text("""

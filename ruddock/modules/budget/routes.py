@@ -20,13 +20,29 @@ def route_portal():
 def route_summary():
   """Displays account and budget summaries."""
 
-  current_fyear_id = helpers.get_current_fyear()["fyear_id"]
+  fyear_dict = {r["fyear_num"]: r["fyear_id"] for r in helpers.get_fyears()}
+
+  fyear_num = flask.request.args.get("fyear", None)
+
+  if fyear_num is not None:
+    fyear_id = fyear_dict.get(int(fyear_num), None)
+  else:
+    fyear_id = helpers.get_current_fyear()["fyear_id"]
+    fyear_num = "Current"
+
   a_summary = helpers.get_account_summary()
-  b_summary = helpers.get_budget_summary(current_fyear_id)
+  b_summary = helpers.get_budget_summary(fyear_id)
+
+  fyear_options = [
+    (num, fyear_dict[num])
+    for num in reversed(sorted(fyear_dict.keys()))
+  ]
 
   return flask.render_template('summary.html',
     a_summary=a_summary,
-    b_summary=b_summary)
+    b_summary=b_summary,
+    fyear_num=fyear_num,
+    fyear_options=fyear_options)
 
 
 @blueprint.route('/expenses')
