@@ -14,7 +14,10 @@
       <th>Description</th>
       <th>Amount</th>
       <th>Payee</th>
+      <th>Payment Type</th>
       <th>Payment ID</th>
+      <th>Account</th>
+      <th>Check #</th>
     </tr>
   </thead>
 
@@ -25,10 +28,13 @@
       <td>{{ r["budget_name"] }}</td>
       <td>{{ r["fyear_num"] }}</td>
       <td>{{ r["date_incurred"] }}</td>
-      <td>{{ r["description"].decode("utf8") }}</td>
+      <td>{{ r["description"] }}</td>
       <td>${{ r["cost"] }}</td>
-      <td>{{ r["payee_name"] }}</td>
-      <td>{{ r["payment_id"]}}
+      <td>{{ r["payee_name"] or "--" }}</td>
+      <td>{{ ptypes[r["payment_type"]] or "--" }}</td>
+      <td>{{ r["payment_id"] or "--" }}</td>
+      <td>{{ r["account_name"] or "--" }}</td>
+      <td>{{ r["check_no"] or "--" }}</td>
     </tr>
     {% endfor %}
   </tbody>

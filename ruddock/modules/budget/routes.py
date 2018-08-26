@@ -34,7 +34,8 @@ def route_summary():
 def route_expenses():
   """Displays list of expenses."""
   return flask.render_template('expenses.html',
-    expenses=helpers.get_expenses())
+    expenses=helpers.get_transactions(),
+    ptypes=helpers.get_payment_types())
 
 
 @blueprint.route('/payments')
