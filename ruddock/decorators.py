@@ -40,7 +40,7 @@ def get_args_from_form():
 
       # We might need to change the form keys a bit
       form = flask.request.form
-      modified_form = {k.replace('-', '_'): v for k, v in list(form.items())}
+      modified_form = {k.replace('-', '_'): v for k, v in form.items()}
 
       # Get function arguments
       fn_args = inspect.getargspec(fn)[0]

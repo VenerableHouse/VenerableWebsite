@@ -173,7 +173,7 @@ def get_prefrosh_and_adjacent(prefrosh_id, prefrosh_list):
 
 def postprocess_prefrosh_data(ls):
   """Formats names and escapes comments for a prefrosh."""
-  prefrosh_list = [dict(list(pf.items())) for pf in ls]
+  prefrosh_list = [dict(pf.items()) for pf in ls]
   for prefrosh in prefrosh_list:
     prefrosh['full_name'] = format_name(
       prefrosh['first_name'], prefrosh['last_name'], prefrosh['preferred_name'])

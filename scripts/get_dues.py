@@ -67,7 +67,7 @@ if __name__ == "__main__":
     for row in records:
       outcsv.writerow([row[x] for x in column_names])
 
-    print(("Successfully output dues to {}".format(CSV_FILE)))
+    print("Successfully output dues to {}".format(CSV_FILE))
 
   with open(CSV_FILE, 'r') as infile:
     msg = MIMEMultipart()

@@ -109,8 +109,8 @@ def main():
 
 
 def ask_for_dinner(last_name, first_name):
-    print(("Could not determine which dinner {} {} is supposed to "
-          "attend.".format(first_name, last_name)))
+    print("Could not determine which dinner {} {} is supposed to "
+          "attend.".format(first_name, last_name))
     while True:
         resp = input("Please enter a dinner (1-8): ")
         try:
@@ -124,8 +124,8 @@ def ask_for_dinner(last_name, first_name):
 
 
 def ask_for_image(last_name, first_name, imgpath):
-    print(("Could not determine the name of the image for "
-          "{} {}".format(first_name, last_name)))
+    print("Could not determine the name of the image for "
+          "{} {}".format(first_name, last_name))
     while True:
         resp = input("Please enter the image name, or NULL if there is "
                          "no image available: ")
