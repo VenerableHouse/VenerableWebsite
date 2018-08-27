@@ -202,9 +202,9 @@ CREATE TABLE rotation_move_history (
   new_bucket INTEGER NOT NULL,
   PRIMARY KEY (event_id),
   UNIQUE (prefrosh_id, old_bucket, new_bucket),
-  FOREIGN KEY (prefrosh_id) REFERENCES rotation_prefrosh (prefrosh_id)
-  -- FOREIGN KEY (old_bucket) REFERENCES rotation_buckets (bucket_id),
-  -- FOREIGN KEY (new_bucket) REFERENCES rotation_buckets (bucket_id)
+  FOREIGN KEY (prefrosh_id) REFERENCES rotation_prefrosh (prefrosh_id),
+  FOREIGN KEY (old_bucket) REFERENCES rotation_buckets (bucket_id),
+  FOREIGN KEY (new_bucket) REFERENCES rotation_buckets (bucket_id)
 );
 
 -- BUDGET TABLES
