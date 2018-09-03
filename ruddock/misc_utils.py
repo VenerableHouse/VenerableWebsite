@@ -13,7 +13,7 @@ def generate_random_string(length, chars=None):
   # Default character set.
   if chars is None:
     chars = string.ascii_letters + string.digits
-  return "".join(random.SystemRandom().choice(chars) for i in xrange(length))
+  return "".join(random.SystemRandom().choice(chars) for i in range(length))
 
 def compare_secure_strings(string1, string2):
   """

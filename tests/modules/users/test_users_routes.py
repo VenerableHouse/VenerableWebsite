@@ -4,7 +4,7 @@ Tests routes in the users module.
 
 import flask
 import sqlalchemy
-import httplib
+import http.client
 
 from ruddock.testing import utils
 from ruddock.testing.fixtures import client
@@ -14,7 +14,7 @@ def test_show_memberlist(client):
   with client.session_transaction() as session:
     utils.login(session)
   response = client.get(flask.url_for('users.show_memberlist'))
-  assert response.status_code == httplib.OK
+  assert response.status_code == http.client.OK
 
 def test_view_profile(client):
   """Tests that viewing a user works."""
@@ -23,4 +23,4 @@ def test_view_profile(client):
     utils.login(session)
   response = client.get(
       flask.url_for('users.view_profile', username=username))
-  assert response.status_code == httplib.OK
+  assert response.status_code == http.client.OK

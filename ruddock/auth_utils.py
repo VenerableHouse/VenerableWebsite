@@ -84,7 +84,7 @@ class PasswordHashParser:
       return None
 
     algorithms = self.algorithms
-    rounds = map(lambda x: str(x) if x is not None else '', self.rounds)
+    rounds = [str(x) if x is not None else '' for x in self.rounds]
     salts = self.salts
 
     algorithm_str = '|'.join(algorithms)
@@ -158,7 +158,7 @@ class PasswordHashParser:
 
     test_hash = password
     true_hash = self.password_hash
-    for i in xrange(len(self.algorithms)):
+    for i in range(len(self.algorithms)):
       algorithm = self.algorithms[i]
       rounds = self.rounds[i]
       salt = self.salts[i]
@@ -191,11 +191,12 @@ def hash_password(password, salt, rounds, algorithm):
     # Rounds must be set.
     if rounds is None:
       return None
-    result = hashlib.pbkdf2_hmac('sha256', password, salt, rounds)
-    return binascii.hexlify(result)
+    result = hashlib.pbkdf2_hmac(
+      'sha256', password.encode(), salt.encode(), rounds)
+    return binascii.hexlify(result).decode()
   elif algorithm == 'md5':
     # Rounds is ignored.
-    return hashlib.md5(salt + password).hexdigest()
+    return hashlib.md5(salt.encode() + password.encode()).hexdigest()
   return None
 
 def set_password(username, password):

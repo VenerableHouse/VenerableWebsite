@@ -1,5 +1,5 @@
 import tempfile
-import httplib
+import http.client
 import flask
 import json
 
@@ -22,7 +22,7 @@ def admin_home():
   # If there are no links, they have no business being here so we return an
   # access denied error.
   if len(links) == 0:
-    flask.abort(httplib.FORBIDDEN)
+    flask.abort(http.client.FORBIDDEN)
   return flask.render_template('admin.html', links=links)
 
 @blueprint.route('/members/add')

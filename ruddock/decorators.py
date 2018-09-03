@@ -1,4 +1,4 @@
-import httplib
+import http.client
 import functools
 import flask
 import inspect
@@ -24,7 +24,7 @@ def login_required(permission=None):
       if permission is not None:
         if not auth_utils.check_permission(permission):
           # Abort with an access forbidden HTTP code.
-          flask.abort(httplib.FORBIDDEN)
+          flask.abort(http.client.FORBIDDEN)
       return fn(*args, **kwargs)
     return functools.update_wrapper(wrapped_function, fn)
   return decorator

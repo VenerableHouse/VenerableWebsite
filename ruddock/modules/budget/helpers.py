@@ -181,7 +181,7 @@ def get_unpaid_expenses():
     return payee_id, payee_name, total, expenses
 
   # We return a list of payees w/ addl data attached
-  return map(make_tuple, unpaid_payees)
+  return list(map(make_tuple, unpaid_payees))
 
 
 def get_unpaid_amount(payee_id):

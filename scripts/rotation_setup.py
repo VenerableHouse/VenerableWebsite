@@ -73,7 +73,7 @@ def main():
   # import the prefrosh from the csv
   with open(args.csvfile, 'rb') as csvfile:
     reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-    reader.next()  # skip the header row
+    next(reader)  # skip the header row
     for row in reader:
         # DEAR FUTURE READER: when the columns change, just edit this
         last_name = row[0]
@@ -112,7 +112,7 @@ def ask_for_dinner(last_name, first_name):
     print("Could not determine which dinner {} {} is supposed to "
           "attend.".format(first_name, last_name))
     while True:
-        resp = raw_input("Please enter a dinner (1-8): ")
+        resp = input("Please enter a dinner (1-8): ")
         try:
             dinner = int(resp)
             if dinner < 1 or dinner > 8:
@@ -127,7 +127,7 @@ def ask_for_image(last_name, first_name, imgpath):
     print("Could not determine the name of the image for "
           "{} {}".format(first_name, last_name))
     while True:
-        resp = raw_input("Please enter the image name, or NULL if there is "
+        resp = input("Please enter the image name, or NULL if there is "
                          "no image available: ")
         if resp == "NULL" or os.path.isfile(imgpath + '/' + resp):
             return resp
