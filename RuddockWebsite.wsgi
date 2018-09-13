@@ -1,6 +1,6 @@
 # Activate the virtualenv.
 activate_this = "/home/ruddweb/virtualenvs/RuddockWebsite3/bin/activate_this.py"
-execfile(activate_this, dict(__file__=activate_this))
+exec(compile(open(activate_this).read(), activate_this, 'exec'), dict(__file__=activate_this))
 
 # Put the repository in Python's path.
 import sys
