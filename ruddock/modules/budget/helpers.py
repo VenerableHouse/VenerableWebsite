@@ -11,19 +11,20 @@ class PaymentType(enum.IntEnum):
   ONLINE = 4
   TRANSFER = 5
   OTHER = 6
+  INCOME = 7
 
   @classmethod
   def has_value(cls, value):
     return value in [x.value for x in cls]
 
-__PTYPE_STRS = ['Cash', 'Check', 'Debit', 'Online', 'Transfer', 'Other']
+__PTYPE_STRS = ['Cash', 'Check', 'Debit', 'Online', 'Transfer', 'Other', "Income"]
 
 # ==== SQL QUERIES ====
 
 def get_payment_types():
   """Returns a dict of string representations for payment types."""
   # TODO probably a better way...
-  return { i: __PTYPE_STRS[i-1] for i in range(1, 7) }
+  return { i+1: x for i, x in enumerate(__PTYPE_STRS) }
 
 
 def get_current_fyear():
@@ -46,7 +47,7 @@ def get_expenses():
   """Gets list of all expenses."""
   query = sqlalchemy.text("""
     SELECT expense_id, budget_name, fyear_num, date_incurred, description, cost,
-        payee_name, payment_id
+        payment_type, payee_name, payment_id
     FROM budget_expenses
       NATURAL JOIN budget_budgets
       NATURAL JOIN budget_fyears
@@ -66,6 +67,33 @@ def get_payments():
       NATURAL JOIN budget_accounts
       NATURAL LEFT JOIN budget_payees
     ORDER BY payment_id DESC
+    """)
+
+  return flask.g.db.execute(query).fetchall()
+
+
+def get_transactions():
+  """Gets list of all expenses + payments."""
+  query = sqlalchemy.text("""
+    SELECT *
+    FROM budget_expenses
+      NATURAL JOIN budget_budgets
+      NATURAL JOIN budget_fyears
+      NATURAL LEFT JOIN budget_payments
+      NATURAL LEFT JOIN budget_accounts
+      NATURAL LEFT JOIN budget_payees
+    ORDER BY expense_id DESC
+    """)
+
+  return flask.g.db.execute(query).fetchall()
+
+
+def get_fyears():
+  """Gets list of all available fiscal years."""
+  query = sqlalchemy.text("""
+    SELECT fyear_id, fyear_num
+    FROM budget_fyears
+    ORDER BY fyear_id DESC
     """)
 
   return flask.g.db.execute(query).fetchall()

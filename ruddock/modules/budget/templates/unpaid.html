@@ -46,7 +46,7 @@ No client side validation for now. If you submit an invalid request, you'll have
               <td>{{ r["budget_name"] }}</td>
               <td>{{ r["fyear_num"] }}</td>
               <td>{{ r["date_incurred"] }}</td>
-              <td>{{ r["description"].decode("utf8") }}</td>
+              <td>{{ r["description"] }}</td>
               <td>${{ r["cost"] }}</td>
             </tr>
           {% endfor %}
