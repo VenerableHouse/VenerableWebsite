@@ -71,7 +71,7 @@ def main():
   bucket_id = db.execute(query).first()['bucket_id']
 
   # import the prefrosh from the csv
-  with open(args.csvfile, 'rb') as csvfile:
+  with open(args.csvfile, 'r') as csvfile:
     reader = csv.reader(csvfile, delimiter=',', quotechar='"')
     next(reader)  # skip the header row
     for row in reader:
