@@ -71,13 +71,14 @@ def route_add_expense():
   # TODO allow for multiple years
 
   # Get the lists for the dropdown menus
-  current_fyear_id = helpers.get_current_fyear()["fyear_id"]
-  budgets_list = helpers.get_budget_list(current_fyear_id)
+  current_fyear = helpers.get_current_fyear()
+  budgets_list = helpers.get_budget_list(current_fyear["fyear_id"])
   payment_types = helpers.get_payment_types()
   accounts = helpers.get_accounts()
   payees = helpers.get_payees()
 
   return flask.render_template('add_expense.html',
+    fyear_num=current_fyear["fyear_num"],
     budgets=budgets_list,
     payment_types=payment_types,
     accounts=accounts,

@@ -32,7 +32,7 @@ $(document).ready(function() {
 
   <h2>Expense Info</h2>
   <div class="form-row">
-    <label>Fiscal Year: 2018</label>
+    <label>Fiscal Year: {{ fyear_num }}</label>
     <input type="button" value="Need a different year?" onclick="change_year()">
   </div>
   {{ forms.expense(budgets) }}
