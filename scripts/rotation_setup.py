@@ -78,7 +78,7 @@ def main():
         # DEAR FUTURE READER: when the columns change, just edit this
         last_name = row[0]
         first_name = row[1]
-        preferred_name = row[2] if row[2] != "" else None
+        preferred_name = row[2] if row[2] != "" and row[2] != first_name else None
         dinners = row[3:11]
         dinners = [d.lower() for d in dinners]
 
