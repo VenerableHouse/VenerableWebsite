@@ -189,7 +189,7 @@ CREATE TABLE rotation_prefrosh (
   votes_plus_three INTEGER NOT NULL DEFAULT 0,
   dinner INTEGER, -- defined in rotation/helpers.py (1-8)
   attended_dinner BOOLEAN,
-  comments BLOB,
+  comments TEXT,
   image_name VARCHAR(255),
   PRIMARY KEY (prefrosh_id),
   FOREIGN KEY (bucket_id) REFERENCES rotation_buckets (bucket_id)
