@@ -1,6 +1,6 @@
 import flask
 import sqlalchemy
-import cgi
+import html
 
 DINNERS = list(range(1, 9))
 BUCKETS = ['-2', '-1', '0', '0.5', '1', '1.5', '2', '3']
@@ -189,16 +189,12 @@ def change_bucket(prefrosh_id, new_bucket_name):
     """)
   flask.g.db.execute(query, b=new_bucket_name, pid=prefrosh_id)
 
-def escape_comments(str):
+def escape_comments(b):
   """Escapes comments so they don't mess with HTML formatting."""
-  if str is not None:
-    # cgi.escape escapes '<', '>', and '&'
-    # unicode.escape escapes newlines to '\n'
-    # the replace statement escapes apostrophes
-    # TODO: refactor this to something less hacky
-    ret = str.encode('unicode_escape')
-    ret = ret.replace("'", "\\'")
-    ret = cgi.escape(ret)
+  if b is not None:
+    # html.escape escapes '<', '>', and '&' and quotes
+    ret = str(b)
+    ret = html.escape(ret)
     return ret
   else:
-    return str
+    return str(b)
