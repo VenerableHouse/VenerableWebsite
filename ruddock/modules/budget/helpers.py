@@ -27,6 +27,25 @@ def get_payment_types():
   return { i+1: x for i, x in enumerate(__PTYPE_STRS) }
 
 
+def select_fyear_info(fyear_num):
+  """
+  Looks up the record for the given year, returning the record, and a boolean
+  indicating if it is the current year.
+
+  If None is given, returns the current year.
+  """
+
+  current = get_current_fyear()
+
+  if fyear_num is None:
+    return current, True
+
+  fyear_num = int(fyear_num)
+  record = [r for r in get_fyears() if r["fyear_num"] == fyear_num][0]
+
+  return record, current["fyear_num"] == fyear_num
+
+
 def get_current_fyear():
   """
   Looks up the record for the current year.

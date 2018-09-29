@@ -20,32 +20,24 @@ def route_portal():
 def route_summary():
   """Displays account and budget summaries."""
 
-  # Get the info we need
-  fyear_dict = {r["fyear_num"]: r["fyear_id"] for r in helpers.get_fyears()}
-  current_fyear = helpers.get_current_fyear()["fyear_num"]
+  fyear, is_current = helpers.select_fyear_info(
+    flask.request.args.get("fyear", None)
+  )
 
-  # Check what year the user gave, falling to the current year by default
-  fyear_num = int(flask.request.args.get("fyear", current_fyear))
-  fyear_id = fyear_dict[fyear_num]
+  fyear_id = fyear["fyear_id"]
+  fyear_num = fyear["fyear_num"]
 
-  # Decide how to display the year
-  if fyear_num == current_fyear:
-    fyear_str = "{} (Current)".format(fyear_num)
-  else:
-    fyear_str = str(fyear_num)
+  fyear_options = [(r["fyear_num"], r["fyear_id"]) for r in helpers.get_fyears()]
+  fyear_options.sort(key=lambda x: x[0], reverse=True)
 
   a_summary = helpers.get_account_summary()
   b_summary = helpers.get_budget_summary(fyear_id)
 
-  fyear_options = [
-    (num, fyear_dict[num])
-    for num in reversed(sorted(fyear_dict.keys()))
-  ]
-
   return flask.render_template('summary.html',
     a_summary=a_summary,
     b_summary=b_summary,
-    fyear_num=fyear_str,
+    fyear_num=fyear_num,
+    is_current=is_current,
     fyear_options=fyear_options)
 
 
@@ -72,11 +64,18 @@ def route_payments():
 def route_add_expense():
   """Provides an interface for submitting an expense."""
 
-  # TODO allow for multiple years
+  fyear, is_current = helpers.select_fyear_info(
+    flask.request.args.get("fyear", None)
+  )
+
+  fyear_id = fyear["fyear_id"]
+  fyear_num = fyear["fyear_num"]
+
+  fyear_options = [(r["fyear_num"], r["fyear_id"]) for r in helpers.get_fyears()]
+  fyear_options.sort(key=lambda x: x[0], reverse=True)
 
   # Get the lists for the dropdown menus
-  current_fyear = helpers.get_current_fyear()
-  budgets_list = helpers.get_budget_list(current_fyear["fyear_id"])
+  budgets_list = helpers.get_budget_list(fyear_id)
   payment_types = helpers.get_payment_types()
   accounts = helpers.get_accounts()
   payees = helpers.get_payees()
@@ -86,7 +85,10 @@ def route_add_expense():
     budgets=budgets_list,
     payment_types=payment_types,
     accounts=accounts,
-    payees=payees)
+    payees=payees,
+    fyear_options=fyear_options,
+    fyear_num=fyear_num,
+    is_current=is_current)
 
 
 @blueprint.route('/add_expense/submit', methods=['POST'])
