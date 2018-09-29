@@ -93,14 +93,15 @@ def get_payments():
 
 def get_transactions():
   """Gets list of all expenses + payments."""
+  # We need the USING clause because there's a payee_id in both tables
+  # TODO change the column in one of the tables to a different name
   query = sqlalchemy.text("""
     SELECT *
-    FROM budget_expenses
+    FROM budget_expenses LEFT JOIN budget_payments USING(payment_id)
       NATURAL JOIN budget_budgets
       NATURAL JOIN budget_fyears
-      NATURAL LEFT JOIN budget_payments
       NATURAL LEFT JOIN budget_accounts
-      NATURAL LEFT JOIN budget_payees
+      LEFT JOIN budget_payees ON budget_payments.payee_id = budget_payees.payee_id
     ORDER BY expense_id DESC
     """)
 

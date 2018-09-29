@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
 
+<!--TODO alter css so that the page is extra-wide-->
+
 {% block body %}
 
 <h2>Expense List</h2>
@@ -13,9 +15,9 @@
       <th>Date Incurred</th>
       <th>Description</th>
       <th>Amount</th>
-      <th>Payee</th>
-      <th>Payment Type</th>
       <th>Payment ID</th>
+      <th>Payee</th>
+      <th>Type</th>
       <th>Account</th>
       <th>Check #</th>
     </tr>
@@ -30,9 +32,9 @@
       <td>{{ r["date_incurred"] }}</td>
       <td>{{ r["description"] }}</td>
       <td>${{ r["cost"] }}</td>
+      <td>{{ r["payment_id"] or "--" }}</td>
       <td>{{ r["payee_name"] or "--" }}</td>
       <td>{{ ptypes[r["payment_type"]] or "--" }}</td>
-      <td>{{ r["payment_id"] or "--" }}</td>
       <td>{{ r["account_name"] or "--" }}</td>
       <td>{{ r["check_no"] or "--" }}</td>
     </tr>
