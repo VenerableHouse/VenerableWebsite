@@ -20,15 +20,19 @@ def route_portal():
 def route_summary():
   """Displays account and budget summaries."""
 
+  # Get the info we need
   fyear_dict = {r["fyear_num"]: r["fyear_id"] for r in helpers.get_fyears()}
+  current_fyear = helpers.get_current_fyear()["fyear_num"]
 
-  fyear_num = flask.request.args.get("fyear", None)
+  # Check what year the user gave, falling to the current year by default
+  fyear_num = int(flask.request.args.get("fyear", current_fyear))
+  fyear_id = fyear_dict[fyear_num]
 
-  if fyear_num is not None:
-    fyear_id = fyear_dict.get(int(fyear_num), None)
+  # Decide how to display the year
+  if fyear_num == current_fyear:
+    fyear_str = "{} (Current)".format(fyear_num)
   else:
-    fyear_id = helpers.get_current_fyear()["fyear_id"]
-    fyear_num = "Current"
+    fyear_str = str(fyear_num)
 
   a_summary = helpers.get_account_summary()
   b_summary = helpers.get_budget_summary(fyear_id)
@@ -41,7 +45,7 @@ def route_summary():
   return flask.render_template('summary.html',
     a_summary=a_summary,
     b_summary=b_summary,
-    fyear_num=fyear_num,
+    fyear_num=fyear_str,
     fyear_options=fyear_options)
 
 
