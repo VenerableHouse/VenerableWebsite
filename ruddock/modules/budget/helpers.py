@@ -1,10 +1,10 @@
 import flask
 import sqlalchemy
-import enum
+from enum import Enum
 
 import ruddock.validation_utils as vu
 
-class PaymentType(enum.IntEnum):
+class PaymentType(Enum):
   CASH = 1
   CHECK = 2
   DEBIT = 3
@@ -15,17 +15,18 @@ class PaymentType(enum.IntEnum):
 
   @classmethod
   def has_value(cls, value):
-    return value in [x.value for x in cls]
+    try:
+      PaymentType(value)
+      return True
+    except ValueError:
+      return False
 
-__PTYPE_STRS = ['Cash', 'Check', 'Debit', 'Online', 'Transfer', 'Other', "Income"]
+  @classmethod
+  def get_all(cls):
+    return {x.value: x.name.title() for x in PaymentType}
+
 
 # ==== SQL QUERIES ====
-
-def get_payment_types():
-  """Returns a dict of string representations for payment types."""
-  # TODO probably a better way...
-  return { i+1: x for i, x in enumerate(__PTYPE_STRS) }
-
 
 def select_fyear_info(fyear_num):
   """

@@ -47,7 +47,7 @@ def route_expenses():
   """Displays list of expenses."""
   return flask.render_template('expenses.html',
     expenses=helpers.get_transactions(),
-    ptypes=helpers.get_payment_types())
+    ptypes=PaymentType.get_all())
 
 
 @blueprint.route('/payments')
@@ -56,7 +56,7 @@ def route_payments():
   """Displays list of payments."""
   return flask.render_template('payments.html',
     payments=helpers.get_payments(),
-    ptypes=helpers.get_payment_types())
+    ptypes=PaymentType.get_all())
 
 
 @blueprint.route('/add_expense')
@@ -76,7 +76,7 @@ def route_add_expense():
 
   # Get the lists for the dropdown menus
   budgets_list = helpers.get_budget_list(fyear_id)
-  payment_types = helpers.get_payment_types()
+  payment_types = PaymentType.get_all()
   accounts = helpers.get_accounts()
   payees = helpers.get_payees()
 
@@ -131,7 +131,7 @@ def route_submit_expense(budget_id, date_incurred, amount, description,
       payment_id = None
     else:
       date_written = date_incurred  # non-deferred payments are instant
-      date_posted = None if payment_type == PaymentType.CHECK else date_written
+      date_posted = None if payment_type == PaymentType.CHECK.value else date_written
 
       payee_id = None
       payment_id = helpers.record_payment(
@@ -158,7 +158,7 @@ def route_unpaid():
   Displays unpaid expenses, and allows the user to create payments for them.
   """
 
-  payment_types = helpers.get_payment_types()
+  payment_types = PaymentType.get_all()
   accounts = helpers.get_accounts()
   expense_groups=helpers.get_unpaid_expenses()
   today = datetime.now().strftime("%Y-%m-%d")
@@ -178,7 +178,7 @@ def route_submit_unpaid(payee_id, payment_type, account_id, check_no,
   """Sends the payment to the database."""
 
   # The date posted is the same as the date written unless we're using a check
-  date_posted = None if (payment_type != PaymentType.CHECK) else date_written
+  date_posted = None if (payment_type != PaymentType.CHECK.value) else date_written
 
   # Server side validation
   total = helpers.get_unpaid_amount(payee_id)
@@ -217,7 +217,7 @@ def route_checks():
   """Displays all undeposited checks."""
   return flask.render_template('checks.html',
     checks=helpers.get_unposted_payments(),
-    ptypes=helpers.get_payment_types())
+    ptypes=PaymentType.get_all())
 
 
 @blueprint.route('/checks/submit', methods=['POST'])
