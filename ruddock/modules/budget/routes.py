@@ -81,7 +81,6 @@ def route_add_expense():
   payees = helpers.get_payees()
 
   return flask.render_template('add_expense.html',
-    fyear_num=current_fyear["fyear_num"],
     budgets=budgets_list,
     payment_types=payment_types,
     accounts=accounts,
