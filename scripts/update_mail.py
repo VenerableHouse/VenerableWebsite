@@ -21,9 +21,9 @@ def updateFromList(results, lst):
     try:
       f = tempfile.NamedTemporaryFile()
       for result in results:
-        f.write(result[0] + '\n')
+        f.write(result[0].encode() + b'\n')
       for addition in getAdditionalEmails(lst):
-        f.write(addition[0] + '\n')
+        f.write(addition[0].encode() + b'\n')
       f.flush() # flush so file can be read by `sync_members`
 
       # update mailman list
