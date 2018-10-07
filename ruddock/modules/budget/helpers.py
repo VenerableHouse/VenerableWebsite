@@ -1,10 +1,10 @@
 import flask
 import sqlalchemy
-import enum
+from enum import Enum
 
 import ruddock.validation_utils as vu
 
-class PaymentType(enum.IntEnum):
+class PaymentType(Enum):
   CASH = 1
   CHECK = 2
   DEBIT = 3
@@ -15,16 +15,36 @@ class PaymentType(enum.IntEnum):
 
   @classmethod
   def has_value(cls, value):
-    return value in [x.value for x in cls]
+    try:
+      PaymentType(value)
+      return True
+    except ValueError:
+      return False
 
-__PTYPE_STRS = ['Cash', 'Check', 'Debit', 'Online', 'Transfer', 'Other', "Income"]
+  @classmethod
+  def get_all(cls):
+    return {x.value: x.name.title() for x in PaymentType}
+
 
 # ==== SQL QUERIES ====
 
-def get_payment_types():
-  """Returns a dict of string representations for payment types."""
-  # TODO probably a better way...
-  return { i+1: x for i, x in enumerate(__PTYPE_STRS) }
+def select_fyear_info(fyear_num):
+  """
+  Looks up the record for the given year, returning the record, and a boolean
+  indicating if it is the current year.
+
+  If None is given, returns the current year.
+  """
+
+  current = get_current_fyear()
+
+  if fyear_num is None:
+    return current, True
+
+  fyear_num = int(fyear_num)
+  record = [r for r in get_fyears() if r["fyear_num"] == fyear_num][0]
+
+  return record, current["fyear_num"] == fyear_num
 
 
 def get_current_fyear():
@@ -74,14 +94,15 @@ def get_payments():
 
 def get_transactions():
   """Gets list of all expenses + payments."""
+  # We need the USING clause because there's a payee_id in both tables
+  # TODO change the column in one of the tables to a different name
   query = sqlalchemy.text("""
     SELECT *
-    FROM budget_expenses
+    FROM budget_expenses LEFT JOIN budget_payments USING(payment_id)
       NATURAL JOIN budget_budgets
       NATURAL JOIN budget_fyears
-      NATURAL LEFT JOIN budget_payments
       NATURAL LEFT JOIN budget_accounts
-      NATURAL LEFT JOIN budget_payees
+      LEFT JOIN budget_payees ON budget_payments.payee_id = budget_payees.payee_id
     ORDER BY expense_id DESC
     """)
 

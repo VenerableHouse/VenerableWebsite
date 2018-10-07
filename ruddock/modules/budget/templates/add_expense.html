@@ -27,14 +27,26 @@ $(document).ready(function() {
 
 
 {% block body %}
+<h2>Fiscal Year: {{ fyear_num }}</h2>
+
+<form method="get">
+  <select id="fyear_select" name="fyear">
+    <option selected disabled hidden>--</option>
+    {% for num, id in fyear_options %}
+    <option id=id>{{ num }}</option>
+    {% endfor %}
+  </select>
+  <input type="submit" value="Change Year">
+</form>
+
+{% if not is_current %}
+<p style="color: red"><b>WARNING: This expense will not be filed in the current fiscal year! Be sure that's what you intend.</b></p>
+{% endif %}
 
 <form action="{{ url_for('budget.route_submit_expense') }}" method="POST">
 
   <h2>Expense Info</h2>
-  <div class="form-row">
-    <label>Fiscal Year: {{ fyear_num }}</label>
-    <input type="button" value="Need a different year?" onclick="change_year()">
-  </div>
+
   {{ forms.expense(budgets) }}
 
   <h2>Payment Info</h2>

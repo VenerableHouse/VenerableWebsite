@@ -2,7 +2,12 @@
 
 {% block body %}
 
-<h2>Fiscal Year: {{ fyear_num }}</h2>
+<h2>
+  Fiscal Year: {{ fyear_num }}
+  {% if is_current %}
+  (Current)
+  {% endif %}
+</h2>
 
 <form method="get">
   <select id="fyear_select" name="fyear">
@@ -37,7 +42,7 @@
 </table>
 
 
-<h2>Budget Summary ({{ fyear_num }})</h2>
+<h2>Budget Summary</h2>
 
 <table>
 
