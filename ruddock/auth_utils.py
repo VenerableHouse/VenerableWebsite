@@ -373,3 +373,12 @@ def generate_admin_links():
     links.append(AdminLink('Budget',
       flask.url_for('budget.route_portal', _external=True)))
   return links
+
+def is_full_member(username):
+  query = sqlalchemy.text("""
+    SELECT membership_desc_short
+    FROM users NATURAL JOIN members NATURAL JOIN membership_types
+    WHERE username = :u
+  """)
+  result = flask.g.db.execute(query, u=username).first()
+  return result is not None and result['membership_desc_short'] == 'Full'

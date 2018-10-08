@@ -1,4 +1,5 @@
 config.py
+secrets.py
 
 ### Python gitignore
 ### See https://github.com/github/gitignore/
