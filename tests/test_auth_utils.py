@@ -9,6 +9,7 @@ import hashlib
 from ruddock import auth_utils
 from ruddock import misc_utils
 from ruddock import constants
+from ruddock.testing.fixtures import client
 
 def test_hash_password():
   """
@@ -79,3 +80,9 @@ def test_compare_secure_strings():
   # Make sure compare_secure_strings returns True and False when expected.
   assert misc_utils.compare_secure_strings(string1, string1) == True
   assert misc_utils.compare_secure_strings(string1, string2) == False
+
+def test_is_full_member(client):
+  assert auth_utils.is_full_member('twilight') # Full
+  assert auth_utils.is_full_member('dashie') # Full
+  assert not auth_utils.is_full_member('luna') # Social
+  assert not auth_utils.is_full_member('buford') # not a user

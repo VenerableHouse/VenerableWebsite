@@ -1,10 +1,11 @@
+import flask
 import pytest
 import sqlalchemy
 
 import ruddock
 from ruddock import app
 
-@pytest.fixture
+@pytest.yield_fixture
 def client():
   """Use the client fixture to test requests to the application."""
   ruddock.init("test")
@@ -14,4 +15,10 @@ def client():
   # Establish application context before running tests.
   ctx = app.app_context()
   ctx.push()
-  return app.test_client()
+  # Create database engine object.
+  engine = sqlalchemy.create_engine(app.config["DB_URI"], convert_unicode=True)
+  # Connect to the database and publish it in flask.g
+  flask.g.db = engine.connect()
+
+  yield app.test_client()
+  flask.g.db.close()

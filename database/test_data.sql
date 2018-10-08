@@ -22,7 +22,7 @@ INSERT INTO members
     1, 2010, 2014),
   -- user_id = 3
   ('1000003', 'Princess', 'Luna', NULL, 'luna@canter.lot',
-    1, 2007, 2009),
+    2, 2007, 2009),
   -- user_id = 4
   ('1000004', 'Princess', 'Celestia', NULL, 'celestia@canter.lot',
     1, 2007, 2009),

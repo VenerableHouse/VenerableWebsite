@@ -3,14 +3,51 @@
 <h2>Useful House Info</h2>
 <br />
 
+{% if full_member %}
 <h3>Door codes</h3>
 <table>
-<tr><td>Computer lab</td><td>4-12-3</td></tr>
-<tr><td>PGR</td><td>4-12-3</td></tr>
-<tr><td>O'Doms</td><td>45-2-3-1</td></tr>
-<tr><td>Kitchens</td><td>5-3-1-2-4</td></tr>
+  {% for room, code in secrets.DOOR_CODES.items() %}
+    <tr>
+      <td>{{ room }}</td>
+      <td>{{ code }}</td>
+    </tr>
+  {% endfor %}
+</table>
+<p>These codes change at the beginning of each school year.</p>
+
+<h3>Netflix account</h3>
+<table>
+  <tr>
+    <td><b>Email</b></td>
+    <td>{{ secrets.NETFLIX['email'] }}</td>
+  </tr>
+  <tr>
+    <td><b>Password</b></td>
+    <td>{{ secrets.NETFLIX['password'] }}</td>
+  </tr>
 </table>
 <br />
+
+<h3>Phones</h3>
+<table>
+  {% for location, extension in secrets.PHONES.items() %}
+    <tr>
+      <td>{{ location }}</td>
+      <td>626-395-{{ extension }}</td>
+    </tr>
+  {% endfor %}
+</table>
+<br />
+
+<h3>Pavilions card</h3>
+<p>
+  Use the 1.5 phone number
+  {% if '1.5' in secrets.PHONES %}
+    (626-395-{{ secrets.PHONES['1.5'] }})
+  {% endif %}
+  linked to Ruddock's membership card.
+</p>
+{% endif %}
 
 <h3>Printers</h3>
 <p>If you need help setting up a printer, don't hesitate to ask any IMSS rep.</p>
