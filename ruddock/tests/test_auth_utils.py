@@ -9,7 +9,6 @@ import hashlib
 from ruddock import auth_utils
 from ruddock import misc_utils
 from ruddock import constants
-from ruddock.testing.fixtures import client
 
 def test_hash_password():
   """

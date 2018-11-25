@@ -7,7 +7,6 @@ import http.client
 
 from ruddock.resources import Permissions
 from ruddock.testing import utils
-from ruddock.testing.fixtures import client
 
 def test_run_hassle(client):
   """Tests /hassle route."""

@@ -7,7 +7,6 @@ import sqlalchemy
 import http.client
 
 from ruddock.testing import utils
-from ruddock.testing.fixtures import client
 
 def test_show_memberlist(client):
   """Tests /members route."""

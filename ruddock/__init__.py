@@ -74,7 +74,7 @@ def init(environment_name):
   app.jinja_env.globals.update(
       current_year=lambda: datetime.datetime.now().year)
 
-  # Create database engine object. We'll create connections for each request
+  # Create database engine object. We'll create connections for each request.
   app.engine = sqlalchemy.create_engine(app.config["DB_URI"], convert_unicode=True)
 
 @app.before_request
