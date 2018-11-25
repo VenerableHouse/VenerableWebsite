@@ -5,8 +5,6 @@ Tests routes that are not in a module.
 import flask
 import http.client
 
-from ruddock.testing.fixtures import client
-
 def test_home(client):
   """Tests the / route."""
   response = client.get(flask.url_for('home'))

@@ -74,7 +74,7 @@ def init(environment_name):
   app.jinja_env.globals.update(
       current_year=lambda: datetime.datetime.now().year)
 
-  # Create database engine object. We'll create connections for each request
+  # Create database engine object. We'll create connections for each request.
   app.engine = sqlalchemy.create_engine(app.config["DB_URI"], convert_unicode=True)
 
 @app.before_request
@@ -82,7 +82,7 @@ def before_request():
   """Logic executed before request is processed."""
   
   # Create a connection to the database, and publish it in flask.g
-  # TODO this should be a session someday, I think
+  # TODO make this on-demand, running this hook makes testing a bit trickier
   flask.g.db = app.engine.connect()
 
 @app.teardown_request
