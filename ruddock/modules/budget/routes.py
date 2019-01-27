@@ -1,4 +1,5 @@
 import flask
+import http
 
 from datetime import datetime  # ugh
 
@@ -148,6 +149,37 @@ def route_submit_expense(budget_id, date_incurred, amount, description,
       flask.flash("An unexpected error occurred. Please find an IMSS rep.")
 
   return flask.redirect(flask.url_for("budget.route_add_expense"))
+
+
+@blueprint.route('/expense/<int:expense_id>')
+@login_required(Permissions.BUDGET)
+def route_show_expense(expense_id):
+  """
+  Displays an expense and allows you to edit it.
+  """
+
+  expense = helpers.get_expense(expense_id)
+
+  if expense is None:
+    flask.abort(http.client.NOT_FOUND)
+
+
+  budgets_list = helpers.get_budget_list(expense["fyear_id"])
+  payment_types = PaymentType.get_all()
+
+  return flask.render_template(
+    'edit_expense.html',
+    expense=expense,
+    budgets=budgets_list,
+    payment_types=payment_types,
+  )
+
+
+@blueprint.route('/expense/<int:expense_id>/submit', methods=['POST'])
+@login_required(Permissions.BUDGET)
+def route_edit_expense(expense_id):
+  # TODO lol
+  flask.abort(http.client.NOT_FOUND)
 
 
 @blueprint.route('/unpaid')

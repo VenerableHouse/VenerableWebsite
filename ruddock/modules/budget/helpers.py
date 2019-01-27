@@ -66,8 +66,8 @@ def get_current_fyear():
 def get_expenses():
   """Gets list of all expenses."""
   query = sqlalchemy.text("""
-    SELECT expense_id, budget_name, fyear_num, date_incurred, description, cost,
-        payment_type, payee_name, payment_id
+    SELECT expense_id, budget_id, budget_name, fyear_num, date_incurred,
+        description, cost, payee_name, payment_id
     FROM budget_expenses
       NATURAL JOIN budget_budgets
       NATURAL JOIN budget_fyears
@@ -76,6 +76,20 @@ def get_expenses():
     """)
 
   return flask.g.db.execute(query).fetchall()
+
+def get_expense(expense_id):
+  """Gets a particular expense, or None"""
+  query = sqlalchemy.text("""
+    SELECT expense_id, budget_id, budget_name, fyear_id, fyear_num,
+        date_incurred, description, cost, payee_name, payment_id
+    FROM budget_expenses
+      NATURAL JOIN budget_budgets
+      NATURAL JOIN budget_fyears
+      NATURAL LEFT JOIN budget_payees
+    WHERE expense_id = (:e)
+    """)
+
+  return flask.g.db.execute(query, e=expense_id).first()
 
 
 def get_payments():
