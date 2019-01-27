@@ -1,26 +1,30 @@
 <!-- Fields for an expense: budget, date incurred, amount, description -->
-{% macro expense(budgets) %}
+{% macro expense(budgets, expense=None) %}
 
 <div class="form-row">
   <label for="budget-id">Budget: </label>
   <select id="budget-id" name="budget-id">
-    <option value="" selected="selected">-- Select Budget --</option>
+    <option value="" {{ "selected" if expense is none else "" }}>
+    -- Select Budget --
+    </option>
     {% for row in budgets %}
-      <option value="{{ row["budget_id"] }}">{{ row["budget_name"] }}</option>
+      <option value="{{ row["budget_id"] }}" {{ "selected" if expense["budget_id"] == row["budget_id"] else "" }}>
+        {{ row["budget_name"] }}
+      </option>
     {% endfor %}}
   </select>
 </div>
 <div class="form-row">
   <label for="date-incurred">Date Incurred: </label>
-  <input type="date" id="date-incurred" name="date-incurred">
+  <input type="date" id="date-incurred" name="date-incurred" value="{{ expense['date_incurred'] }}">
 </div>
 <div class="form-row">
   <label for="amount">Amount: </label>
-  <input type="text" id="amount" name="amount">
+  <input type="text" id="amount" name="amount" value="{{ expense['cost'] }}">
 </div>
 <div class="form-row">
   <label for="description">Description: </label>
-  <textarea id="description" name="description"></textarea>
+  <textarea id="description" name="description">{{ expense['description'] }}</textarea>
 </div>
 
 {% endmacro %}

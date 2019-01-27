@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% import 'forms.html' as forms %}
+
+
+{% block head %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('budget.static', filename='css/forms.css') }}">
+{% endblock head %}
+
+
+{% block body %}
+{% set expense_id = expense["expense_id"] %}
+<form action="{{ url_for('budget.route_edit_expense', expense_id=expense_id) }}" method="POST">
+
+  <h2>Expense #{{ expense_id }}</h2>
+
+  {{ forms.expense(budgets, expense) }}
+
+<input type="submit" value="Edit Expense">
+
+</form>
+
+{% endblock body %}
