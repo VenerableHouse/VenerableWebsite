@@ -12,3 +12,7 @@
 .form-row input, textarea, select {
 	clear: both;
 }
+
+.form-row textarea {
+	width: 90%;
+}

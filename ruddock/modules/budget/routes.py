@@ -152,7 +152,7 @@ def route_submit_expense(budget_id, date_incurred, amount, description,
   return flask.redirect(flask.url_for("budget.route_add_expense"))
 
 
-@blueprint.route('/expense/<int:expense_id>')
+@blueprint.route('/expenses/<int:expense_id>')
 @login_required(Permissions.BUDGET)
 def route_show_expense(expense_id):
   """
@@ -167,12 +167,14 @@ def route_show_expense(expense_id):
 
   budgets_list = helpers.get_budget_list(expense["fyear_id"])
   payment_types = PaymentType.get_all()
+  payees = helpers.get_payees()
 
   return flask.render_template(
     'edit_expense.html',
     expense=expense,
     budgets=budgets_list,
     payment_types=payment_types,
+    payees=payees
   )
 
 
@@ -192,7 +194,7 @@ def route_edit_expense(expense_id, budget_id, date_incurred, amount, description
   amount_unchanged = expense["cost"] == Decimal(amount)
   payee_unchanged = expense["payee_id"] == int(payee_id)
 
-  # Can't change payment info if there's a pre-existing payment
+  # Can't change payment info if there's a linked payment
   # TODO soften this so debit purchaes aren't a PITA
 
   errs = helpers.test_predicates((
@@ -213,6 +215,31 @@ def route_edit_expense(expense_id, budget_id, date_incurred, amount, description
     flask.flash("Something went wrong during the edit, not sure what.")
 
   return flask.redirect(flask.url_for("budget.route_show_expense", expense_id=expense_id))
+
+
+@blueprint.route('/expense/delete', methods=['POST'])
+@login_required(Permissions.BUDGET)
+@get_args_from_form()
+def route_delete_expense(expense_id, budget_id, date_incurred, amount, description, payee_id, new_payee):
+  """Deletes the given expense."""
+
+  expense = helpers.get_expense(expense_id)
+  if expense is None:
+    flask.abort(http.client.NOT_FOUND)
+
+  existing_payment = expense["payment_id"] is not None
+
+  # Can't delete if there's a linked payment
+  # TODO soften this so debit purchaes aren't a PITA
+
+  if existing_payment:
+    flask.flash("Cannot delete expense if there is a linked payment.")
+    return flask.redirect(flask.url_for("budget.route_show_expense", expense_id=expense_id))
+
+  helpers.delete_expense(expense_id)
+
+  flask.flash("Success!")
+  return flask.redirect(flask.url_for("budget.route_expenses"))
   
 
 @blueprint.route('/unpaid')

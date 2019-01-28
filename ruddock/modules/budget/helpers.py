@@ -67,7 +67,7 @@ def get_expenses():
   """Gets list of all expenses."""
   query = sqlalchemy.text("""
     SELECT expense_id, budget_id, budget_name, fyear_num, date_incurred,
-        description, cost, payee_name, payment_id
+        description, cost, payee_id, payee_name, payment_id
     FROM budget_expenses
       NATURAL JOIN budget_budgets
       NATURAL JOIN budget_fyears
@@ -81,7 +81,7 @@ def get_expense(expense_id):
   """Gets a particular expense, or None"""
   query = sqlalchemy.text("""
     SELECT expense_id, budget_id, budget_name, fyear_id, fyear_num,
-        date_incurred, description, cost, payee_name, payment_id
+        date_incurred, description, cost, payee_id, payee_name, payment_id
     FROM budget_expenses
       NATURAL JOIN budget_budgets
       NATURAL JOIN budget_fyears
@@ -304,7 +304,6 @@ def record_expense(budget_id, date_incurred, description, amount, payment_id,
 def edit_expense(expense_id, budget_id, date_incurred, description, amount, payee_id):
   """
   Changes the details of the given expense.
-  Will not work if there is a payment already attached to this expense.
   """
 
   query = sqlalchemy.text("""
@@ -316,7 +315,7 @@ def edit_expense(expense_id, budget_id, date_incurred, description, amount, paye
       cost = (:amount),
       payee_id = (:payee_id)
     WHERE
-      expense_id = (:expense_id) AND payment_id IS NULL
+      expense_id = (:expense_id)
   """)
 
   rp = flask.g.db.execute(
@@ -327,6 +326,24 @@ def edit_expense(expense_id, budget_id, date_incurred, description, amount, paye
     description=description,
     amount=amount,
     payee_id=payee_id
+  )
+
+  return rp.rowcount != 0
+
+
+def delete_expense(expense_id):
+  """
+  Deletes the given expense.
+  """
+
+  query = sqlalchemy.text("""
+    DELETE FROM budget_expenses
+    WHERE expense_id = (:expense_id)
+  """)
+
+  rp = flask.g.db.execute(
+    query,
+    expense_id=expense_id,
   )
 
   return rp.rowcount != 0

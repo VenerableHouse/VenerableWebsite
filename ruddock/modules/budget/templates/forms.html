@@ -24,7 +24,9 @@
 </div>
 <div class="form-row">
   <label for="description">Description: </label>
-  <textarea id="description" name="description">{{ expense['description'] }}</textarea>
+  <div style="overflow: hidden">
+    <textarea id="description" name="description">{{ expense['description'] }}</textarea>
+  </div>
 </div>
 
 {% endmacro %}
@@ -60,14 +62,18 @@
 
 
 <!-- Fields for payee input, existing or new -->
-{% macro payee(payees) %}
+{% macro payee(payees, payee_id=None) %}
 
 <div class="form-row">
   <label for="payee-id">Existing Payee: </label>
   <select id="payee-id" name="payee-id">
-    <option value="" selected="selected">-- Select Payee --</option>
+    <option value="" {{ "selected" if payee_id is none else "" }}>
+      -- Select Payee --
+    </option>
     {% for row in payees %}
-      <option value="{{ row["payee_id"] }}">{{ row["payee_name"] }}</option>
+      <option value="{{ row["payee_id"] }}" {{ "selected" if payee_id == row["payee_id"] else "" }}>
+        {{ row["payee_name"] }}
+      </option>
     {% endfor %}
   </select>
 </div>

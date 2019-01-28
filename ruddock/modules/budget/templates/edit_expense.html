@@ -33,7 +33,16 @@
 
   {{ forms.expense(budgets, expense) }}
 
+  {{ forms.payee(payees, payee_id) }}
+
 <input type="submit" value="Edit Expense">
+
+<input
+  type="submit"
+  value="Delete Expense"
+  formaction="{{ url_for('budget.route_delete_expense') }}"
+  onclick="return confirm('Are you sure you want to delete this expense?');"
+  style="margin-left: 20px;">
 
 </form>
 
