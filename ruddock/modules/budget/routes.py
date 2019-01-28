@@ -2,6 +2,7 @@ import flask
 import http
 
 from datetime import datetime  # ugh
+from decimal import Decimal
 
 from ruddock.resources import Permissions
 from ruddock.decorators import login_required, get_args_from_form
@@ -175,12 +176,44 @@ def route_show_expense(expense_id):
   )
 
 
-@blueprint.route('/expense/<int:expense_id>/submit', methods=['POST'])
+@blueprint.route('/expense/edit', methods=['POST'])
 @login_required(Permissions.BUDGET)
-def route_edit_expense(expense_id):
-  # TODO lol
-  flask.abort(http.client.NOT_FOUND)
+@get_args_from_form()
+def route_edit_expense(expense_id, budget_id, date_incurred, amount, description, payee_id, new_payee):
+  """Changes the given expense."""
 
+  expense = helpers.get_expense(expense_id)
+  if expense is None:
+    flask.abort(http.client.NOT_FOUND)
+
+  existing_payment = expense["payment_id"] is not None
+  valid_expense = helpers.validate_expense(budget_id, date_incurred, amount,
+      description)
+  amount_unchanged = expense["cost"] == Decimal(amount)
+  payee_unchanged = expense["payee_id"] == int(payee_id)
+
+  # Can't change payment info if there's a pre-existing payment
+  # TODO soften this so debit purchaes aren't a PITA
+
+  errs = helpers.test_predicates((
+    (valid_expense, True, "Invalid expense."),
+    (amount_unchanged,  existing_payment, "Can't change amount with linked payment."),
+    (payee_unchanged,  existing_payment, "Can't change payee with linked payment."),
+  ))
+
+  if errs:
+    return flask.redirect(flask.url_for("budget.route_show_expense", expense_id=expense_id))
+
+  success = helpers.edit_expense(
+    expense_id, budget_id, date_incurred, description, amount, payee_id
+  )
+  if success:
+    flask.flash("Success!")
+  else:
+    flask.flash("Something went wrong during the edit, not sure what.")
+
+  return flask.redirect(flask.url_for("budget.route_show_expense", expense_id=expense_id))
+  
 
 @blueprint.route('/unpaid')
 @login_required(Permissions.BUDGET)

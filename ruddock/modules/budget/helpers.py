@@ -301,6 +301,37 @@ def record_expense(budget_id, date_incurred, description, amount, payment_id,
   )
 
 
+def edit_expense(expense_id, budget_id, date_incurred, description, amount, payee_id):
+  """
+  Changes the details of the given expense.
+  Will not work if there is a payment already attached to this expense.
+  """
+
+  query = sqlalchemy.text("""
+    UPDATE budget_expenses
+    SET
+      budget_id = (:budget_id),
+      date_incurred = (:date_incurred),
+      description = (:description),
+      cost = (:amount),
+      payee_id = (:payee_id)
+    WHERE
+      expense_id = (:expense_id) AND payment_id IS NULL
+  """)
+
+  rp = flask.g.db.execute(
+    query,
+    expense_id=expense_id,
+    budget_id=budget_id,
+    date_incurred=date_incurred,
+    description=description,
+    amount=amount,
+    payee_id=payee_id
+  )
+
+  return rp.rowcount != 0
+
+
 def record_payment(account_id, payment_type, amount, date_written, date_posted,
     payee_id, check_no):
   """Inserts a new payment into the database, returning its ID."""
