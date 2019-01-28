@@ -116,7 +116,7 @@ def get_transactions():
       NATURAL JOIN budget_budgets
       NATURAL JOIN budget_fyears
       NATURAL LEFT JOIN budget_accounts
-      LEFT JOIN budget_payees ON budget_payments.payee_id = budget_payees.payee_id
+      LEFT JOIN budget_payees ON budget_expenses.payee_id = budget_payees.payee_id
     ORDER BY expense_id DESC
     """)
 
