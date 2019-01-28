@@ -25,7 +25,7 @@
 
   <tbody>
     {% for r in expenses %}
-    <tr>
+    <tr class="link" onclick="location.href='{{ url_for('budget.route_show_expense', expense_id=r['expense_id']) }}'">
       <td>{{ r["expense_id"] }}</td>
       <td>{{ r["budget_name"] }}</td>
       <td>{{ r["fyear_num"] }}</td>
