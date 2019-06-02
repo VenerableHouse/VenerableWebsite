@@ -96,7 +96,7 @@ def get_payments():
   """Gets list of all payments."""
   query = sqlalchemy.text("""
     SELECT payment_id, account_name, payment_type, amount, date_written,
-        date_posted, payee_name, check_no
+        date_posted, payee_id, payee_name, check_no, account_id
     FROM budget_payments
       NATURAL JOIN budget_accounts
       NATURAL LEFT JOIN budget_payees

@@ -52,3 +52,33 @@ INSERT INTO users
   (2, 'dashie', '$pbkdf2_sha256$100000$5GtZuPlmtO3deXIOyEFwlS16$971393a31eaeb0446659b77117e5185c808e309e06113f2a7960ccd551a95bd9'),
   -- password = PrincessOfTheNight
   (3, 'luna', '$pbkdf2_sha256$100000$iXtMjvmJ1VzFRyrwmpQ7y9CT$ff5d9f62daaaad885b845ab2f3fea78069b0b4b4a03f089c46115d4981ad8f97');
+
+-- ------------
+-- BUDGET STUFF
+-- ------------
+
+INSERT INTO budget_accounts
+  (account_name, initial_balance)
+VALUES
+  ("MegaBank", 10000.00),
+  ("Piggy Bank", 00.50);
+
+INSERT INTO budget_fyears
+  (fyear_num, start_date, end_date)
+VALUES
+  -- fyear_id = 1
+  (2016, "2015-09-23", "2016-09-18"),
+  -- fyear_id = 2
+  (2017, "2016-09-19", "2017-09-18"),
+  -- fyear_id = 3
+  (2018, "2017-09-19", "2018-09-18"),
+  -- fyear_id = 4
+  (2019, "2018-09-19", "2019-09-18"),
+  -- fyear_id = 5
+  (2020, "2019-09-19", "2020-09-18");
+
+INSERT INTO budget_budgets
+  (budget_name, fyear_id, starting_amount)
+VALUES
+  ("Soc Team", 4, 600), 
+  ("Ath Team", 4, 400);
