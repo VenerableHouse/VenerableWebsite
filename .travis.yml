@@ -1,14 +1,12 @@
 language: python
 python:
   - "3.5"
-services:
-  - mariadb
-before_install:
-  - sudo apt-get install libmariadbclient-dev
+
+addons:
+  mariadb: "10.3"
+
 install:
   - pip install -r requirements.txt
-addons:
-  mariadb: "10.1"
 before_script:
   - mysql -u root < database/setup.sql
   - mysql -u ruddweb_test --password=public < database/reset.sql
