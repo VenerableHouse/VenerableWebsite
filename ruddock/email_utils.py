@@ -15,6 +15,11 @@ def send_email(to, msg, subject, use_prefix=True):
   msg['From'] = 'auto@ruddock.caltech.edu'
   msg['To'] = to
 
+  from ruddock import app
+  if app.config["TESTING"]:
+    print("In test mode, will not send email: {}".format(msg.as_string()))
+    return
+
   s = smtplib.SMTP('localhost')
   s.sendmail('auto@ruddock.caltech.edu', [to], msg.as_string())
   s.quit()
