@@ -15,16 +15,24 @@
 </table>
 <p>These codes change at the beginning of each school year.</p>
 
-<h3>Netflix account</h3>
+<h3>Accounts</h3>
 <table>
-  <tr>
-    <td><b>Email</b></td>
-    <td>{{ secrets.NETFLIX['email'] }}</td>
-  </tr>
-  <tr>
-    <td><b>Password</b></td>
-    <td>{{ secrets.NETFLIX['password'] }}</td>
-  </tr>
+  <thead>
+    <tr>
+      <th>Service</th>
+      <th>Email</th>
+      <th>Password</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for service, login in secrets.ACCOUNTS.items() %}
+      <tr>
+        <td>{{ service }}</td>
+        <td>{{ login['email'] }}</td>
+        <td>{{ login['password'] }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
 </table>
 <br />
 
