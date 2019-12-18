@@ -77,13 +77,18 @@ def init(environment_name):
   # Create database engine object. We'll create connections for each request
   app.engine = sqlalchemy.create_engine(app.config["DB_URI"], convert_unicode=True)
 
+  # Create sessionmaker object. We'll create a session for each request.
+  app.sessionmaker = sqlalchemy.orm.sessionmaker(bind=app.engine)
+
 @app.before_request
 def before_request():
   """Logic executed before request is processed."""
   
   # Create a connection to the database, and publish it in flask.g
-  # TODO this should be a session someday, I think
   flask.g.db = app.engine.connect()
+
+  # Also create a session for SqlAlchemy to use
+  flask.g.session = app.sessionmaker()
 
 @app.teardown_request
 def teardown_request(exception):

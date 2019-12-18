@@ -3,7 +3,7 @@
 {% block body %}
 
 <h2>
-  Fiscal Year: {{ fyear_num }}
+  Fiscal Year: {{ selected_year.fyear_num }}
   {% if is_current %}
   (Current)
   {% endif %}
@@ -12,8 +12,8 @@
 <form method="get">
   <select id="fyear_select" name="fyear">
     <option selected disabled hidden>--</option>
-    {% for num, id in fyear_options %}
-    <option id=id>{{ num }}</option>
+    {% for fy in all_fiscal_years %}
+    <option id={{fy.fyear_id}}>{{ fy.fyear_num }}</option>
     {% endfor %}
   </select>
   <input type="submit" value="Change Year">
@@ -31,10 +31,10 @@
   </thead>
 
   <tbody>
-    {% for r in a_summary %}
+    {% for a, spent in accounts %}
     <tr>
-      <td>{{ r["account_name"] }}</td>
-      <td>${{ r["bal"] }}</td>
+      <td>{{ a.account_name }}</td>
+      <td>${{ a.initial_balance - spent }}</td>
     </tr>
     {% endfor %}
   </tbody>
@@ -56,12 +56,12 @@
   </thead>
 
   <tbody>
-    {% for r in b_summary %}
+    {% for b, spent in budgets %}
     <tr>
-      <td>{{ r["budget_name"] }}</td>
-      <td>${{ r["starting_amount"] }}</td>
-      <td>${{ r["spent"] }}</td>
-      <td>${{ r["remaining"] }}</td>
+      <td>{{ b.budget_name }}</td>
+      <td>${{ b.starting_amount }}</td>
+      <td>${{ spent }}</td>
+      <td>${{ b.starting_amount - spent }}</td>
     </tr>
     {% endfor %}
   </tbody>

@@ -10,9 +10,9 @@
 
 
 {% block body %}
-{% set expense_id = expense["expense_id"] %}
-{% set payee_id = expense["payee_id"] %}
-{% set payment_id = expense["payment_id"] %}
+{% set expense_id = expense.expense_id %}
+{% set payee_id = expense.payee_id %}
+{% set payment_id = expense.payment_id %}
 
 <h2>Expense #{{ expense_id }}</h2>
 
@@ -25,7 +25,7 @@
   {% if not payment_id is none %}
     <p>
       There is already a payment (#{{ payment_id }}) linked to this expense!
-      You will be unable to edit the amount or payee of this expense. If you
+      You will be unable to edit the cost or payee of this expense. If you
       really need to do so, talk to IMSS and they'll tinker with the SQL tables
       for you.
     </p>
