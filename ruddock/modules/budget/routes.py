@@ -2,15 +2,13 @@ import flask
 import http
 import itertools
 
-from datetime import datetime, date
-from decimal import Decimal
 from sqlalchemy import func
 
 from ruddock.resources import Permissions
 from ruddock.decorators import login_required
 from ruddock.modules.budget import blueprint
 
-from .helpers import select_fyear, optional_int, flash_multiple
+from .helpers import select_fyear, optional_int, flash_multiple, FormParser
 from .schema import FiscalYear, Expense, Payment, Budget, Account, Payee, PaymentType
 
 
@@ -153,15 +151,13 @@ def route_submit_expense():
     exit_url = flask.url_for("budget.route_add_expense")
 
     # Fetch args from form
-    # TODO better parsing, w/ flask errors
-    budget_id = int(flask.request.form["budget-id"])
-    date_incurred = datetime.strptime(
-        flask.request.form["date-incurred"], "%Y-%m-%d"
-    ).date()
-    description = flask.request.form["description"]
-    cost = Decimal(flask.request.form["cost"])
-
-    defer_payment = "defer-payment" in flask.request.form
+    # TODO fold errors into flask.flash?
+    fp = FormParser(flask.request.form)
+    budget_id = fp.parse_int("budget-id")
+    date_incurred = fp.parse_date("date-incurred")
+    description = fp.parse_str("description")
+    cost = fp.parse_currency("cost")
+    defer_payment = fp.parse_checkbox("defer-payment")
 
     # Construct the expense
     expense = Expense(
@@ -179,9 +175,8 @@ def route_submit_expense():
     # If not, then we need to make a new payment, and use its ID. Payee ID is
     # not needed.
     if defer_payment:
-        # Fetch args from form
-        payee_id = int(flask.request.form["payee-id"])
-        new_payee = flask.request.form["new-payee"]
+        payee_id = fp.parse_int("payee-id")
+        new_payee = fp.parse_str("new-payee")
 
         if (payee_id and new_payee) or (not payee_id and not new_payee):
             flask.flash("Exactly one of payee ID and payee name should be specified!")
@@ -198,10 +193,9 @@ def route_submit_expense():
         # Link the payee to the new expense
         expense.payee_id = payee.payee_id
     else:
-        # Fetch args from form
-        payment_type = PaymentType(int(flask.request.form["payment-type"]))
-        account_id = int(flask.request.form["account-id"])
-        check_no = flask.request.form["check-no"] or None
+        payment_type = PaymentType(fp.parse_int("payment-type"))
+        account_id = fp.parse_int("account-id")
+        check_no = fp.parse_str("check-no") or None
 
         date_written = date_incurred  # non-deferred payments are instant
         date_posted = None if payment_type == PaymentType.CHECK else date_written
@@ -264,15 +258,14 @@ def route_edit_expense():
     """Changes the given expense."""
 
     # Fetch args from form
-    expense_id = int(flask.request.form["expense-id"])
-    budget_id = int(flask.request.form["budget-id"])
-    date_incurred = datetime.strptime(
-        flask.request.form["date-incurred"], "%Y-%m-%d"
-    ).date()
-    cost = Decimal(flask.request.form["cost"])
-    description = flask.request.form["description"]
-    payee_id = int(flask.request.form["payee-id"] or 0)
-    new_payee = flask.request.form.get("new-payee")
+    fp = FormParser(flask.request.form)
+    expense_id = fp.parse_int("expense-id")
+    budget_id = fp.parse_int("budget-id")
+    date_incurred = fp.parse_date("date-incurred")
+    cost = fp.parse_currency("cost")
+    description = fp.parse_str("description")
+    payee_id = fp.parse_int("payee-id")  # TODO what if it's NULL?
+    new_payee = fp.parse_str("new-payee")
 
     # Get the URL to redirect to
     exit_url = flask.url_for("budget.route_show_expense", expense_id=expense_id)
@@ -287,7 +280,7 @@ def route_edit_expense():
 
     existing_payment = expense.payment_id is not None
     valid_expense = True  # TODO
-    cost_changed = expense.cost != Decimal(cost)
+    cost_changed = expense.cost != cost
     payee_changed = expense.payee_id != int(payee_id)
 
     # Can't change payment info if there's a linked payment
@@ -320,7 +313,8 @@ def route_delete_expense():
     """Deletes the given expense."""
 
     # Fetch args from form
-    expense_id = int(flask.request.form["expense-id"])
+    fp = FormParser(flask.request.form)
+    expense_id = fp.parse_int("expense-id")
 
     # Get the expense
     expense = (
@@ -391,13 +385,12 @@ def route_submit_unpaid():
     """Sends the payment to the database."""
 
     # Fetch args from form
-    payee_id = int(flask.request.form["payee-id"])
-    payment_type = PaymentType(int(flask.request.form["payment-type"]))
-    account_id = int(flask.request.form["account-id"])
-    check_no = flask.request.form["check-no"] or None
-    date_written = datetime.strptime(
-        flask.request.form["date-written"], "%Y-%m-%d"
-    ).date()
+    fp = FormParser(flask.request.form)
+    payee_id = fp.parse_int("payee-id")
+    payment_type = PaymentType(fp.parse_int("payment-type"))
+    account_id = fp.parse_int("account-id")
+    check_no = fp.parse_str("check-no") or None
+    date_written = fp.parse_date("date-written")
 
     # The date posted is the same as the date written unless we're using a check
     date_posted = date_written if (payment_type != PaymentType.CHECK) else None
@@ -465,8 +458,9 @@ def route_process_check():
     exit_url = flask.url_for("budget.route_checks")
 
     # Fetch args from form
-    payment_id = int(flask.request.form["payment-id"])
-    action = flask.request.form["action"]
+    fp = FormParser(flask.request.form)
+    payment_id = fp.parse_int("payment-id")
+    action = fp.parse_str("action")
 
     # Get the list of unposted payments
     unposted = (
@@ -481,7 +475,7 @@ def route_process_check():
     errs = []
     if payment_id not in unposted_ids:
         errs.append(f"Payment #{payment_id} is not unposted!")
-    if action == "Post" and not flask.request.form["date-posted"]:
+    if action == "Post" and not "date-posted" not in fp.data:
         errs.append("Need to specify the date the payment posted!")
 
     if flash_multiple(errs):
@@ -490,9 +484,7 @@ def route_process_check():
     # Decide what to do
     if action == "Post":
         # Set the date_posted of the payment
-        date_posted = datetime.strptime(
-            flask.request.form["date-posted"], "%Y-%m-%d"
-        ).date()
+        date_posted = fp.parse_date("date-posted")
 
         flask.g.session.query(Payment).filter(Payment.payment_id == payment_id).update(
             {"date_posted": date_posted}
