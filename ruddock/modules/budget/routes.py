@@ -4,6 +4,7 @@ import itertools
 
 from sqlalchemy import func
 
+from ruddock.sqlalchemy_utils import nonnull_sum
 from ruddock.resources import Permissions
 from ruddock.decorators import login_required
 from ruddock.modules.budget import blueprint
@@ -34,15 +35,11 @@ def route_summary():
         flask.g.session, optional_int(flask.request.args.get("fyear", None))
     )
 
-    # handy-dandy helper function: sum, but empty sums are 0
-    def null_sum(col):
-      return func.coalesce(func.sum(col), 0)
-
     # Get budgets and how much each has spent
     budgets = (
       flask.g.session.query(
         Budget,
-        null_sum(Expense.cost).label("spent"),
+        nonnull_sum(Expense.cost).label("spent"),
       )
       .outerjoin(Expense)  # left join
       .filter(Budget.fyear_id == selected_year.fyear_id)
@@ -58,14 +55,14 @@ def route_summary():
     subquery = (
       flask.g.session.query(
         Payment.account_id,
-        null_sum(Payment.amount).label("spent")
+        nonnull_sum(Payment.amount).label("spent")
       )
       .filter(Payment.date_posted != None)
       .group_by(Payment.account_id)
       .subquery()
     )
     accounts = (
-      flask.g.session.query(Account, subquery.c.spent)
+      flask.g.session.query(Account, func.coalesce(subquery.c.spent, 0))
       .outerjoin(subquery)
       .order_by(Account.account_name)
       .all()

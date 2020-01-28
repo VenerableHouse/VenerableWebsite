@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Type
 
-from sqlalchemy import Integer, TypeDecorator
+from sqlalchemy import func, Integer, TypeDecorator
 
 class IntEnum(TypeDecorator):
     impl = Integer
@@ -22,3 +22,7 @@ class IntEnum(TypeDecorator):
 
     def process_result_value(self, value: int, dialect) -> Enum:
         return self.enum_type(value)
+
+# handy-dandy helper function: sum, but empty sums are 0
+def nonnull_sum(col):
+  return func.coalesce(func.sum(col), 0)

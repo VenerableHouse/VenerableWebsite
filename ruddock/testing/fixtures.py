@@ -15,10 +15,17 @@ def client():
   # Establish application context before running tests.
   ctx = app.app_context()
   ctx.push()
-  # Create database engine object.
-  engine = sqlalchemy.create_engine(app.config["DB_URI"], convert_unicode=True)
-  # Connect to the database and publish it in flask.g
-  flask.g.db = engine.connect()
+
+  # TODO right now we set these two in before_request, which runs
+  # when a request context is pushed. We shouldn't necessarily be
+  # doing this; flask.g is a part of the application context, which
+  # comes first. Apparently it's conventional to just allocate the
+  # db connection on request?
+  # But for now, we'll sneak in the initialization here :)
+  flask.g.db = app.engine.connect()
+  flask.g.session = app.sessionmaker()
 
   yield app.test_client()
-  flask.g.db.close()
+
+  if flask.g.db is not None:
+    flask.g.db.close()
