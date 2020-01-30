@@ -1,6 +1,6 @@
 language: python
 python:
-  - "3.5"
+  - "3.6"
 
 addons:
   mariadb: "10.3"
@@ -10,5 +10,7 @@ install:
 before_script:
   - mysql -u root < database/setup.sql
   - mysql -u ruddweb_test --password=public < database/reset.sql
+  # necessary for pytest to discover the module on Travis
+  - export PYTHONPATH=$PYTHONPATH:$(pwd)
 script:
   - py.test --cache-clear
