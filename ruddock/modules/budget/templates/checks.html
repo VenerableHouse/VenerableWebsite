@@ -39,15 +39,15 @@
     </tr>
   </thead>
   <tbody>
-    {% for r in checks %}
+    {% for p in unposted_payments %}
     <tr>
-      <td>{{ r["payment_id"] }}</td>
-      <td>{{ r["account_name"] }}</td>
-      <td>{{ ptypes[r["payment_type"]] }}</td>
-      <td>${{ r["amount"] }}</td>
-      <td>{{ r["date_written"] }}</td>
-      <td>{{ r["payee_name"] }}</td>
-      <td>{{ r["check_no"] }}</td>
+      <td>{{ p.payment_id }}</td>
+      <td>{{ p.account.account_name }}</td>
+      <td>{{ p.payment_type.name }}</td>
+      <td>${{ p.amount }}</td>
+      <td>{{ p.date_written }}</td>
+      <td>{{ p.payee.payee_name }}</td>
+      <td>{{ p.check_no or "--" }}</td>
     </tr>
     {% endfor %}
   </tbody>

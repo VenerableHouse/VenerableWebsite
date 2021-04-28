@@ -14,7 +14,7 @@
       <th>FY</th>
       <th>Date Incurred</th>
       <th>Description</th>
-      <th>Amount</th>
+      <th>Cost</th>
       <th>Payment ID</th>
       <th>Payee</th>
       <th>Type</th>
@@ -24,19 +24,20 @@
   </thead>
 
   <tbody>
-    {% for r in expenses %}
-    <tr class="link" onclick="location.href='{{ url_for('budget.route_show_expense', expense_id=r['expense_id']) }}'">
-      <td>{{ r["expense_id"] }}</td>
-      <td>{{ r["budget_name"] }}</td>
-      <td>{{ r["fyear_num"] }}</td>
-      <td>{{ r["date_incurred"] }}</td>
-      <td>{{ r["description"] }}</td>
-      <td>${{ r["cost"] }}</td>
-      <td>{{ r["payment_id"] or "--" }}</td>
-      <td>{{ r["payee_name"] or "--" }}</td>
-      <td>{{ ptypes[r["payment_type"]] or "--" }}</td>
-      <td>{{ r["account_name"] or "--" }}</td>
-      <td>{{ r["check_no"] or "--" }}</td>
+    {% for e in expenses %}
+    <tr class="link" onclick="location.href='{{ url_for('budget.route_show_expense', expense_id=e.expense_id) }}'">
+      <!-- TODO is there a ?. like operator? -->
+      <td>{{ e.expense_id }}</td>
+      <td>{{ e.budget.budget_name }}</td>
+      <td>{{ e.budget.fiscal_year.fyear_num }}</td>
+      <td>{{ e.date_incurred }}</td>
+      <td>{{ e.description }}</td>
+      <td>${{ e.cost }}</td>
+      <td>{{ e.payment.payment_id if e.payment else "--" }}</td>
+      <td>{{ e.payee.payee_name if e.payee else "--" }}</td>
+      <td>{{ e.payment.payment_type.name if e.payment else "--" }}</td>
+      <td>{{ e.payment.account.account_name if e.payment else "--" }}</td>
+      <td>{{ e.payment.check_no if e.payment and e.payment.check_no else "--" }}</td>
     </tr>
     {% endfor %}
   </tbody>

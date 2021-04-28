@@ -15,14 +15,14 @@
 <hr>
 No client side validation for now. If you submit an invalid request, you'll have to start again.
 <hr>
-{% if expense_groups %}
-  {% for payee_id, payee_name, total, expenses in expense_groups %}
-    <h3>{{ payee_name }}: ${{ total }}</h3>
+{% if unpaid_grouped %}
+  {% for payee, expenses in unpaid_grouped %}
+    <h3>{{ payee.payee_name }}: ${{ expenses | sum(attribute="cost") }}</h3>
     <form action="{{ url_for('budget.route_submit_unpaid') }}" method="POST">
       <!-- hidden input tags so that POST sends this -->
-      <input type="hidden" id="payee-id" name="payee-id" value="{{ payee_id }}">
+      <input type="hidden" id="payee-id" name="payee-id" value="{{ payee.payee_id }}">
       <!-- visible stuff -->
-      {{ forms.payment(payment_types, accounts) }}
+      {{ forms.payment(payment_type_enum, accounts) }}
       <div class="form-row">
         <label for="date-written">Date Written:</label>
         <input type="date" id="date-written" name="date-written" value={{ today }}>
@@ -40,14 +40,14 @@ No client side validation for now. If you submit an invalid request, you'll have
           </tr>
         </thead>
         <tbody>
-          {% for r in expenses %}
+          {% for e in expenses %}
             <tr>
-              <td>{{ r["expense_id"] }}</td>
-              <td>{{ r["budget_name"] }}</td>
-              <td>{{ r["fyear_num"] }}</td>
-              <td>{{ r["date_incurred"] }}</td>
-              <td>{{ r["description"] }}</td>
-              <td>${{ r["cost"] }}</td>
+              <td>{{ e.expense_id }}</td>
+              <td>{{ e.budget.budget_name }}</td>
+              <td>{{ e.budget.fiscal_year.fyear_num }}</td>
+              <td>{{ e.date_incurred }}</td>
+              <td>{{ e.description }}</td>
+              <td>${{ e.cost }}</td>
             </tr>
           {% endfor %}
         </tbody>

@@ -1,4 +1,4 @@
-<!-- Fields for an expense: budget, date incurred, amount, description -->
+<!-- Fields for an expense: budget, date incurred, cost, description -->
 {% macro expense(budgets, expense=None) %}
 
 <div class="form-row">
@@ -7,25 +7,25 @@
     <option value="" {{ "selected" if expense is none else "" }}>
     -- Select Budget --
     </option>
-    {% for row in budgets %}
-      <option value="{{ row["budget_id"] }}" {{ "selected" if expense["budget_id"] == row["budget_id"] else "" }}>
-        {{ row["budget_name"] }}
+    {% for b in budgets %}
+      <option value="{{ b.budget_id }}" {{ "selected" if expense.budget_id == b.budget_id else "" }}>
+        {{ b.budget_name }}
       </option>
     {% endfor %}}
   </select>
 </div>
 <div class="form-row">
   <label for="date-incurred">Date Incurred: </label>
-  <input type="date" id="date-incurred" name="date-incurred" value="{{ expense['date_incurred'] }}">
+  <input type="date" id="date-incurred" name="date-incurred" value="{{ expense.date_incurred }}">
 </div>
 <div class="form-row">
-  <label for="amount">Amount: </label>
-  <input type="text" id="amount" name="amount" value="{{ expense['cost'] }}">
+  <label for="cost">Cost: </label>
+  <input type="text" id="cost" name="cost" value="{{ expense.cost }}">
 </div>
 <div class="form-row">
   <label for="description">Description: </label>
   <div style="overflow: hidden">
-    <textarea id="description" name="description">{{ expense['description'] }}</textarea>
+    <textarea id="description" name="description">{{ expense.description }}</textarea>
   </div>
 </div>
 
@@ -33,14 +33,14 @@
 
 
 <!-- Fields for a payment: type, account, check # -->
-{% macro payment(payment_types, accounts) %}
+{% macro payment(payment_type_enum, accounts) %}
 
 <div class="form-row">
   <label for="payment-type">Payment Type: </label>
   <select id="payment-type" name="payment-type">
     <option value="" selected="selected">-- Select Type --</option>
-    {% for i, t in payment_types.items() %}
-      <option value={{i}}>{{t}}</option>
+    {% for pt in payment_type_enum %}
+      <option value={{pt.value}}>{{pt.name}}</option>
     {% endfor %}
   </select>
 </div>
@@ -48,8 +48,8 @@
   <label for="account-id">Account: </label>
   <select id="account-id" name="account-id">
     <option value="" selected="selected">-- Select Account --</option>
-    {% for row in accounts %}
-      <option value="{{ row["account_id"] }}">{{ row["account_name"] }}</option>
+    {% for a in accounts %}
+      <option value="{{ a.account_id }}">{{ a.account_name }}</option>
     {% endfor %}
   </select>
 </div>
@@ -70,9 +70,9 @@
     <option value="" {{ "selected" if payee_id is none else "" }}>
       -- Select Payee --
     </option>
-    {% for row in payees %}
-      <option value="{{ row["payee_id"] }}" {{ "selected" if payee_id == row["payee_id"] else "" }}>
-        {{ row["payee_name"] }}
+    {% for p in payees %}
+      <option value="{{ p.payee_id }}" {{ "selected" if payee_id == p.payee_id else "" }}>
+        {{ p.payee_name }}
       </option>
     {% endfor %}
   </select>

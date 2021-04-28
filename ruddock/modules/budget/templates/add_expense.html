@@ -27,13 +27,13 @@ $(document).ready(function() {
 
 
 {% block body %}
-<h2>Fiscal Year: {{ fyear_num }}</h2>
+<h2>Fiscal Year: {{ selected_fy.fyear_num }}</h2>
 
 <form method="get">
   <select id="fyear_select" name="fyear">
     <option selected disabled hidden>--</option>
-    {% for num, id in fyear_options %}
-    <option id=id>{{ num }}</option>
+    {% for fy in all_fiscal_years %}
+    <option id=fy.fyear_id>{{ fy.fyear_num }}</option>
     {% endfor %}
   </select>
   <input type="submit" value="Change Year">
@@ -53,7 +53,7 @@ $(document).ready(function() {
     <label for="defer-payment">Defer Payment?</label>
     <input type="checkbox" id="defer-payment" name="defer-payment" onclick="toggle_defer()">
   <div id="direct-payment">
-    {{ forms.payment(payment_types, accounts) }}
+    {{ forms.payment(payment_type_enum, accounts) }}
   </div>
   <div id="deferred-payment">
     {{ forms.payee(payees) }}
