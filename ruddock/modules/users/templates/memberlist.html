@@ -3,21 +3,48 @@
 {% block body %}
 <script src="{{ url_for('static', filename='js/tablesort.min.js') }}"></script>
 <h2>House Lists</h2>
-{# Show link to change current/alumni filtering #}
-{% if search_type == 'current' %}
-  Currently showing only current students. View
-  <a href="{{ url_for('users.show_memberlist') }}">all Rudds</a> or
-  <a href="{{ url_for('users.show_memberlist', search_type='alumni') }}">only alumni</a>.
-{% elif search_type == 'alumni' %}
-  Currently showing only alumni. View
-  <a href="{{ url_for('users.show_memberlist') }}">all Rudds</a> or
-  <a href="{{ url_for('users.show_memberlist', search_type='current') }}">only current students</a>.
-{% else %}
-  Currently showing all Rudds. View only
-  <a href="{{ url_for('users.show_memberlist', search_type='current') }}">current students</a> or
-  <a href="{{ url_for('users.show_memberlist', search_type='alumni') }}">alumni</a>.
-{% endif %}
-Click on the columns to sort.
+<script>
+  function memberListDropdownFunction() {
+    document.getElementById("member-list-dropdown").classList.toggle("member-list-dropdown-show");
+  }
+  window.onclick = function(event) {
+    if (!event.target.matches(".member-list-dropbtn")) {
+      var dropdowns = document.getElementsByClassName("member-list-dropdown-content");
+      var i;
+      for (i = 0; i < dropdowns.length; i ++){
+        var openDropdown = dropdowns[i];
+        if (openDropdown.classList.contains("member-list-dropdown-show")) {
+          openDropdown.classList.remove("member-list-dropdown-show");
+        }
+      }
+    }
+  }
+</script>
+Currently showing {{search_type}} Rudds.<br>
+Click on the columns to sort, or
+<div class="member-list-dropdown">
+  <button onclick="memberListDropdownFunction()" class="member-list-dropbtn">click here</button>
+  <div class="member-list-dropdown-content" id="member-list-dropdown">
+    <a href="{{ url_for('users.show_memberlist', search_type='all') }}">all</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='current') }}">current</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='alumni') }}">alumni</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='grad2020') }}">grad2020</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='grad2019') }}">grad2019</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='grad2018') }}">grad2018</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='grad2017') }}">grad2017</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='grad2016') }}">grad2016</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='grad2015') }}">grad2015</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='grad2014') }}">grad2014</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='grad2013') }}">grad2013</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='grad2012') }}">grad2012</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='grad2011') }}">grad2011</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='grad2010') }}">grad2010</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='grad2009') }}">grad2009</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='grad2008') }}">grad2008</a>
+    <a href="{{ url_for('users.show_memberlist', search_type='grad2007') }}">grad2007</a>
+  </div>
+</div>
+ to select a different filter.
 <br><br>
 
 <table class="userlist" id="user-table">
