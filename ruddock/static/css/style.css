@@ -274,6 +274,9 @@ table th.sort-up:after {
     padding: 5px;
     margin: 0px;
 }
+.member-list-dropbtn:hover {
+    background-color: #dddddd;
+}
 .member-list-dropdown {
     position: relative;
     display: inline-block;
@@ -283,6 +286,9 @@ table th.sort-up:after {
     position: absolute;
     z-index: 1;
     background-color: #e8e8e8;
+}
+.member-list-dropdown-link a:hover {
+    background-color: #dddddd;
 }
 .member-list-dropdown-content a {
     display: block;

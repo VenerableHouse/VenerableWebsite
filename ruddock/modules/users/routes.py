@@ -7,26 +7,6 @@ from ruddock import auth_utils
 from ruddock.decorators import login_required
 from ruddock.modules.users import blueprint, helpers
 
-search_filters_all = [
-    'all',
-    'current',
-    'alumni',
-    'grad2020',
-    'grad2019',
-    'grad2018',
-    'grad2017',
-    'grad2016',
-    'grad2015',
-    'grad2014',
-    'grad2013',
-    'grad2012',
-    'grad2011',
-    'grad2010',
-    'grad2009',
-    'grad2008',
-    'grad2007'
-]
-
 @blueprint.route('/list', defaults={'search_type': 'all'})
 @blueprint.route('/list/<search_type>')
 @login_required()
@@ -37,6 +17,7 @@ def show_memberlist(search_type):
   """
   # If search_type is not a valid value (someone is messing with the URL),
   # abort the request.
+  search_filters_all = ['all', 'current', 'alumni'] + helpers.get_all_grad_years()
   if search_type not in search_filters_all:
     flask.abort(http.client.NOT_FOUND)
 
@@ -44,7 +25,8 @@ def show_memberlist(search_type):
   return flask.render_template(
       'memberlist.html',
       memberlist=memberlist,
-      search_type=search_type)
+      search_type=search_type,
+      search_terms=search_filters_all)
 
 @blueprint.route('/view/<username>')
 @login_required()
