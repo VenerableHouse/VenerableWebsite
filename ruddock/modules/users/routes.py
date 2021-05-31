@@ -17,14 +17,16 @@ def show_memberlist(search_type):
   """
   # If search_type is not a valid value (someone is messing with the URL),
   # abort the request.
-  if search_type not in ['all', 'current', 'alumni']:
+  search_filters_all = ['all', 'current', 'alumni'] + helpers.get_all_grad_years()
+  if search_type not in search_filters_all:
     flask.abort(http.client.NOT_FOUND)
 
   memberlist = helpers.get_memberlist(search_type)
   return flask.render_template(
       'memberlist.html',
       memberlist=memberlist,
-      search_type=search_type)
+      search_type=search_type,
+      search_terms=search_filters_all)
 
 @blueprint.route('/view/<username>')
 @login_required()

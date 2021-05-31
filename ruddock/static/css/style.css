@@ -262,3 +262,42 @@ table th.sort-up:after {
   border-bottom:none;
   border-width:4px 4px 0;
 }
+
+/* Member-sort Dropdown */
+.member-list-dropbtn {
+    color: black;
+    font-family: "Roboto", Helvetica, Tahoma, Arial, sans-serif;
+    border: none;
+    cursor: pointer;
+    border: 0px;
+    background-color: #e8e8e8;
+    padding: 5px;
+    margin: 0px;
+}
+.member-list-dropbtn:hover {
+    background-color: #dddddd;
+}
+.member-list-dropdown {
+    position: relative;
+    display: inline-block;
+}
+.member-list-dropdown-content {
+    display: none;
+    position: absolute;
+    z-index: 1;
+    background-color: #e8e8e8;
+}
+.member-list-dropdown-link a:hover {
+    background-color: #dddddd;
+}
+.member-list-dropdown-content a {
+    display: block;
+    text-decoration: none;
+    padding: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+    color: black;
+}
+.member-list-dropdown-show {
+    display: block;
+}
