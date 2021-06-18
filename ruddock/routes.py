@@ -17,6 +17,7 @@ def home():
 @login_required()
 def show_info():
   """Shows info page on door combos, printers, etc."""
+  # TODO - if desired, add excomm flag to show/hide ExComm Materials link
   return flask.render_template('info.html',
     full_member=is_full_member(flask.session['username']),
     secrets=secrets)
