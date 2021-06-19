@@ -1,4 +1,6 @@
+import csv
 import flask
+import io
 import sqlalchemy
 from enum import Enum
 
@@ -475,3 +477,34 @@ def validate_payee(payee_id, payee_name):
   existing_payee = vu.validate_integer(payee_id, flash_errors=False)
   new_payee = len(payee_name) > 0
   return (existing_payee != new_payee)
+
+
+def download_expenses(filename='expenses.csv'):
+  expenses = get_transactions()
+  ptypes = PaymentType.get_all()
+  fields = ["expense_id", "budget_name", "fyear_num", "date_incurred",
+            "description", "cost", "payment_id", "payee_name", "payment_type",
+            "account_name", "check_no"]
+  # If the first title is "ID" there is a formatting issue with Excel
+  titles = ["Expense ID", "Budget", "FY", "Date Incurred", "Description",
+            "Amount", "Payment ID", "Payee", "Type", "Account", "Check"]
+
+  # The approach is outlined at "Python Flask send_file StringIO blank files"
+  # and "How can I generate file on the fly and delete it after download?"
+  proxy = io.StringIO()
+  wr = csv.DictWriter(proxy, fields)
+  wr.writerow(dict(zip(fields, titles)))
+  for r in expenses:
+    r = dict({key:r[key] for key in fields})
+    if r["payment_type"] != None:
+        r["payment_type"] = ptypes[r["payment_type"]]
+    else:
+        r["payment_type"] = None
+    wr.writerow(r)
+
+  download = io.BytesIO()
+  download.write(proxy.getvalue().encode())
+  download.seek(0)
+  proxy.close()
+
+  return flask.send_file(download, as_attachment=True, attachment_filename=filename)
