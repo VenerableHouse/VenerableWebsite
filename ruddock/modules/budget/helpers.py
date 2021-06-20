@@ -479,7 +479,7 @@ def validate_payee(payee_id, payee_name):
   return (existing_payee != new_payee)
 
 
-def download_expenses(filename='expenses.csv'):
+def download_expenses():
   expenses = get_transactions()
   ptypes = PaymentType.get_all()
   fields = ["expense_id", "budget_name", "fyear_num", "date_incurred",
@@ -489,22 +489,20 @@ def download_expenses(filename='expenses.csv'):
   titles = ["Expense ID", "Budget", "FY", "Date Incurred", "Description",
             "Amount", "Payment ID", "Payee", "Type", "Account", "Check"]
 
-  # The approach is outlined at "Python Flask send_file StringIO blank files"
-  # and "How can I generate file on the fly and delete it after download?"
+  # References: stackoverflow.com/a/45111660 and stackoverflow.com/a/14614920
   proxy = io.StringIO()
   wr = csv.DictWriter(proxy, fields)
   wr.writerow(dict(zip(fields, titles)))
-  for r in expenses:
-    r = dict({key:r[key] for key in fields})
-    if r["payment_type"] != None:
-        r["payment_type"] = ptypes[r["payment_type"]]
-    else:
-        r["payment_type"] = None
-    wr.writerow(r)
+  for db_row in expenses:
+    csv_row = {key: db_row[key] for key in fields}
+    if csv_row["payment_type"] is not None:
+      csv_row["payment_type"] = ptypes[csv_row["payment_type"]]
+    wr.writerow(csv_row)
 
   download = io.BytesIO()
   download.write(proxy.getvalue().encode())
   download.seek(0)
   proxy.close()
 
-  return flask.send_file(download, as_attachment=True, attachment_filename=filename)
+  return flask.send_file(download, as_attachment=True,
+                         attachment_filename="expenses.csv")
