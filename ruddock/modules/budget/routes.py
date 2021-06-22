@@ -52,6 +52,13 @@ def route_expenses():
     ptypes=PaymentType.get_all())
 
 
+@blueprint.route('/expenses/download')
+@login_required(Permissions.BUDGET)
+def route_download_expenses():
+  """Downloads list of expenses."""
+  return helpers.download_expenses()
+
+
 @blueprint.route('/payments')
 @login_required(Permissions.BUDGET)
 def route_payments():
@@ -240,7 +247,7 @@ def route_delete_expense(expense_id, budget_id, date_incurred, amount, descripti
 
   flask.flash("Success!")
   return flask.redirect(flask.url_for("budget.route_expenses"))
-  
+
 
 @blueprint.route('/unpaid')
 @login_required(Permissions.BUDGET)

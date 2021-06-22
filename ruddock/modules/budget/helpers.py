@@ -1,4 +1,6 @@
+import csv
 import flask
+import io
 import sqlalchemy
 from enum import Enum
 
@@ -475,3 +477,32 @@ def validate_payee(payee_id, payee_name):
   existing_payee = vu.validate_integer(payee_id, flash_errors=False)
   new_payee = len(payee_name) > 0
   return (existing_payee != new_payee)
+
+
+def download_expenses():
+  expenses = get_transactions()
+  ptypes = PaymentType.get_all()
+  fields = ["expense_id", "budget_name", "fyear_num", "date_incurred",
+            "description", "cost", "payment_id", "payee_name", "payment_type",
+            "account_name", "check_no"]
+  # If the first title is "ID" there is a formatting issue with Excel
+  titles = ["Expense ID", "Budget", "FY", "Date Incurred", "Description",
+            "Amount", "Payment ID", "Payee", "Type", "Account", "Check"]
+
+  # References: stackoverflow.com/a/45111660 and stackoverflow.com/a/14614920
+  proxy = io.StringIO()
+  wr = csv.DictWriter(proxy, fields)
+  wr.writerow(dict(zip(fields, titles)))
+  for db_row in expenses:
+    csv_row = {key: db_row[key] for key in fields}
+    if csv_row["payment_type"] is not None:
+      csv_row["payment_type"] = ptypes[csv_row["payment_type"]]
+    wr.writerow(csv_row)
+
+  download = io.BytesIO()
+  download.write(proxy.getvalue().encode())
+  download.seek(0)
+  proxy.close()
+
+  return flask.send_file(download, as_attachment=True,
+                         attachment_filename="expenses.csv")
