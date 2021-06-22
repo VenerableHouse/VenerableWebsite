@@ -52,6 +52,7 @@
       <th>Starting Amount</th>
       <th>Spent</th>
       <th>Remaining</th>
+      <th>Percent Spent</th>
     </tr>
   </thead>
 
@@ -62,6 +63,10 @@
       <td>${{ r["starting_amount"] }}</td>
       <td>${{ r["spent"] }}</td>
       <td>${{ r["remaining"] }}</td>
+      <td>{{ '{0:.2f}'.format(
+                 100*r["spent"]/r["starting_amount"]
+                 if r["starting_amount"] else 100
+          )}}%</td>
     </tr>
     {% endfor %}
   </tbody>
