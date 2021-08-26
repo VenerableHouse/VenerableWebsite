@@ -301,3 +301,27 @@ table th.sort-up:after {
 .member-list-dropdown-show {
     display: block;
 }
+
+/* Constitution and Amendment Dropdown */
+.constitution-dropdown {
+    position: relative;
+    display: inline-block;
+    background-color: #ebf3fb;
+}
+.constitution-list-dropdown {
+}
+.constitution-list-dropdown-content {
+    display: none;
+    position: absolute;
+    z-index: 1;
+    background-color: #ebf3fb;
+    font-family: "Roboto", Helvetica, Tahoma, Arial, sans-serif;
+}
+.constitution-list-dropdown-show {
+    display: block;
+}
+
+#constitution-button {
+    background-color: #ebf3fb;
+    font-family: "Roboto", Helvetica, Tahoma, Arial, sans-serif;
+}

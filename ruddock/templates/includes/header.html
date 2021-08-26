@@ -23,9 +23,28 @@
       <a class="header-link" href="{{ url_for("government.government_home") }}">
         <div class="navbar-link">Government</div>
       </a>
-      <a class="header-link" target="_blank" href="{{ url_for("static", filename="constitution/constitution.pdf") }}">
-        <div class="navbar-link">Constitution</div>
-      </a>
+      <script>
+        function constitutionDropdownFunction() {
+          document.getElementById("constitution-list-dropdown").classList.toggle("constitution-list-dropdown-show")
+        }
+        window.onclick = function(event) {
+          if (!event.target.matches(".navbar-link")) {
+            dropdown = document.getElementsByClassName("constitution-list-dropdown-content")[0]
+            dropdown.classList.remove("constitution-list-dropdown-show")
+          }
+        }
+      </script>
+      <div class="constitution-dropdown">
+        <button class="navbar-link" id="constitution-button" onclick="constitutionDropdownFunction()">Constitution</button>
+        <div class="constitution-list-dropdown-content" id="constitution-list-dropdown">
+          <a class="header-link" target="_blank" href="{{ url_for("static", filename="constitution/constitution.pdf") }}">
+            <div class="navbar-link">Constitution</div>
+          </a>
+          <a class="header-link" target="_blank" href="{{ url_for("static", filename="constitution/amendments.pdf") }}">
+            <div class="navbar-link">Amendments</div>
+          </a>
+        </div>
+      </div>
     </div>
     <div id="navbar-login">
       {% if not session['username'] %}
