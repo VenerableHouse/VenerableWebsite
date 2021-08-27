@@ -26,6 +26,17 @@
 </table>
 <p>These codes change at the beginning of each school year.</p>
 
+<h3>Cart codes</h3>
+<table>
+  {% for cart, code in secrets.CART_CODES.items() %}
+    <tr>
+      <td>{{ cart }}</td>
+      <td>{{ code }}</td>
+    </tr>
+  {% endfor %}
+</table>
+<br />
+
 <h3>Accounts</h3>
 <table>
   <thead>
