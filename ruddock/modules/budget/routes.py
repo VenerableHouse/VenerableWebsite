@@ -43,6 +43,16 @@ def route_summary():
     fyear_options=fyear_options)
 
 
+@blueprint.route('/summary/download')
+@login_required(Permissions.BUDGET)
+def route_download_summaries():
+  """Downloads account and budget summaries."""
+  fyear, is_current = helpers.select_fyear_info(
+    flask.request.args.get("fyear", None)
+  )
+  fyear_id = fyear["fyear_id"]
+  return helpers.download_summaries(fyear_id)
+
 @blueprint.route('/expenses')
 @login_required(Permissions.BUDGET)
 def route_expenses():

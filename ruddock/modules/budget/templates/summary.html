@@ -7,6 +7,7 @@
   {% if is_current %}
   (Current)
   {% endif %}
+  (<a href="{{ url_for('budget.route_download_summaries') }}">download</a>)
 </h2>
 
 <form method="get">

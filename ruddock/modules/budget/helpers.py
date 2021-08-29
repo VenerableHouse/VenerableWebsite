@@ -506,3 +506,38 @@ def download_expenses():
 
   return flask.send_file(download, as_attachment=True,
                          attachment_filename="expenses.csv")
+
+def download_summaries(fyear_id):
+  a_query = sqlalchemy.text("""
+    SELECT *
+    FROM budget_accounts
+    ORDER BY account_name
+    """)
+  accounts = flask.g.db.execute(a_query).fetchall()
+  budgets = get_budget_summary(fyear_id)
+  account_fields = ["account_id", "account_name", "initial_balance"]
+  account_titles = ["Account ID", "Account", "Initial Balance"]
+  budget_fields = ["budget_name", "starting_amount", "spent", "remaining"]
+  budget_titles = ["Budget", "Starting Amount", "Spent", "Remaining"]
+
+  proxy = io.StringIO()
+
+  wr = csv.DictWriter(proxy, account_fields)
+  wr.writerow(dict(zip(account_fields, account_titles)))
+  for db_row in accounts:
+    csv_row = {key: db_row[key] for key in account_fields}
+    wr.writerow(csv_row)
+
+  wr.writerow({})
+
+  wr = csv.DictWriter(proxy, budget_fields)
+  wr.writerow(dict(zip(budget_fields, budget_titles)))
+  for db_row in budgets:
+    csv_row = {key: db_row[key] for key in budget_fields}
+    wr.writerow(csv_row)
+
+  download = io.BytesIO()
+  download.write(proxy.getvalue().encode())
+  download.seek(0)
+  proxy.close()
+  return flask.send_file(download, as_attachment=True, attachment_filename="budget_summaries.csv")
