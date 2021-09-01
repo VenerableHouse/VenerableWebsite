@@ -350,6 +350,22 @@ def delete_expense(expense_id):
 
   return rp.rowcount != 0
 
+def delete_payment(payment_id):
+  """
+  Deletes the given payment.
+  """
+
+  query = sqlalchemy.text("""
+    DELETE FROM budget_payments
+    WHERE payment_id = (:payment_id)
+  """)
+
+  rp = flask.g.db.execute(
+    query,
+    payment_id=payment_id,
+  )
+
+  return rp.rowcount != 0
 
 def record_payment(account_id, payment_type, amount, date_written, date_posted,
     payee_id, check_no):
