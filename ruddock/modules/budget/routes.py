@@ -208,20 +208,12 @@ def route_edit_expense(expense_id, budget_id, date_incurred, amount, description
   existing_payment = expense["payment_id"] is not None
   valid_expense = helpers.validate_expense(budget_id, date_incurred, amount,
       description)
-  amount_unchanged = expense["cost"] == Decimal(amount)
-  payee_unchanged = expense["payee_id"] == int(payee_id)
 
-  # Can't change payment info if there's a linked payment
-  # TODO soften this so debit purchaes aren't a PITA
-
-  errs = helpers.test_predicates((
-    (valid_expense, True, "Invalid expense."),
-    (amount_unchanged,  existing_payment, "Can't change amount with linked payment."),
-    (payee_unchanged,  existing_payment, "Can't change payee with linked payment."),
-  ))
-
-  if errs:
+  if not valid_expense:
     return flask.redirect(flask.url_for("budget.route_show_expense", expense_id=expense_id))
+
+  if payee_id == '':
+    payee_id = None
 
   success = helpers.edit_expense(
     expense_id, budget_id, date_incurred, description, amount, payee_id
@@ -230,6 +222,9 @@ def route_edit_expense(expense_id, budget_id, date_incurred, amount, description
     flask.flash("Success!")
   else:
     flask.flash("Something went wrong during the edit, not sure what.")
+
+  if existing_payment:
+    helpers.edit_payment(expense["payment_id"], Decimal(amount), date_incurred, payee_id)
 
   return flask.redirect(flask.url_for("budget.route_show_expense", expense_id=expense_id))
 
