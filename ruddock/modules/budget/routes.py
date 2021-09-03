@@ -43,6 +43,16 @@ def route_summary():
     fyear_options=fyear_options)
 
 
+@blueprint.route('/summary/download')
+@login_required(Permissions.BUDGET)
+def route_download_summaries():
+  """Downloads account and budget summaries."""
+  fyear, is_current = helpers.select_fyear_info(
+    flask.request.args.get("fyear", None)
+  )
+  fyear_id = fyear["fyear_id"]
+  return helpers.download_summaries(fyear_id)
+
 @blueprint.route('/expenses')
 @login_required(Permissions.BUDGET)
 def route_expenses():
@@ -198,20 +208,12 @@ def route_edit_expense(expense_id, budget_id, date_incurred, amount, description
   existing_payment = expense["payment_id"] is not None
   valid_expense = helpers.validate_expense(budget_id, date_incurred, amount,
       description)
-  amount_unchanged = expense["cost"] == Decimal(amount)
-  payee_unchanged = expense["payee_id"] == int(payee_id)
 
-  # Can't change payment info if there's a linked payment
-  # TODO soften this so debit purchaes aren't a PITA
-
-  errs = helpers.test_predicates((
-    (valid_expense, True, "Invalid expense."),
-    (amount_unchanged,  existing_payment, "Can't change amount with linked payment."),
-    (payee_unchanged,  existing_payment, "Can't change payee with linked payment."),
-  ))
-
-  if errs:
+  if not valid_expense:
     return flask.redirect(flask.url_for("budget.route_show_expense", expense_id=expense_id))
+
+  if payee_id == '':
+    payee_id = None
 
   success = helpers.edit_expense(
     expense_id, budget_id, date_incurred, description, amount, payee_id
@@ -221,6 +223,9 @@ def route_edit_expense(expense_id, budget_id, date_incurred, amount, description
   else:
     flask.flash("Something went wrong during the edit, not sure what.")
 
+  if existing_payment:
+    helpers.edit_payment(expense["payment_id"], Decimal(amount), date_incurred, payee_id)
+
   return flask.redirect(flask.url_for("budget.route_show_expense", expense_id=expense_id))
 
 
@@ -228,22 +233,18 @@ def route_edit_expense(expense_id, budget_id, date_incurred, amount, description
 @login_required(Permissions.BUDGET)
 @get_args_from_form()
 def route_delete_expense(expense_id, budget_id, date_incurred, amount, description, payee_id, new_payee):
-  """Deletes the given expense."""
+  """
+  Deletes the given expense.
+  If there is a linked payment, deletes that also.
+  """
 
   expense = helpers.get_expense(expense_id)
   if expense is None:
     flask.abort(http.client.NOT_FOUND)
 
-  existing_payment = expense["payment_id"] is not None
-
-  # Can't delete if there's a linked payment
-  # TODO soften this so debit purchaes aren't a PITA
-
-  if existing_payment:
-    flask.flash("Cannot delete expense if there is a linked payment.")
-    return flask.redirect(flask.url_for("budget.route_show_expense", expense_id=expense_id))
-
   helpers.delete_expense(expense_id)
+  if expense["payment_id"] is not None:
+    helpers.delete_payment(expense["payment_id"])
 
   flask.flash("Success!")
   return flask.redirect(flask.url_for("budget.route_expenses"))

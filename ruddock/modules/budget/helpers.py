@@ -350,6 +350,47 @@ def delete_expense(expense_id):
 
   return rp.rowcount != 0
 
+def edit_payment(payment_id, amount, date_written, payee_id):
+  """
+  Changes the details of the given payment.
+  """
+
+  query = sqlalchemy.text("""
+    UPDATE budget_payments
+    SET
+      date_written = (:date_written),
+      amount = (:amount),
+      payee_id = (:payee_id)
+    WHERE
+      payment_id = (:payment_id)
+  """)
+
+  rp = flask.g.db.execute(
+    query,
+    date_written=date_written,
+    amount=amount,
+    payee_id=payee_id,
+    payment_id=payment_id
+  )
+
+  return rp.rowcount != 0
+
+def delete_payment(payment_id):
+  """
+  Deletes the given payment.
+  """
+
+  query = sqlalchemy.text("""
+    DELETE FROM budget_payments
+    WHERE payment_id = (:payment_id)
+  """)
+
+  rp = flask.g.db.execute(
+    query,
+    payment_id=payment_id,
+  )
+
+  return rp.rowcount != 0
 
 def record_payment(account_id, payment_type, amount, date_written, date_posted,
     payee_id, check_no):
@@ -506,3 +547,38 @@ def download_expenses():
 
   return flask.send_file(download, as_attachment=True,
                          attachment_filename="expenses.csv")
+
+def download_summaries(fyear_id):
+  a_query = sqlalchemy.text("""
+    SELECT *
+    FROM budget_accounts
+    ORDER BY account_name
+    """)
+  accounts = flask.g.db.execute(a_query).fetchall()
+  budgets = get_budget_summary(fyear_id)
+  account_fields = ["account_id", "account_name", "initial_balance"]
+  account_titles = ["Account ID", "Account", "Initial Balance"]
+  budget_fields = ["budget_name", "starting_amount", "spent", "remaining"]
+  budget_titles = ["Budget", "Starting Amount", "Spent", "Remaining"]
+
+  proxy = io.StringIO()
+
+  wr = csv.DictWriter(proxy, account_fields)
+  wr.writerow(dict(zip(account_fields, account_titles)))
+  for db_row in accounts:
+    csv_row = {key: db_row[key] for key in account_fields}
+    wr.writerow(csv_row)
+
+  wr.writerow({})
+
+  wr = csv.DictWriter(proxy, budget_fields)
+  wr.writerow(dict(zip(budget_fields, budget_titles)))
+  for db_row in budgets:
+    csv_row = {key: db_row[key] for key in budget_fields}
+    wr.writerow(csv_row)
+
+  download = io.BytesIO()
+  download.write(proxy.getvalue().encode())
+  download.seek(0)
+  proxy.close()
+  return flask.send_file(download, as_attachment=True, attachment_filename="budget_summaries.csv")
