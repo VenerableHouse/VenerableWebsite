@@ -91,6 +91,19 @@ def add_members_confirm_submit():
   flask.flash("An unexpected error was encountered. Please find an IMSS rep.")
   return flask.redirect(flask.url_for('admin.add_members'))
 
+@blueprint.route('/members/edit')
+@login_required(Permissions.USERS)
+def edit_members():
+  """Displays a form to edit existing members."""
+  return flask.render_template('edit_members.html')
+
+@blueprint.route('/members/edit/confirm', methods=['POST'])
+@login_required(Permissions.USERS)
+def edit_members_confirm():
+  """Submission endpoint for editing a member."""
+  #TODO add something real here
+  return flask.redirect(flask.url_for('admin.edit_members'))
+
 @blueprint.route('/positions/assignments')
 @login_required(Permissions.USERS)
 def manage_positions():
