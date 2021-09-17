@@ -50,8 +50,7 @@ $(document).ready(function() {
   {{ forms.expense(budgets) }}
 
   <h2>Payment Info</h2>
-    <label for="defer-payment">Defer Payment?</label>
-    <input type="checkbox" id="defer-payment" name="defer-payment" onclick="toggle_defer()">
+
   <div id="direct-payment">
     {{ forms.payment(payment_types, accounts) }}
   </div>

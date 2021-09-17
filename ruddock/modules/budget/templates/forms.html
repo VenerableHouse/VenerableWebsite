@@ -36,15 +36,6 @@
 {% macro payment(payment_types, accounts) %}
 
 <div class="form-row">
-  <label for="payment-type">Payment Type: </label>
-  <select id="payment-type" name="payment-type">
-    <option value="" selected="selected">-- Select Type --</option>
-    {% for i, t in payment_types.items() %}
-      <option value={{i}}>{{t}}</option>
-    {% endfor %}
-  </select>
-</div>
-<div class="form-row">
   <label for="account-id">Account: </label>
   <select id="account-id" name="account-id">
     <option value="" selected="selected">-- Select Account --</option>
@@ -54,8 +45,13 @@
   </select>
 </div>
 <div class="form-row">
-  <label for="check-no">Check #: </label>
-  <input type="number" id="check-no" name="check-no">
+  <label for="payment-type">Payment Type: </label>
+  <select id="payment-type" name="payment-type">
+    <option value="" selected="selected">-- Select Type --</option>
+    {% for i, t in payment_types.items() %}
+      <option value={{i}}>{{t}}</option>
+    {% endfor %}
+  </select>
 </div>
 
 {% endmacro %}
