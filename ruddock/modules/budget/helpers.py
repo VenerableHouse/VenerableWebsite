@@ -549,15 +549,23 @@ def download_expenses():
                          attachment_filename="expenses.csv")
 
 def download_summaries(fyear_id):
-  a_query = sqlalchemy.text("""
-    SELECT *
+  query = sqlalchemy.text("""
+    SELECT account_id, account_name, initial_balance, 
+      initial_balance - IFNULL(SUM(amount), 0) AS bal
     FROM budget_accounts
+      NATURAL LEFT JOIN (
+        SELECT account_id, amount
+        FROM budget_payments
+        WHERE date_posted IS NOT NULL) AS t
+    GROUP BY account_id
     ORDER BY account_name
     """)
-  accounts = flask.g.db.execute(a_query).fetchall()
+
+  accounts = flask.g.db.execute(query).fetchall()
+
   budgets = get_budget_summary(fyear_id)
-  account_fields = ["account_id", "account_name", "initial_balance"]
-  account_titles = ["Account ID", "Account", "Initial Balance"]
+  account_fields = ["account_id", "account_name", "initial_balance", "bal"]
+  account_titles = ["Account ID", "Account", "Initial Balance", "Current Balance"]
   budget_fields = ["budget_name", "starting_amount", "spent", "remaining"]
   budget_titles = ["Budget", "Starting Amount", "Spent", "Remaining"]
 
