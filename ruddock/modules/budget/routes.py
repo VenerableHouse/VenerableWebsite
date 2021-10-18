@@ -113,11 +113,11 @@ def route_add_expense():
 @login_required(Permissions.BUDGET)
 @get_args_from_form()
 def route_submit_expense(budget_id, date_incurred, amount, description,
-    payee_id, new_payee, payment_type, account_id, check_no, defer_payment):
+    payee_id, new_payee, payment_type, account_id):
   """Sends the expense to the database."""
 
-  # Checkboxes aren't sent as bools... :(
-  defer_payment = defer_payment is not None
+  defer_payment = False # deprecated feature
+  check_no = "0" # deprecated feature
 
   # Server side validation
   valid_expense = helpers.validate_expense(budget_id, date_incurred, amount,
@@ -138,25 +138,15 @@ def route_submit_expense(budget_id, date_incurred, amount, description,
 
   transaction = flask.g.db.begin()
   try:
-    # This next part depends on whether we are deferring payment or not.
-    # If so, then we leave the payment ID null, cause it the corresponding
-    # payment hasn't been made yet. However, we require the payee. If it's a new
-    # payee, we have to insert it into the database first.
-    # If not, then we need to make a new payment, and use its ID. Payee ID is
-    # not needed.
-    if defer_payment:
-      payee_id = payee_id or helpers.record_new_payee(new_payee)
-      payment_id = None
-    else:
-      date_written = date_incurred  # non-deferred payments are instant
-      date_posted = None if payment_type == PaymentType.CHECK.value else date_written
+    date_written = date_incurred
+    date_posted = None if payment_type == PaymentType.CHECK.value else date_written
 
-      payee_id = None
-      payment_id = helpers.record_payment(
-        account_id, payment_type, amount, date_written, date_posted,
-        payee_id, check_no)
+    payee_id = None
+    payment_id = helpers.record_payment(
+      account_id, payment_type, amount, date_written, date_posted,
+      payee_id, check_no)
 
-    # Either way, record the expense
+    # Record the expense
     helpers.record_expense(
         budget_id, date_incurred, description, amount, payment_id, payee_id)
     transaction.commit()
