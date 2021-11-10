@@ -14,6 +14,9 @@ class PaymentType(Enum):
   TRANSFER = 5
   OTHER = 6
   INCOME = 7
+  PCARD_DEBIT = 8
+  ACH_DIRECT_DEPOSIT_REIMBURSEMENT = 9
+  CHECK_REIMBURSEMENT = 10
 
   @classmethod
   def has_value(cls, value):
@@ -25,7 +28,10 @@ class PaymentType(Enum):
 
   @classmethod
   def get_all(cls):
-    return {x.value: x.name.title() for x in PaymentType}
+    values = {x.value: x.name.title() for x in PaymentType}
+    for key, value in values.items():
+      values[key] = value.replace("_", " ").replace("Reimbursement", "(Reimbursement)")
+    return values
 
 
 # ==== SQL QUERIES ====
