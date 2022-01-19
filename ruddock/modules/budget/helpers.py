@@ -99,6 +99,18 @@ def get_expense(expense_id):
 
   return flask.g.db.execute(query, e=expense_id).first()
 
+def get_payment(payment_id):
+  """Gets a particular payment, or None"""
+  query = sqlalchemy.text("""
+    SELECT payment_id, account_name, payment_type, amount, date_written,
+        date_posted, payee_name, check_no
+    FROM budget_payments
+      NATURAL JOIN budget_accounts
+      NATURAL LEFT JOIN budget_payees
+    WHERE payment_id = (:e)
+    """)
+
+  return flask.g.db.execute(query, e=payment_id).first()
 
 def get_payments():
   """Gets list of all payments."""
@@ -356,7 +368,7 @@ def delete_expense(expense_id):
 
   return rp.rowcount != 0
 
-def edit_payment(payment_id, amount, date_written, payee_id):
+def edit_payment(payment_id, amount, date_written, payee_id, payment_type):
   """
   Changes the details of the given payment.
   """
@@ -366,7 +378,8 @@ def edit_payment(payment_id, amount, date_written, payee_id):
     SET
       date_written = (:date_written),
       amount = (:amount),
-      payee_id = (:payee_id)
+      payee_id = (:payee_id),
+      payment_type = (:payment_type)
     WHERE
       payment_id = (:payment_id)
   """)
@@ -376,7 +389,8 @@ def edit_payment(payment_id, amount, date_written, payee_id):
     date_written=date_written,
     amount=amount,
     payee_id=payee_id,
-    payment_id=payment_id
+    payment_id=payment_id,
+    payment_type=payment_type
   )
 
   return rp.rowcount != 0
