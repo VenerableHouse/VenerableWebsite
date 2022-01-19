@@ -188,7 +188,7 @@ def route_show_expense(expense_id):
 @blueprint.route('/expense/edit', methods=['POST'])
 @login_required(Permissions.BUDGET)
 @get_args_from_form()
-def route_edit_expense(expense_id, budget_id, date_incurred, amount, description, payee_id, new_payee):
+def route_edit_expense(expense_id, budget_id, date_incurred, amount, description, payee_id, new_payee, payment_type):
   """Changes the given expense."""
 
   expense = helpers.get_expense(expense_id)
@@ -213,8 +213,12 @@ def route_edit_expense(expense_id, budget_id, date_incurred, amount, description
   else:
     flask.flash("Something went wrong during the edit, not sure what.")
 
+  if payment_type == '':
+    payment = helpers.get_payment(expense["payment_id"])
+    payment_type = payment["payment_type"]
+
   if existing_payment:
-    helpers.edit_payment(expense["payment_id"], Decimal(amount), date_incurred, payee_id)
+    helpers.edit_payment(expense["payment_id"], Decimal(amount), date_incurred, payee_id, payment_type)
 
   return flask.redirect(flask.url_for("budget.route_show_expense", expense_id=expense_id))
 
