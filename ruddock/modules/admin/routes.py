@@ -11,6 +11,7 @@ from ruddock.decorators import login_required
 from ruddock.modules.admin import blueprint
 from ruddock.modules.admin import member_helpers
 from ruddock.modules.admin import position_helpers
+from ruddock.modules.admin import edit_member_helpers
 
 @blueprint.route('/')
 @login_required()
@@ -101,8 +102,24 @@ def edit_members():
 @login_required(Permissions.USERS)
 def edit_members_confirm():
   """Submission endpoint for editing a member."""
-  #TODO add something real here
+  id = flask.request.form.get('user_id', '')
+  return flask.render_template('edit_members_confirm.html',
+      id=id)
+
   return flask.redirect(flask.url_for('admin.edit_members'))
+
+@blueprint.route('/members/edit/confirm/submit', methods=['POST'])
+@login_required(Permissions.USERS)
+def edit_members_confirm_submit():
+  """Handles member editing."""
+  user_id = flask.request.form.get('user_id', None)
+  if user_id:
+    success = edit_member_helpers.delete_member(user_id)
+    if success:
+      return flask.redirect(flask.url_for('admin.edit_members'))
+  # An error happened somewhere.
+  flask.flash("An unexpected error was encountered. Please find an IMSS rep.")
+  return flask.redirect(flask.url_for('admin.edit_nembers'))
 
 @blueprint.route('/positions/assignments')
 @login_required(Permissions.USERS)

@@ -116,18 +116,24 @@ function selectMember() {
 <h2> Edit existing members</h2>
 Use this to edit or delete a single member on the website.
 <br><br>
-Select a member:
-<button type="button" onclick="showSelectMemberUI()">Choose...</button>
+
 <br><br>
-Selected member:
-<input type="hidden" id="selectedUser" name="user_id" value="-1" />
-<span id="selectedName">(None selected)</span>
-<br><br>
-Select an action below.<br>
-<button class="edit_member_button" onclick="">Delete Member</button><br>
-<button class="edit_member_button">Make Social Member</button><br>
-<button class="edit_member_button">Make Full Member</button><br>
-*Note: None of these buttons actually do anything yet.
+
+<form action="{{ url_for('admin.edit_members_confirm') }}" method="post">
+    Select a member:
+    <button type="button" onclick="showSelectMemberUI()">Choose...</button>
+    <br><br>
+    Selected member:
+    <input type="hidden" id="selectedUser" name="user_id" value="-1" />
+    <span id="selectedName">(None selected)</span>
+    <br><br>
+    <button type="submit">Delete Member</button>
+</form>
+<br>
+<br>
+<button class="edit_member_button" onclick="">Make Social Member</button><br><br>
+<button class="edit_member_button" onclick="">Make Full Member</button><br><br>
+*Note: Delete member button might work. Social/full buttons do nothing.
 
 
 {% endblock body %}
