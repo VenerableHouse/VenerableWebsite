@@ -4,14 +4,14 @@
   {% for name, email, positions in assignment_data %}
     {# Display name and email of group #}
     <h2>{{ name }}</h2>
-    <h3>{{ "[" + email + " at ruddock.caltech.edu" + "]" if email }}</h3>
+    <h3>{{ "[" + email + " at venerable.caltech.edu" + "]" if email }}</h3>
     <br>
     <table class="userlist" id="sort-{{ name }}">
     {# First display header #}
       <thead><tr>
         <th width='25%'>Office</th>
         <th width='25%'>Name</th>
-        <th width='25%'>Office Email (at ruddock.caltech.edu)</th>
+        <th width='25%'>Office Email (at venerable.caltech.edu)</th>
       </tr></thead>
       {# Now, display each row #}
       {% for position in positions %}
