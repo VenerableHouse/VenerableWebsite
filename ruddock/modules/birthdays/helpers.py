@@ -8,6 +8,7 @@ def fetch_birthdays():
     FROM members
       NATURAL JOIN members_current
       NATURAL JOIN members_extra
+      WHERE member_type != 5
   """)
 
   return flask.g.db.execute(query).fetchall()
