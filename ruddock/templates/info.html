@@ -81,6 +81,26 @@
   {% endif %}
   linked to Venerable's membership card.
 </p>
+
+<h3>Library Card</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Card Number</th>
+      <th>PIN</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for card_num, pin in secrets.LIBRARY_CARD.items() %}
+      <tr>
+        <td>{{ card_num }}</td>
+        <td>{{ pin }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<br />
+
 {% endif %}
 
 <h3>Printers</h3>
