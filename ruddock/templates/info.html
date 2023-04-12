@@ -84,20 +84,12 @@
 
 <h3>Library Card</h3>
 <table>
-  <thead>
+  {% for card_num, pin in secrets.LIBRARY_CARD.items() %}
     <tr>
-      <th>Card Number</th>
-      <th>PIN</th>
+      <td>{{ card_num }}</td>
+      <td>{{ pin }}</td>
     </tr>
-  </thead>
-  <tbody>
-    {% for card_num, pin in secrets.LIBRARY_CARD.items() %}
-      <tr>
-        <td>{{ card_num }}</td>
-        <td>{{ pin }}</td>
-      </tr>
-    {% endfor %}
-  </tbody>
+  {% endfor %}
 </table>
 <br />
 
