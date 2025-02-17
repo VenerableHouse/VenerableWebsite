@@ -372,6 +372,9 @@ def generate_admin_links():
   if check_permission(Permissions.BUDGET):
     links.append(AdminLink('Budget',
       flask.url_for('budget.route_portal', _external=True)))
+  if check_permission(Permissions.PERMISSION_MANAGER):
+    links.append(AdminLink('Permission manager',
+      flask.url_for('perm_mgr.show_permissions', _external=True)))
   return links
 
 def is_full_member(username):
