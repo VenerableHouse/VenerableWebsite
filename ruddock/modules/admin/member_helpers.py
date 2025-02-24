@@ -59,6 +59,12 @@ class NewMember:
     """
     # If the user is already in the database, skip this user.
     if validation_utils.check_uid_exists(self.uid):
+      query = sqlalchemy.text("""
+      UPDATE members
+      SET member_type = :m
+      WHERE uid = :uid
+      """)
+      flask.g.db.execute(query, m=self.member_type, uid=self.uid)
       return False
     # Generate an account creation key.
     create_account_key = auth_utils.generate_create_account_key()
