@@ -11,14 +11,14 @@ from .helpers import PaymentType
 
 
 @blueprint.route('/')
-@login_required(Permissions.BUDGET, Permissions.BUDGET_VIEW)
+@login_required(Permissions.BUDGET)
 def route_portal():
   """Displays the budget portal."""
   return flask.render_template('budget_portal.html')
 
 
 @blueprint.route('/summary')
-@login_required(Permissions.BUDGET, Permissions.BUDGET_VIEW)
+@login_required(Permissions.BUDGET)
 def route_summary():
   """Displays account and budget summaries."""
 
