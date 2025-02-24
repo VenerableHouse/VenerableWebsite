@@ -44,7 +44,7 @@ def route_summary():
 
 
 @blueprint.route('/summary/download')
-@login_required(Permissions.BUDGET, Permissions.BUDGET_VIEW)
+@login_required(Permissions.BUDGET)
 def route_download_summaries():
   """Downloads account and budget summaries."""
   fyear, is_current = helpers.select_fyear_info(
