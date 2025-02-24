@@ -59,6 +59,7 @@ class NewMember:
     """
     # If the user is already in the database, skip this user.
     if validation_utils.check_uid_exists(self.uid):
+      self.set_member_type()
       return False
     # Generate an account creation key.
     create_account_key = auth_utils.generate_create_account_key()
