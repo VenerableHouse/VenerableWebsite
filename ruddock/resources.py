@@ -25,6 +25,8 @@ class Permissions(enum.IntEnum):
   BUDGET = 6
   # See birthday list
   BIRTHDAYS = 7
+  # See budget summary
+  BUDGET_VIEW = 8
 
 # Enum for search modes.
 class MemberSearchMode(enum.IntEnum):
