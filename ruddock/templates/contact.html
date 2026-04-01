@@ -14,4 +14,17 @@
 Pasadena, CA 91106
 </p>
 
+{#
+  {% if 'username' in session %}
+<h4>Anonymous message to the House President</h4>
+<p>
+  <a href="{{ url_for('president_message') }}">Send a message</a> (login required;
+  your username is not included in the email).
+</p>
+{% endif %}
+  
+#}
+
+
+
 {% endblock body %}

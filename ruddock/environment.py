@@ -13,7 +13,7 @@ class Environment(object):
   """
 
   def __init__(self, db_hostname, db_name, db_user, db_password, debug,
-      testing, secret_key, media_folder):
+      testing, secret_key, media_folder, president_message_to=None):
     self.db_hostname = db_hostname
     self.db_name = db_name
     self.db_user = db_user
@@ -22,6 +22,7 @@ class Environment(object):
     self.testing = testing
     self.secret_key = secret_key
     self.media_folder = media_folder
+    self.president_message_to = president_message_to
 
   @property
   def db_uri(self):

@@ -13,3 +13,7 @@ PWD_RESET_KEY_LENGTH = 32
 # Length of time before recovery key expires, in minutes.
 PWD_RESET_KEY_EXPIRATION = 1 * 24 * 60
 CREATE_ACCOUNT_KEY_LENGTH = 32
+
+# Anonymous message to House President (login-gated form)
+PRESIDENT_MESSAGE_SUBJECT_MAX_LEN = 200
+PRESIDENT_MESSAGE_BODY_MAX_LEN = 16000
