@@ -104,11 +104,6 @@ def anonymous_contact_submit():
         'Your message could not be sent. Please contact the webmaster.')
     return flask.render_template('contact.html', **ctx)
 
-
-  addrs = [
-    "asharma3@caltech.edu",
-    "arjun.sharma07@outlook.com"
-  ]
   display_name = name if name else '(not provided)'
   display_email = email if email else '(not provided)'
   body = (
