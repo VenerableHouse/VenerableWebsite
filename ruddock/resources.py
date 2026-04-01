@@ -9,6 +9,9 @@ Note: DO NOT re-use enum values unless you know exactly what you are doing!
 
 import enum
 
+# Logged-in users who may see and submit the anonymous contact form on /contact.
+ANONYMOUS_CONTACT_FORM_USERNAMES = frozenset(('asharma3', 'mtongco', 'ywyang'))
+
 # Logged-in anonymous contact form: form checkbox value -> To address.
 ANONYMOUS_CONTACT_ROLES = {
     'president': 'president@venerable.caltech.edu',

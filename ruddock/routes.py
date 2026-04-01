@@ -7,6 +7,7 @@ from ruddock import constants
 from ruddock import email_utils
 from ruddock.auth_utils import is_full_member
 from ruddock.decorators import login_required
+from ruddock.resources import ANONYMOUS_CONTACT_FORM_USERNAMES
 from ruddock.resources import ANONYMOUS_CONTACT_ROLES
 try:
   from ruddock import secrets
@@ -37,6 +38,10 @@ def _resolve_anonymous_recipient_addresses(role_keys):
     return None
   return addrs
 
+def _anonymous_contact_form_allowed():
+  uname = flask.session.get('username')
+  return bool(uname and uname.lower() in ANONYMOUS_CONTACT_FORM_USERNAMES)
+
 def _contact_form_context(form_name='', form_email='', form_message=''):
   return dict(
       message_max=constants.ANONYMOUS_CONTACT_MESSAGE_MAX_LEN,
@@ -44,7 +49,8 @@ def _contact_form_context(form_name='', form_email='', form_message=''):
       email_max=constants.ANONYMOUS_CONTACT_EMAIL_FIELD_MAX_LEN,
       form_name=form_name,
       form_email=form_email,
-      form_message=form_message)
+      form_message=form_message,
+      show_anonymous_contact_form=_anonymous_contact_form_allowed())
 
 @app.route('/')
 def home():
@@ -68,6 +74,8 @@ def show_contact():
 @login_required()
 def anonymous_contact_submit():
   """Logged-in anonymous contact form: sends email directly to a subset of {president, excomm, hucc}."""
+  if not _anonymous_contact_form_allowed():
+    flask.abort(403)
   name = (flask.request.form.get('name') or '').strip()
   email = (flask.request.form.get('email') or '').strip()
   message = (flask.request.form.get('message') or '').strip()
