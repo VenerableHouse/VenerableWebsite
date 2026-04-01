@@ -12,6 +12,9 @@ except ImportError:
   from ruddock import default_secrets as secrets
 
 def _president_message_recipient():
+  # FOR TESTING
+  return "asharma3@caltech.edu"
+  
   """Resolve outbound address: env override, then config, else webmaster, except test."""
   env_to = (os.environ.get('RUDDWEB_PRESIDENT_MESSAGE_TO') or '').strip()
   if env_to:
