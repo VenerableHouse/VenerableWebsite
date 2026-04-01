@@ -9,6 +9,13 @@ Note: DO NOT re-use enum values unless you know exactly what you are doing!
 
 import enum
 
+# Logged-in anonymous contact form: form checkbox value -> To address.
+ANONYMOUS_CONTACT_ROLES = {
+    'president': 'president@venerable.caltech.edu',
+    'excomm': 'excomm@venerable.caltech.edu',
+    'hucc': 'headucc@venerable.caltech.edu',
+}
+
 # Enum for permissions available to users.
 class Permissions(enum.IntEnum):
   # Site admins: always has access to everything

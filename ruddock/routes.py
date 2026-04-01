@@ -1,4 +1,5 @@
 import os
+
 import flask
 
 from ruddock import app
@@ -6,25 +7,44 @@ from ruddock import constants
 from ruddock import email_utils
 from ruddock.auth_utils import is_full_member
 from ruddock.decorators import login_required
+from ruddock.resources import ANONYMOUS_CONTACT_ROLES
 try:
   from ruddock import secrets
 except ImportError:
   from ruddock import default_secrets as secrets
 
-def _president_message_recipient():
-  # FOR TESTING
-  return "asharma3@caltech.edu"
-  
-  """Resolve outbound address: env override, then config, else webmaster, except test."""
-  env_to = (os.environ.get('RUDDWEB_PRESIDENT_MESSAGE_TO') or '').strip()
-  if env_to:
-    return env_to
-  cfg = flask.current_app.config.get('PRESIDENT_MESSAGE_TO')
-  if cfg is not None and str(cfg).strip():
-    return str(cfg).strip()
+def _resolve_anonymous_recipient_addresses(role_keys):
+  """
+  Map whitelisted role keys to email addresses, deduped in stable order.
+  In TESTING, if PRESIDENT_MESSAGE_TO or RUDDWEB_PRESIDENT_MESSAGE_TO is set,
+  replace with a single-address list for a dev sink; if unset, return None.
+  """
+  addrs = []
+  seen = set()
+  for key in role_keys:
+    email_addr = ANONYMOUS_CONTACT_ROLES.get(key)
+    if email_addr and email_addr not in seen:
+      seen.add(email_addr)
+      addrs.append(email_addr)
+
   if flask.current_app.config.get('TESTING'):
+    env_override = (os.environ.get('RUDDWEB_PRESIDENT_MESSAGE_TO') or '').strip()
+    cfg = flask.current_app.config.get('PRESIDENT_MESSAGE_TO')
+    cfg_to = str(cfg).strip() if cfg is not None and str(cfg).strip() else ''
+    override = env_override or cfg_to
+    if override:
+      return [override]
     return None
-  return 'imss@venerable.caltech.edu'
+  return addrs
+
+def _contact_form_context(form_name='', form_email='', form_message=''):
+  return dict(
+      message_max=constants.ANONYMOUS_CONTACT_MESSAGE_MAX_LEN,
+      name_max=constants.ANONYMOUS_CONTACT_NAME_MAX_LEN,
+      email_max=constants.ANONYMOUS_CONTACT_EMAIL_FIELD_MAX_LEN,
+      form_name=form_name,
+      form_email=form_email,
+      form_message=form_message)
 
 @app.route('/')
 def home():
@@ -36,54 +56,70 @@ def home():
 def show_info():
   """Shows info page on door combos, printers, etc."""
   return flask.render_template('info.html',
-    full_member=is_full_member(flask.session['username']),
-    secrets=secrets)
+      full_member=is_full_member(flask.session['username']),
+      secrets=secrets)
 
 @app.route('/contact')
 def show_contact():
   """Shows Contact Us page."""
-  return flask.render_template('contact.html')
+  return flask.render_template('contact.html', **_contact_form_context())
 
-@app.route('/contact/president-message', methods=['GET', 'POST'])
+@app.route('/contact/anonymous', methods=['POST'])
 @login_required()
-def president_message():
-  """Anonymous message to the House President (login required; email only)."""
-  if flask.request.method == 'POST':
-    subject = (flask.request.form.get('subject') or '').strip()
-    body = (flask.request.form.get('body') or '').strip()
-    errors = []
-    if not subject:
-      errors.append('Subject is required.')
-    elif len(subject) > constants.PRESIDENT_MESSAGE_SUBJECT_MAX_LEN:
-      errors.append('Subject is too long.')
-    if not body:
-      errors.append('Message is required.')
-    elif len(body) > constants.PRESIDENT_MESSAGE_BODY_MAX_LEN:
-      errors.append('Message is too long.')
-    if errors:
-      for err in errors:
-        flask.flash(err)
-      return flask.render_template('president_message.html',
-          subject=subject, body=body,
-          subject_max=constants.PRESIDENT_MESSAGE_SUBJECT_MAX_LEN,
-          body_max=constants.PRESIDENT_MESSAGE_BODY_MAX_LEN)
+def anonymous_contact_submit():
+  """Logged-in anonymous contact form: sends email directly to a subset of {president, excomm, hucc}."""
+  name = (flask.request.form.get('name') or '').strip()
+  email = (flask.request.form.get('email') or '').strip()
+  message = (flask.request.form.get('message') or '').strip()
+  role_keys = flask.request.form.getlist('recipients')
 
-    to = _president_message_recipient()
-    if not to:
-      flask.flash(
-          'Your message could not be sent. Please contact the webmaster.')
-      return flask.render_template('president_message.html',
-          subject=subject, body=body,
-          subject_max=constants.PRESIDENT_MESSAGE_SUBJECT_MAX_LEN,
-          body_max=constants.PRESIDENT_MESSAGE_BODY_MAX_LEN)
+  ctx = _contact_form_context(name, email, message)
+  errors = []
 
-    msg = (
-        'An anonymous message was submitted via venerable.caltech.edu/contact/president-message:\n\n'
-        'Subject: ' + subject + '\n\n' + body + '\n')
-    email_utils.send_email(to, msg, subject)
-    flask.flash('Your message was sent.')
-    return flask.redirect(flask.url_for('president_message'))
+  if len(name) > constants.ANONYMOUS_CONTACT_NAME_MAX_LEN:
+    errors.append('Name is too long.')
+  if len(email) > constants.ANONYMOUS_CONTACT_EMAIL_FIELD_MAX_LEN:
+    errors.append('Email is too long.')
+  if not message:
+    errors.append('Message is required.')
+  elif len(message) > constants.ANONYMOUS_CONTACT_MESSAGE_MAX_LEN:
+    errors.append('Message is too long.')
 
-  return flask.render_template('president_message.html', subject='', body='',
-      subject_max=constants.PRESIDENT_MESSAGE_SUBJECT_MAX_LEN,
-      body_max=constants.PRESIDENT_MESSAGE_BODY_MAX_LEN)
+  unknown = [k for k in role_keys if k not in ANONYMOUS_CONTACT_ROLES]
+  if unknown:
+    errors.append('Invalid recipient selection.')
+
+  resolved_keys = [k for k in role_keys if k in ANONYMOUS_CONTACT_ROLES]
+  if not resolved_keys:
+    errors.append('Select at least one recipient.')
+
+  if errors:
+    for err in errors:
+      flask.flash(err)
+    return flask.render_template('contact.html', **ctx)
+
+  addrs = _resolve_anonymous_recipient_addresses(resolved_keys)
+  if not addrs:
+    flask.flash(
+        'Your message could not be sent. Please contact the webmaster.')
+    return flask.render_template('contact.html', **ctx)
+
+
+  addrs = [
+    "asharma3@caltech.edu",
+    "arjun.sharma07@outlook.com"
+  ]
+  display_name = name if name else '(not provided)'
+  display_email = email if email else '(not provided)'
+  body = (
+      'A message was submitted via venerable.caltech.edu/contact.\n\n'
+      'Name: ' + display_name + '\n'
+      'Email: ' + display_email + '\n\n'
+      'Message:\n' + message + '\n')
+
+  email_utils.send_email(
+      addrs,
+      body,
+      constants.ANONYMOUS_CONTACT_MAIL_SUBJECT)
+  flask.flash('Your message was sent.')
+  return flask.redirect(flask.url_for('show_contact') + '#anonymous-contact')

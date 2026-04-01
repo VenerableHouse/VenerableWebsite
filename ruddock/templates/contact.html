@@ -14,17 +14,45 @@
 Pasadena, CA 91106
 </p>
 
-{#
-  {% if 'username' in session %}
-<h4>Anonymous message to the House President</h4>
-<p>
-  <a href="{{ url_for('president_message') }}">Send a message</a> (login required;
-  your username is not included in the email).
-</p>
+{% if 'username' in session %}
+<div id="anonymous-contact">
+  <h2>Leave a message</h2>
+  <p>
+    If you'd like a reply, please leave your name and email. Otherwise, feel free to leave the boxes blank, as no additional identifying information is collected if you'd like to remain anonymous.
+  </p>
+  <form action="{{ url_for('anonymous_contact_submit') }}" method="post" style="display: flex; flex-direction: column; gap: 0px;">
+    <div>
+      <p>
+        <label for="ac-name">Name (optional)</label><br />
+        <input type="text" id="ac-name" name="name" maxlength="{{ name_max }}"
+               value="{{ form_name }}" style="width: 100%; max-width: 40em; box-sizing: border-box;" />
+      </p>
+      <p>
+        <label for="ac-email">Email (optional)</label><br />
+        <input type="text" id="ac-email" name="email" maxlength="{{ email_max }}"
+               value="{{ form_email }}" style="width: 100%; max-width: 40em; box-sizing: border-box;" />
+      </p>
+    </div>
+
+    <div>
+      <span style="font-weight: bold;">Recipients</span><br />
+      <div style="display: flex; flex-direction: row; gap: 10px;">
+        <label><input type="checkbox" name="recipients" value="president" /> President</label><br />
+        <label><input type="checkbox" name="recipients" value="excomm" /> ExComm</label><br />
+        <label><input type="checkbox" name="recipients" value="hucc" /> Head UCC</label>  
+      </div>
+    </div>
+
+    <p>
+      <label for="ac-message">Message</label><br />
+      <textarea id="ac-message" name="message" rows="12" cols="72" required maxlength="{{ message_max }}"
+                style="width: 100%; max-width: 40em; box-sizing: border-box;">{{ form_message }}</textarea>
+    </p>
+    <p>
+      <button type="submit">Send</button>
+    </p>
+  </form>
+</div>
 {% endif %}
-  
-#}
-
-
 
 {% endblock body %}
