@@ -7,7 +7,6 @@ from ruddock import constants
 from ruddock import email_utils
 from ruddock.auth_utils import is_full_member
 from ruddock.decorators import login_required
-from ruddock.resources import ANONYMOUS_CONTACT_FORM_USERNAMES
 from ruddock.resources import ANONYMOUS_CONTACT_ROLES
 try:
   from ruddock import secrets
@@ -38,9 +37,6 @@ def _resolve_anonymous_recipient_addresses(role_keys):
     return None
   return addrs
 
-def _anonymous_contact_form_allowed():
-  uname = flask.session.get('username')
-  return bool(uname and uname.lower() in ANONYMOUS_CONTACT_FORM_USERNAMES)
 
 def _contact_form_context(form_name='', form_email='', form_message=''):
   return dict(
@@ -49,8 +45,7 @@ def _contact_form_context(form_name='', form_email='', form_message=''):
       email_max=constants.ANONYMOUS_CONTACT_EMAIL_FIELD_MAX_LEN,
       form_name=form_name,
       form_email=form_email,
-      form_message=form_message,
-      show_anonymous_contact_form=_anonymous_contact_form_allowed())
+      form_message=form_message)
 
 @app.route('/')
 def home():
