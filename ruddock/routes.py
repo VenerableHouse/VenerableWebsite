@@ -69,8 +69,6 @@ def show_contact():
 @login_required()
 def anonymous_contact_submit():
   """Logged-in anonymous contact form: sends email directly to a subset of {president, excomm, hucc}."""
-  if not _anonymous_contact_form_allowed():
-    flask.abort(403)
   name = (flask.request.form.get('name') or '').strip()
   email = (flask.request.form.get('email') or '').strip()
   message = (flask.request.form.get('message') or '').strip()
