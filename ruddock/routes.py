@@ -66,9 +66,8 @@ def show_contact():
   return flask.render_template('contact.html', **_contact_form_context())
 
 @app.route('/contact/anonymous', methods=['POST'])
-@login_required()
 def anonymous_contact_submit():
-  """Logged-in anonymous contact form: sends email directly to a subset of {president, excomm, hucc}."""
+  """anonymous contact form: sends email directly to a subset of {president, excomm, hucc}."""
   name = (flask.request.form.get('name') or '').strip()
   email = (flask.request.form.get('email') or '').strip()
   message = (flask.request.form.get('message') or '').strip()
