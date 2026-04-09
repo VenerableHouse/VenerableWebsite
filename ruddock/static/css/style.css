@@ -322,6 +322,13 @@ table th.sort-up:after {
 }
 
 #constitution-button {
+    /* Reset UA <button> styles so label matches other .navbar-link text (inherit from #navbar). */
+    appearance: none;
+    -webkit-appearance: none;
     background-color: #ebf3fb;
-    font-family: "Roboto", Helvetica, Tahoma, Arial, sans-serif;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    margin: 0;
 }
