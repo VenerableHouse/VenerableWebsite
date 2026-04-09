@@ -80,7 +80,8 @@ def _contact_form_context(form_name='', form_email='', form_message=''):
       form_name=form_name,
       form_email=form_email,
       form_message=form_message,
-      turnstile_site_key=getattr(secrets, 'TURNSTILE_SITE_KEY', ''))
+      turnstile_site_key=(
+          getattr(secrets, 'TURNSTILE_SITE_KEY', '') or TURNSTILE_SITE_KEY))
 
 @app.route('/')
 def home():
