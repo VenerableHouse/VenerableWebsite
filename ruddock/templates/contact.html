@@ -1,5 +1,13 @@
 {% extends "layout.html" %}
 
+{% block head %}
+<script
+  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+  async
+  defer
+></script>
+{% endblock head %}
+
 {% block body %}
 <h2>Contact</h2>
 <h4>Email</h4>
@@ -46,6 +54,9 @@ Pasadena, CA 91106
       <label for="ac-message">Message</label><br />
       <textarea id="ac-message" name="message" rows="12" cols="72" required maxlength="{{ message_max }}"
                 style="width: 100%; max-width: 40em; box-sizing: border-box;">{{ form_message }}</textarea>
+    </p>
+    <p>
+      <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}"></div>
     </p>
     <p>
       <button type="submit">Send</button>

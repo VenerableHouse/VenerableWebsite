@@ -1,6 +1,7 @@
 import os
 
 import flask
+import requests
 
 from ruddock import app
 from ruddock import constants
@@ -12,6 +13,39 @@ try:
   from ruddock import secrets
 except ImportError:
   from ruddock import default_secrets as secrets
+
+
+TURNSTILE_SITE_KEY = '0x4AAAAAAC2inpEl7Xe5Go3Q'
+
+def validate_turnstile(token, secret, remoteip=None):
+    url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
+
+    data = {
+        'secret': secret,
+        'response': token
+    }
+
+    if remoteip:
+        data['remoteip'] = remoteip
+
+    try:
+        response = requests.post(url, data=data, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Turnstile validation error: {e}")
+        return {'success': False, 'error-codes': ['internal-error']}
+
+
+def _anonymous_contact_client_ip():
+  cf = (flask.request.headers.get('CF-Connecting-IP') or '').strip()
+  if cf:
+    return cf
+  xff = flask.request.headers.get('X-Forwarded-For') or ''
+  if xff.strip():
+    return xff.split(',')[0].strip()
+  return flask.request.remote_addr
+
 
 def _resolve_anonymous_recipient_addresses(role_keys):
   """
@@ -45,7 +79,8 @@ def _contact_form_context(form_name='', form_email='', form_message=''):
       email_max=constants.ANONYMOUS_CONTACT_EMAIL_FIELD_MAX_LEN,
       form_name=form_name,
       form_email=form_email,
-      form_message=form_message)
+      form_message=form_message,
+      turnstile_site_key=getattr(secrets, 'TURNSTILE_SITE_KEY', ''))
 
 @app.route('/')
 def home():
@@ -74,6 +109,19 @@ def anonymous_contact_submit():
   role_keys = flask.request.form.getlist('recipients')
 
   ctx = _contact_form_context(name, email, message)
+
+  if not flask.current_app.config.get('TESTING'):
+    token = (flask.request.form.get('cf-turnstile-response') or '').strip()
+    if not token:
+      flask.flash('Invalid captcha. Please try again.')
+      return flask.render_template('contact.html', **ctx)
+    remoteip = _anonymous_contact_client_ip()
+    validation = validate_turnstile(
+        token, secrets.TURNSTILE_SECRET_KEY, remoteip)
+    if not validation.get('success'):
+      flask.flash('Invalid captcha. Please try again.')
+      return flask.render_template('contact.html', **ctx)
+
   errors = []
 
   if len(name) > constants.ANONYMOUS_CONTACT_NAME_MAX_LEN:
