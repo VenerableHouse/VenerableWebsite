@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h2>Edit members</h2><br>
+<br>
+Are you sure you want to edit the member?<br>
+
+
+<form action="{{ url_for('admin.edit_members_confirm_submit', id=id) }}" method="post">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ id }}</td>
+    </tbody>
+  </table>
+  <br>
+  <input type="hidden" name="user_id" value="{{ id }}" />
+  <button type="button"
+    onclick="location.href='{{ url_for('admin.edit_members') }}'">No</button>
+  <button type="submit">Yes</button>
+</form>
+
+
+<br>
+<br>
+
+{% endblock body %}
