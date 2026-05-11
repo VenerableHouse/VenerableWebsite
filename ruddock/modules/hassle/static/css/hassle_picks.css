@@ -234,20 +234,20 @@ table.userlist {
 /* ----- Building floor plan ----- */
 .fp { overflow-x: auto; margin-bottom: 1em; }
 
-.fp-grid {
-  display: grid;
-  grid-template-columns: repeat(52, 19px);
-  grid-template-rows: repeat(42, 15px);
-  gap: 0;
+.fp-canvas {
+  position: relative;
+  width: 988px;
+  height: 630px;
   font-size: 9px;
   line-height: 1.1;
-  width: 988px;
 }
 
-.fp-bg {
-  background: #f0f0f0;
-  z-index: 0;
+.fp-bg, .fp-svc, .fp-room, .fp-outline {
+  position: absolute;
+  box-sizing: border-box;
 }
+
+.fp-bg { background: #f0f0f0; }
 
 .fp-room {
   border: 1px solid #aaa;
@@ -257,7 +257,6 @@ table.userlist {
   justify-content: center;
   text-align: center;
   padding: 1px;
-  box-sizing: border-box;
   overflow: hidden;
   z-index: 2;
 }
@@ -274,25 +273,23 @@ table.userlist {
   font-size: 7.5px;
   color: #444;
   text-align: center;
-  box-sizing: border-box;
   z-index: 2;
 }
 
 .fp-outline {
-  grid-row: 1 / span 42;
-  grid-column: 1 / span 52;
+  top: 0; left: 0;
+  width: 988px; height: 630px;
   pointer-events: none;
   z-index: 10;
-  overflow: visible;
 }
 
 /* floor plan status colours (override .room-tile-* for fp context) */
-.fp-grid .room-tile-available  { background: #fff; cursor: pointer; }
-.fp-grid .room-tile-available:hover { background: #e8f4e8; }
-.fp-grid .room-tile-wanted     { background: #fff8c0; cursor: pointer; }
-.fp-grid .room-tile-wanted:hover { background: #ffe87a; }
-.fp-grid .room-tile-ucc        { background: #ffe0b2; cursor: pointer; }
-.fp-grid .room-tile-assigned   { background: #ccc; color: #333; cursor: not-allowed; }
-.fp-grid .room-tile-assigned_you { background: #c8f0c8; border: 2px solid #2a7a2a; color: #1a5a1a; }
-.fp-grid .room-tile-blocked    { background: #ffcccc; color: #880000; cursor: not-allowed; }
-.fp-grid .room-tile-blocked .fp-rt { color: #aa4444; }
+.fp-canvas .room-tile-available  { background: #fff; cursor: pointer; }
+.fp-canvas .room-tile-available:hover { background: #e8f4e8; }
+.fp-canvas .room-tile-wanted     { background: #fff8c0; cursor: pointer; }
+.fp-canvas .room-tile-wanted:hover { background: #ffe87a; }
+.fp-canvas .room-tile-ucc        { background: #ffe0b2; cursor: pointer; }
+.fp-canvas .room-tile-assigned   { background: #ccc; color: #333; cursor: not-allowed; }
+.fp-canvas .room-tile-assigned_you { background: #c8f0c8; border: 2px solid #2a7a2a; color: #1a5a1a; }
+.fp-canvas .room-tile-blocked    { background: #ffcccc; color: #880000; cursor: not-allowed; }
+.fp-canvas .room-tile-blocked .fp-rt { color: #aa4444; }
