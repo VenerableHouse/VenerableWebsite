@@ -110,20 +110,44 @@
       <tr>
         <th>#</th>
         <th>Name</th>
+        <th>Pair</th>
         <th>Alley UCC</th>
         <th>Assigned Room</th>
         <th>Status</th>
       </tr>
     </thead>
     <tbody>
+      {% set shown_pairs = [] %}
       {% for row in summary %}
-      <tr>
-        <td>{{ row['pick_position'] }}</td>
-        <td>{{ row['name'] }}</td>
-        <td>{{ 'Alley ' ~ row['ucc_alley'] if row['ucc_alley'] else '—' }}</td>
-        <td>{{ row['room'] if row['room'] else '—' }}</td>
-        <td>{{ row['status'] }}</td>
-      </tr>
+        {% if row['pair_id'] and row['pair_id'] in shown_pairs %}
+          {# skip — already shown as part of the pair row above #}
+        {% else %}
+          {% if row['pair_id'] %}{% if shown_pairs.append(row['pair_id']) %}{% endif %}{% endif %}
+          {# find partner if paired #}
+          {% set partner = [] %}
+          {% for other in summary %}
+            {% if other['pair_id'] and other['pair_id'] == row['pair_id'] and other['user_id'] != row['user_id'] %}
+              {% if partner.append(other) %}{% endif %}
+            {% endif %}
+          {% endfor %}
+          <tr>
+            <td>{{ row['pick_position'] }}</td>
+            <td>
+              {{ row['name'] }}
+              {% if partner %}
+                <br><small>+ {{ partner[0]['name'] }}</small>
+              {% endif %}
+            </td>
+            <td>
+              {% if row['pair_id'] %}
+                <span class="pair-badge">Pair {{ row['pair_id'] }}</span>
+              {% else %}—{% endif %}
+            </td>
+            <td>{{ 'Alley ' ~ row['ucc_alley'] if row['ucc_alley'] else '—' }}</td>
+            <td>{{ row['room'] if row['room'] else '—' }}</td>
+            <td>{{ row['status'] }}</td>
+          </tr>
+        {% endif %}
       {% endfor %}
     </tbody>
   </table>

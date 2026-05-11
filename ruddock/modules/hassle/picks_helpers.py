@@ -132,17 +132,19 @@ def set_picks_participants(ordered_list):
   """
   Replace participant table.
 
-  ordered_list: [(user_id, pick_position, ucc_alley), ...]
-    pick_position 1 = first pick; ucc_alley is None or an int 1-6.
+  ordered_list: [(user_id, pick_position, ucc_alley, pair_id), ...]
+    pick_position 1 = first pick; ucc_alley is None or an int 1-6;
+    pair_id is None for solo pickers or a shared int for roommate pairs.
   """
   with flask.g.db.begin():
     flask.g.db.execute(sqlalchemy.text(
         "DELETE FROM hassle_picks_participants"))
-    for user_id, pick_position, ucc_alley in ordered_list:
+    for user_id, pick_position, ucc_alley, pair_id in ordered_list:
       flask.g.db.execute(sqlalchemy.text("""
-        INSERT INTO hassle_picks_participants (user_id, pick_position, ucc_alley)
-        VALUES (:u, :p, :a)
-      """), u=user_id, p=pick_position, a=ucc_alley)
+        INSERT INTO hassle_picks_participants
+          (user_id, pick_position, ucc_alley, pair_id)
+        VALUES (:u, :p, :a, :r)
+      """), u=user_id, p=pick_position, a=ucc_alley, r=pair_id)
 
 
 def set_picks_rooms(room_numbers, ucc_set):
@@ -195,12 +197,27 @@ def reset_to_defaults():
 def get_picks_participants():
   """Returns all participants ordered by pick_position."""
   return flask.g.db.execute(sqlalchemy.text("""
-    SELECT p.user_id, p.pick_position, p.ucc_alley, me.name
+    SELECT p.user_id, p.pick_position, p.ucc_alley, p.pair_id, me.name
     FROM hassle_picks_participants p
     JOIN members m ON p.user_id = m.user_id
     JOIN members_extra me ON p.user_id = me.user_id
     ORDER BY p.pick_position
   """)).fetchall()
+
+
+def get_pair_partner_id(user_id, participants):
+  """Returns the user_id of the pair partner, or None if solo."""
+  pair_id = None
+  for p in participants:
+    if p['user_id'] == user_id:
+      pair_id = p['pair_id']
+      break
+  if pair_id is None:
+    return None
+  for p in participants:
+    if p['pair_id'] == pair_id and p['user_id'] != user_id:
+      return p['user_id']
+  return None
 
 
 def get_picks_rooms():
@@ -245,20 +262,28 @@ def get_all_picks_preferences():
 
 def set_preferences(user_id, ordered_rooms):
   """
-  Replace preferences for one user.
+  Replace preferences for one user and sync to their pair partner if they have one.
 
   ordered_rooms: list of room_numbers in preference order (index 0 = rank 1).
   Silently truncates to 10.
   """
   ordered_rooms = ordered_rooms[:10]
+  participants = get_picks_participants()
+  partner_id = get_pair_partner_id(user_id, participants)
+
+  user_ids_to_update = [user_id]
+  if partner_id is not None:
+    user_ids_to_update.append(partner_id)
+
   with flask.g.db.begin():
-    flask.g.db.execute(sqlalchemy.text(
-        "DELETE FROM hassle_picks_preferences WHERE user_id = :u"), u=user_id)
-    for rank, room_number in enumerate(ordered_rooms, start=1):
-      flask.g.db.execute(sqlalchemy.text("""
-        INSERT INTO hassle_picks_preferences (user_id, room_number, rank)
-        VALUES (:u, :r, :k)
-      """), u=user_id, r=room_number, k=rank)
+    for uid in user_ids_to_update:
+      flask.g.db.execute(sqlalchemy.text(
+          "DELETE FROM hassle_picks_preferences WHERE user_id = :u"), u=uid)
+      for rank, room_number in enumerate(ordered_rooms, start=1):
+        flask.g.db.execute(sqlalchemy.text("""
+          INSERT INTO hassle_picks_preferences (user_id, room_number, rank)
+          VALUES (:u, :r, :k)
+        """), u=uid, r=room_number, k=rank)
 
 
 def is_participant(user_id):
@@ -463,6 +488,13 @@ def run_picks_algorithm():
   for participant in participants:
     uid = participant['user_id']
     ucc_alley = participant['ucc_alley']
+
+    # Skip participants already assigned (via their pair partner picking first).
+    if uid in assignments:
+      continue
+
+    partner_id = get_pair_partner_id(uid, participants)
+
     blocked = get_blocked_rooms(
         assignments, frosh_quotas, participants, rooms_info,
         current_picker_id=uid)
@@ -471,7 +503,7 @@ def run_picks_algorithm():
     for room_number in prefs:
       if room_number not in rooms_info:
         continue
-      if room_number in assignments.values():
+      if room_number in set(assignments.values()):
         continue
       if room_number in blocked:
         continue
@@ -479,6 +511,9 @@ def run_picks_algorithm():
         if rooms_info[room_number]['alley'] != ucc_alley:
           continue
       assignments[uid] = room_number
+      # Assign partner to same room.
+      if partner_id is not None:
+        assignments[partner_id] = room_number
       break
 
   final_blocked = get_blocked_rooms(
@@ -500,33 +535,34 @@ def get_room_statuses(current_user_id, assignments, blocked, rooms_info,
     'wanted'    — available but in a lower-priority picker's preferences (yellow)
     'available' — available, no demand (white)
   """
-  # Determine the current user's pick position.
+  # Determine the current user's pick position, UCC alley, and pair partner.
   user_position = None
+  ucc_alley = None
+  partner_id = get_pair_partner_id(current_user_id, participants)
   for p in participants:
     if p['user_id'] == current_user_id:
       user_position = p['pick_position']
+      ucc_alley = p['ucc_alley']
       break
 
-  # Rooms wanted by lower-priority pickers.
+  # The room assigned to this viewer (or their partner — same room for pairs).
+  my_room = assignments.get(current_user_id)
+
+  # Rooms wanted by lower-priority pickers (excluding pair partner, same list).
   wanted_rooms = set()
   if user_position is not None:
     for p in participants:
       if p['pick_position'] > user_position and p['user_id'] not in assignments:
+        if partner_id is not None and p['user_id'] == partner_id:
+          continue  # partner shares our prefs, don't double-count
         for rn in all_prefs.get(p['user_id'], []):
           wanted_rooms.add(rn)
-
-  # Determine the current user's UCC alley restriction.
-  ucc_alley = None
-  for p in participants:
-    if p['user_id'] == current_user_id:
-      ucc_alley = p['ucc_alley']
-      break
 
   statuses = {}
   for rn, row in rooms_info.items():
     if rn in PERMANENTLY_VACANT:
       statuses[rn] = 'vacant'
-    elif assignments.get(current_user_id) == rn:
+    elif my_room == rn:
       statuses[rn] = 'assigned_you'
     elif rn in assignments.values():
       statuses[rn] = 'assigned'

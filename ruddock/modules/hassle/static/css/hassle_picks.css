@@ -220,3 +220,15 @@
 }
 
 /* ----- Picks overview table uses existing .userlist style ----- */
+
+/* ----- Pair badge ----- */
+.pair-badge {
+  display: inline-block;
+  background: #6a5acd;
+  color: white;
+  font-size: 0.7em;
+  font-weight: bold;
+  padding: 1px 5px;
+  border-radius: 3px;
+  vertical-align: middle;
+}

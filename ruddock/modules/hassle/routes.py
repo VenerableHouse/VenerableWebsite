@@ -160,6 +160,7 @@ def picks_index():
       'name': p['name'],
       'pick_position': p['pick_position'],
       'ucc_alley': p['ucc_alley'],
+      'pair_id': p['pair_id'],
       'room': room,
       'status': status,
     })
@@ -226,8 +227,34 @@ def picks_setup_submit():
   ucc_rooms = set(int(r) for r in form.getlist('ucc_rooms'))
 
   # --- Parse participants ---
+  # pair_with_{uid} contains the user_id of the partner, or '' for solo.
+  # We assign pair_ids by grouping matched pairs.
   ordered_ids = form.getlist('ordered_user_ids[]')
   participant_list = []
+  pair_id_map = {}   # uid -> pair_id
+  next_pair_id = 1
+
+  for uid_str in ordered_ids:
+    try:
+      uid = int(uid_str)
+    except (ValueError, TypeError):
+      continue
+    partner_str = form.get('pair_with_{}'.format(uid), '')
+    try:
+      partner = int(partner_str) if partner_str else None
+    except (ValueError, TypeError):
+      partner = None
+
+    if partner is not None:
+      if partner in pair_id_map:
+        pair_id_map[uid] = pair_id_map[partner]
+      elif uid in pair_id_map:
+        pass  # already assigned
+      else:
+        pair_id_map[uid] = next_pair_id
+        next_pair_id += 1
+    # Solo pickers get no pair_id (leave out of map).
+
   for pos, uid_str in enumerate(ordered_ids, start=1):
     try:
       uid = int(uid_str)
@@ -238,7 +265,8 @@ def picks_setup_submit():
       ucc_alley = int(ucc_alley_str) if ucc_alley_str else None
     except (ValueError, TypeError):
       ucc_alley = None
-    participant_list.append((uid, pos, ucc_alley))
+    pair_id = pair_id_map.get(uid)
+    participant_list.append((uid, pos, ucc_alley, pair_id))
 
   # --- Commit all three in one transaction ---
   import sqlalchemy
@@ -259,11 +287,12 @@ def picks_setup_submit():
       flask.g.db.execute(sqlalchemy.text(
           "INSERT INTO hassle_picks_rooms (room_number, is_ucc) VALUES (:r, :u)"),
           r=rn, u=(rn in ucc_rooms))
-    for uid, pos, ucc_alley in participant_list:
+    for uid, pos, ucc_alley, pair_id in participant_list:
       flask.g.db.execute(sqlalchemy.text("""
-          INSERT INTO hassle_picks_participants (user_id, pick_position, ucc_alley)
-          VALUES (:u, :p, :a)"""),
-          u=uid, p=pos, a=ucc_alley)
+          INSERT INTO hassle_picks_participants
+            (user_id, pick_position, ucc_alley, pair_id)
+          VALUES (:u, :p, :a, :r)"""),
+          u=uid, p=pos, a=ucc_alley, r=pair_id)
 
   flask.flash('Hassle setup saved. Note: all previously submitted preferences have been cleared.')
   return flask.redirect(flask.url_for('hassle.picks_index'))
@@ -293,12 +322,21 @@ def picks_preferences():
   statuses = picks_helpers.get_room_statuses(
       user_id, assignments, blocked, rooms_info, all_prefs, participants)
 
+  partner_id = picks_helpers.get_pair_partner_id(user_id, participants)
+  partner_name = None
+  if partner_id is not None:
+    for p in participants:
+      if p['user_id'] == partner_id:
+        partner_name = p['name']
+        break
+
   return flask.render_template('hassle_picks_preferences.html',
       not_participant=False,
       my_prefs=my_prefs,
       my_room=my_room,
       statuses=statuses,
       rooms_info=rooms_info,
+      partner_name=partner_name,
       ROOMS_BY_ALLEY=picks_helpers.ROOMS_BY_ALLEY,
       PERMANENTLY_VACANT=picks_helpers.PERMANENTLY_VACANT,
       FORCED_FROSH=picks_helpers.FORCED_FROSH)

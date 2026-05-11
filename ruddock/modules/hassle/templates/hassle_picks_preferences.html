@@ -82,6 +82,13 @@ function syncPrefOrder() {
      Contact the Secretary to be added.</p>
 {% else %}
 
+  {% if partner_name %}
+  <div class="assignment-banner" style="background:#eef3ff; border:1px solid #99b; color:#335;">
+    You are paired with <strong>{{ partner_name }}</strong>.
+    Your preferences are shared — saving your preferences updates theirs too.
+  </div>
+  {% endif %}
+
   {% if my_room %}
   <div class="assignment-banner assignment-banner-assigned">
     Your current assignment: <strong>Room {{ my_room }}</strong>

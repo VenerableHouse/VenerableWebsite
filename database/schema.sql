@@ -159,10 +159,13 @@ CREATE TABLE hassle_roommates (
 -- ucc_alley: if set, this participant is an on-campus Alley-N UCC and may only
 -- be assigned a room in that alley; the system also blocks other pickers from
 -- exhausting all rooms in that alley before this person picks.
+-- pair_id: participants sharing the same pair_id pick together as a unit and
+-- are assigned to the same room. NULL means solo picker.
 CREATE TABLE hassle_picks_participants (
   user_id       INTEGER NOT NULL,
   pick_position INTEGER NOT NULL,
   ucc_alley     INTEGER,
+  pair_id       INTEGER,
   PRIMARY KEY (user_id),
   UNIQUE (pick_position),
   FOREIGN KEY (user_id) REFERENCES members (user_id) ON DELETE CASCADE

@@ -63,10 +63,15 @@ function addToPickList(uid, name, isUcc) {
     '<select name="ucc_alley_' + uid + '">' +
     '<option value="">None</option>' + uccOptions +
     '</select>' +
+    '&nbsp;&nbsp;Pair with: ' +
+    '<select name="pair_with_' + uid + '" class="pair-select" data-uid="' + uid + '">' +
+    '<option value="">— Solo —</option>' +
+    '</select>' +
     '&nbsp;<button type="button" class="remove-pick" onclick="removePick(this)">✕</button>';
 
   list.appendChild(li);
   updatePositions();
+  refreshPairDropdowns();
   syncPickOrder();
 }
 
@@ -74,10 +79,14 @@ function removePick(btn) {
   var row = btn.closest('.pick-row');
   var uid = row.dataset.uid;
   var name = row.querySelector('strong').textContent;
+  // Clear any partner pairing before removing.
+  document.querySelectorAll('.pair-select').forEach(function(sel) {
+    if (sel.value === uid) sel.value = '';
+  });
   row.remove();
   updatePositions();
+  refreshPairDropdowns();
   syncPickOrder();
-  // Re-add to bench.
   addToBench(uid, name);
 }
 
@@ -103,6 +112,35 @@ function updatePositions() {
     if (posSpan) posSpan.textContent = i + 1;
   });
 }
+
+// Rebuild every pair-with dropdown to list all OTHER participants.
+function refreshPairDropdowns() {
+  var rows = document.querySelectorAll('#pick-list .pick-row');
+  var options = [];
+  rows.forEach(function(row) {
+    options.push({ uid: row.dataset.uid, name: row.querySelector('strong').textContent });
+  });
+
+  rows.forEach(function(row) {
+    var myUid = row.dataset.uid;
+    var sel = row.querySelector('.pair-select');
+    if (!sel) return;
+    var current = sel.value;
+    sel.innerHTML = '<option value="">— Solo —</option>';
+    options.forEach(function(opt) {
+      if (opt.uid === myUid) return;
+      var o = document.createElement('option');
+      o.value = opt.uid;
+      o.textContent = opt.name;
+      if (opt.uid === current) o.selected = true;
+      sel.appendChild(o);
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  refreshPairDropdowns();
+});
 </script>
 {% endblock head %}
 
@@ -195,6 +233,20 @@ function updatePositions() {
             <option value="">None</option>
             {% for a in range(1,7) %}
             <option value="{{ a }}" {{ 'selected' if p['ucc_alley'] == a }}>{{ a }}</option>
+            {% endfor %}
+          </select>
+          &nbsp;&nbsp;Pair with:
+          <select name="pair_with_{{ p['user_id'] }}" class="pair-select" data-uid="{{ p['user_id'] }}">
+            <option value="">— Solo —</option>
+            {% for other in current_participants.values() %}
+              {% if other['user_id'] != p['user_id'] %}
+                {% for m in members %}{% if m['user_id'] == other['user_id'] %}
+                <option value="{{ other['user_id'] }}"
+                  {{ 'selected' if p['pair_id'] is not none and p['pair_id'] == other['pair_id'] }}>
+                  {{ m['name'] }}
+                </option>
+                {% endif %}{% endfor %}
+              {% endif %}
             {% endfor %}
           </select>
           &nbsp;<button type="button" class="remove-pick" onclick="removePick(this)">✕</button>
