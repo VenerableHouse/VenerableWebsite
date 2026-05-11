@@ -228,11 +228,6 @@
 
 /* ----- Picks overview table uses existing .userlist style ----- */
 
-/* Override global max-width so the picks page fills the viewport */
-#content {
-  max-width: 1000px;
-}
-
 /* Make the picks table fill the content area */
 table.userlist {
   width: 100%;
