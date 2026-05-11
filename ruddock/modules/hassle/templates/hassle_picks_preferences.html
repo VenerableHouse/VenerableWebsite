@@ -17,8 +17,9 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('.room-tile-available, .room-tile-wanted, .room-tile-ucc').forEach(function(tile) {
     tile.addEventListener('click', function() {
       var rn = this.dataset.room;
-      var label = this.dataset.label;
-      addPref(rn, label);
+      var parts = this.title.split(' / ');
+      var type = parts.length > 1 ? parts[1] : '';
+      addPref(rn, type);
     });
   });
   {% endif %}
@@ -26,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 var MAX_PREFS = 10;
 
-function addPref(rn, label) {
+function addPref(rn, type) {
   var list = document.getElementById('pref-list');
   // Don't add duplicates.
   if (document.querySelector('.pref-row[data-room="' + rn + '"]')) return;
@@ -38,26 +39,17 @@ function addPref(rn, label) {
   li.className = 'pref-row';
   li.dataset.room = rn;
   li.innerHTML =
-    '<span class="drag-handle">☰</span> ' +
-    '<span class="pref-rank"></span>. Room ' + rn +
-    ' <span class="room-label">' + label + '</span>' +
+    '<span class="drag-handle">☰</span>' +
+    ' Room ' + rn +
+    (type ? ' <span class="room-label">' + type + '</span>' : '') +
     ' <button type="button" onclick="removePref(this)">✕</button>';
   list.appendChild(li);
-  updateRanks();
   syncPrefOrder();
 }
 
 function removePref(btn) {
   btn.closest('.pref-row').remove();
-  updateRanks();
   syncPrefOrder();
-}
-
-function updateRanks() {
-  document.querySelectorAll('#pref-list .pref-row').forEach(function(el, i) {
-    var span = el.querySelector('.pref-rank');
-    if (span) span.textContent = i + 1;
-  });
 }
 
 function syncPrefOrder() {
@@ -206,7 +198,7 @@ function syncPrefOrder() {
       {% for rn in my_prefs %}
       <li class="pref-row" data-room="{{ rn }}">
         <span class="drag-handle">☰</span>
-        <span class="pref-rank">{{ loop.index }}</span>. Room {{ rn }}
+        Room {{ rn }}{% if ROOM_TYPES.get(rn) %} <span class="room-label">{{ ROOM_TYPES.get(rn) }}</span>{% endif %}
         <button type="button" onclick="removePref(this)">✕</button>
       </li>
       {% endfor %}

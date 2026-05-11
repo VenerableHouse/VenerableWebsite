@@ -111,6 +111,22 @@ ALL_PICKABLE_ROOMS = frozenset(
     if r not in FORCED_FROSH
 )
 
+# Room type labels shown in the preference list (matches floor plan titles).
+ROOM_TYPES = {
+    101: 'Sky',  103: 'Loft', 104: 'Loft', 105: 'Bunk', 106: 'Sky',
+    108: 'Loft', 110: 'Loft',
+    112: 'Sky',  114: 'Loft', 119: 'Bunk', 121: 'Loft', 123: 'Sky',
+    125: 'Loft', 127: 'Loft',
+    130: 'Bunk', 132: 'Loft', 133: 'Sky',  134: 'Loft', 136: 'Sky',
+    138: 'Loft',
+    201: 'Loft', 203: 'Sky',  204: 'Loft', 205: 'Loft', 206: 'Bunk',
+    208: 'Loft', 210: 'Sky',  212: 'Loft', 214: 'Sky',  216: 'Loft',
+    218: 'Sky',  220: 'Bunk', 221: 'Loft', 223: 'Sky',  225: 'Loft',
+    227: 'Loft', 229: 'Loft',
+    234: 'Bunk', 236: 'Loft', 238: 'Loft', 240: 'Loft', 242: 'Sky',
+    244: 'Loft',
+}
+
 # ---------------------------------------------------------------------------
 # Database helpers — setup
 # ---------------------------------------------------------------------------

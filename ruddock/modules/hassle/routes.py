@@ -285,7 +285,8 @@ def picks_preferences():
       partner_name=partner_name,
       ROOMS_BY_ALLEY=picks_helpers.ROOMS_BY_ALLEY,
       PERMANENTLY_VACANT=picks_helpers.PERMANENTLY_VACANT,
-      FORCED_FROSH=picks_helpers.FORCED_FROSH)
+      FORCED_FROSH=picks_helpers.FORCED_FROSH,
+      ROOM_TYPES=picks_helpers.ROOM_TYPES)
 
 
 @blueprint.route('/picks/preferences/submit', methods=['POST'])
