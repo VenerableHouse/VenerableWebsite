@@ -251,6 +251,14 @@ table.userlist {
 
 .fp-bg { background: #f0f0f0; }
 
+/* ----- Alley tint colours ----- */
+.fp-alley-1 { --alley-bg: rgba(210,  0,   0,   0.13); }  /* red */
+.fp-alley-2 { --alley-bg: rgba(0,    0,   180, 0.13); }  /* dark blue */
+.fp-alley-3 { --alley-bg: rgba(0,    155, 0,   0.13); }  /* green */
+.fp-alley-4 { --alley-bg: rgba(120,  0,   190, 0.13); }  /* purple */
+.fp-alley-5 { --alley-bg: rgba(30,   150, 225, 0.18); }  /* sky blue */
+.fp-alley-6 { --alley-bg: rgba(0,    185, 185, 0.18); }  /* cyan */
+
 .fp-room {
   border: 1px solid #aaa;
   display: flex;
@@ -261,6 +269,7 @@ table.userlist {
   padding: 1px;
   overflow: hidden;
   z-index: 2;
+  background-color: var(--alley-bg, #fff);
 }
 .fp-room:hover { filter: brightness(0.92); }
 .fp-rn { font-size: 9px; font-weight: 700; }
@@ -285,13 +294,29 @@ table.userlist {
   z-index: 10;
 }
 
-/* floor plan status colours (override .room-tile-* for fp context) */
-.fp-canvas .room-tile-available  { background: #fff; cursor: pointer; }
-.fp-canvas .room-tile-available:hover { background: #e8f4e8; }
-.fp-canvas .room-tile-wanted     { background: #fff8c0; cursor: pointer; }
-.fp-canvas .room-tile-wanted:hover { background: #ffe87a; }
-.fp-canvas .room-tile-ucc        { background: #ffe0b2; cursor: pointer; }
-.fp-canvas .room-tile-assigned   { background: #ccc; color: #333; cursor: not-allowed; }
-.fp-canvas .room-tile-assigned_you { background: #c8f0c8; border: 2px solid #2a7a2a; color: #1a5a1a; }
-.fp-canvas .room-tile-blocked    { background: #ffcccc; color: #880000; cursor: not-allowed; }
-.fp-canvas .room-tile-blocked .fp-rt { color: #aa4444; }
+/* ----- Floor plan status colours ----- */
+/* Status uses background-image so it overlays the alley background-color */
+.fp-canvas .room-tile-available   { cursor: pointer; }
+.fp-canvas .room-tile-available:hover { background-image: linear-gradient(rgba(0,160,0,0.12), rgba(0,160,0,0.12)); }
+.fp-canvas .room-tile-wanted      { background-image: linear-gradient(rgba(195,150,0,0.62), rgba(195,150,0,0.62)); cursor: pointer; }
+.fp-canvas .room-tile-wanted:hover{ background-image: linear-gradient(rgba(195,150,0,0.80), rgba(195,150,0,0.80)); }
+.fp-canvas .room-tile-ucc         { background-image: linear-gradient(rgba(225,80,0,0.60),  rgba(225,80,0,0.60));  cursor: pointer; }
+.fp-canvas .room-tile-assigned    { background-image: linear-gradient(rgba(70,70,70,0.68),  rgba(70,70,70,0.68));  color: white; cursor: not-allowed; }
+.fp-canvas .room-tile-assigned_you{ background-image: linear-gradient(rgba(20,130,20,0.82), rgba(20,130,20,0.82)); border: 2px solid #1a6a1a; color: white; }
+.fp-canvas .room-tile-assigned_you .fp-rt { color: #b0e8b0; }
+.fp-canvas .room-tile-blocked     { background-image: linear-gradient(rgba(180,0,0,0.52),   rgba(180,0,0,0.52));   color: white; cursor: not-allowed; }
+.fp-canvas .room-tile-blocked .fp-rt { color: #ffaaaa; }
+
+/* ----- Floor labels ----- */
+.fp-floor-labels {
+  display: flex;
+  width: 884px;
+  margin-top: 5px;
+}
+.fp-floor-label {
+  font-size: 0.82em;
+  color: #555;
+  font-style: italic;
+  text-align: center;
+  letter-spacing: 0.03em;
+}
