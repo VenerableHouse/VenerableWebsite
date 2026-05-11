@@ -1,5 +1,6 @@
 import json
 import flask
+import sqlalchemy
 
 from ruddock.resources import Permissions
 from ruddock.decorators import login_required
@@ -215,7 +216,6 @@ def picks_setup():
 @login_required(Permissions.HASSLE)
 def picks_setup_submit():
   """Save frosh quota configuration. Participants are set via CSV upload."""
-  import sqlalchemy
   form = flask.request.form
 
   quotas = {}
