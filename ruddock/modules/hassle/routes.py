@@ -181,35 +181,22 @@ def picks_index():
 @blueprint.route('/picks/setup')
 @login_required(Permissions.HASSLE)
 def picks_setup():
-  """Secretary setup page: configure participants, pick order, rooms, UCC flags, quotas."""
-  members = picks_helpers.get_all_members()
-  current_participants = {p['user_id']: p
-                          for p in picks_helpers.get_picks_participants()}
-  rooms_rows = picks_helpers.get_picks_rooms()
-  current_rooms = {row['room_number']: row for row in rooms_rows}
+  """Secretary setup page: upload pick-order CSV and configure frosh quotas."""
   frosh_quotas = picks_helpers.get_frosh_quotas()
   if not frosh_quotas:
     frosh_quotas = dict(picks_helpers.DEFAULT_FROSH_QUOTAS)
 
   return flask.render_template('hassle_picks_setup.html',
-      members=members,
-      current_participants=current_participants,
-      current_rooms=current_rooms,
-      frosh_quotas=frosh_quotas,
-      ROOMS_BY_ALLEY=picks_helpers.ROOMS_BY_ALLEY,
-      PERMANENTLY_VACANT=picks_helpers.PERMANENTLY_VACANT,
-      FORCED_FROSH=picks_helpers.FORCED_FROSH)
+      frosh_quotas=frosh_quotas)
 
 
 @blueprint.route('/picks/setup/submit', methods=['POST'])
 @login_required(Permissions.HASSLE)
 def picks_setup_submit():
-  """Save setup configuration submitted by the Secretary.
-  All three writes (quotas, rooms, participants) execute in one transaction
-  so a partial failure leaves the DB unchanged."""
+  """Save frosh quota configuration. Participants are set via CSV upload."""
+  import sqlalchemy
   form = flask.request.form
 
-  # --- Parse quotas ---
   quotas = {}
   for alley in range(1, 7):
     val = form.get('quota_{}'.format(alley), '')
@@ -218,63 +205,11 @@ def picks_setup_submit():
     except (ValueError, TypeError):
       quotas[alley] = picks_helpers.DEFAULT_FROSH_QUOTAS.get(alley, 0)
 
-  # --- Rooms: auto-include everything except permanently vacant ---
   room_numbers = list(picks_helpers.ALL_PICKABLE_ROOMS | picks_helpers.FORCED_FROSH)
-  ucc_rooms = set()
 
-  # --- Parse participants ---
-  # pair_with_{uid} contains the user_id of the partner, or '' for solo.
-  # We assign pair_ids by grouping matched pairs.
-  ordered_ids = form.getlist('ordered_user_ids[]')
-  participant_list = []
-  pair_id_map = {}   # uid -> pair_id
-  next_pair_id = 1
-
-  for uid_str in ordered_ids:
-    try:
-      uid = int(uid_str)
-    except (ValueError, TypeError):
-      continue
-    partner_str = form.get('pair_with_{}'.format(uid), '')
-    try:
-      partner = int(partner_str) if partner_str else None
-    except (ValueError, TypeError):
-      partner = None
-
-    if partner is not None:
-      if partner in pair_id_map:
-        pair_id_map[uid] = pair_id_map[partner]
-      elif uid in pair_id_map:
-        pass  # already assigned
-      else:
-        pair_id_map[uid] = next_pair_id
-        next_pair_id += 1
-    # Solo pickers get no pair_id (leave out of map).
-
-  for pos, uid_str in enumerate(ordered_ids, start=1):
-    try:
-      uid = int(uid_str)
-    except (ValueError, TypeError):
-      continue
-    ucc_alley_str = form.get('ucc_alley_{}'.format(uid), '')
-    try:
-      ucc_alley = int(ucc_alley_str) if ucc_alley_str else None
-    except (ValueError, TypeError):
-      ucc_alley = None
-    pair_id = pair_id_map.get(uid)
-    participant_list.append((uid, pos, ucc_alley, pair_id))
-
-  # --- Commit all three in one transaction ---
-  import sqlalchemy
   with flask.g.db.begin():
-    flask.g.db.execute(sqlalchemy.text(
-        "DELETE FROM hassle_picks_preferences"))
-    flask.g.db.execute(sqlalchemy.text(
-        "DELETE FROM hassle_picks_participants"))
-    flask.g.db.execute(sqlalchemy.text(
-        "DELETE FROM hassle_picks_rooms"))
-    flask.g.db.execute(sqlalchemy.text(
-        "DELETE FROM hassle_picks_frosh_quotas"))
+    flask.g.db.execute(sqlalchemy.text("DELETE FROM hassle_picks_rooms"))
+    flask.g.db.execute(sqlalchemy.text("DELETE FROM hassle_picks_frosh_quotas"))
     for alley, quota in quotas.items():
       flask.g.db.execute(sqlalchemy.text(
           "INSERT INTO hassle_picks_frosh_quotas (alley, quota) VALUES (:a, :q)"),
@@ -282,16 +217,10 @@ def picks_setup_submit():
     for rn in room_numbers:
       flask.g.db.execute(sqlalchemy.text(
           "INSERT INTO hassle_picks_rooms (room_number, is_ucc) VALUES (:r, :u)"),
-          r=rn, u=(rn in ucc_rooms))
-    for uid, pos, ucc_alley, pair_id in participant_list:
-      flask.g.db.execute(sqlalchemy.text("""
-          INSERT INTO hassle_picks_participants
-            (user_id, pick_position, ucc_alley, pair_id)
-          VALUES (:u, :p, :a, :r)"""),
-          u=uid, p=pos, a=ucc_alley, r=pair_id)
+          r=rn, u=False)
 
-  flask.flash('Hassle setup saved. Note: all previously submitted preferences have been cleared.')
-  return flask.redirect(flask.url_for('hassle.picks_index'))
+  flask.flash('Frosh quotas saved.')
+  return flask.redirect(flask.url_for('hassle.picks_setup'))
 
 
 @blueprint.route('/picks/preferences')
