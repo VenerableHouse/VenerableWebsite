@@ -127,10 +127,9 @@
     <thead>
       <tr>
         <th width='5%'>#</th>
-        <th width='35%'>Name</th>
-        <th width='20%'>Alley UCC</th>
+        <th width='40%'>Name</th>
         <th width='25%'>Assigned Room</th>
-        <th width='15%'>Status</th>
+        <th width='30%'>Preferences</th>
       </tr>
     </thead>
     <tbody>
@@ -157,9 +156,8 @@
                 <br><small>+ {{ partner[0]['name'] }}</small>
               {% endif %}
             </td>
-            <td>{{ 'Alley ' ~ row['ucc_alley'] if row['ucc_alley'] else '—' }}</td>
             <td>{{ row['room'] if row['room'] else '—' }}</td>
-            <td>{{ row['status'] }}</td>
+            <td>{{ all_prefs.get(row['user_id'], []) | join(', ') or '—' }}</td>
           </tr>
         {% endif %}
       {% endfor %}

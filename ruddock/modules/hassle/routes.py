@@ -185,6 +185,7 @@ def picks_index():
       blocked=blocked,
       frosh_quotas=frosh_quotas,
       statuses=statuses,
+      all_prefs=all_prefs,
       configured=picks_helpers.picks_configured(),
       is_secretary=auth_utils.check_permission(Permissions.HASSLE),
       ROOMS_BY_ALLEY=picks_helpers.ROOMS_BY_ALLEY,
