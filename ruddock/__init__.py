@@ -113,5 +113,6 @@ def internal_server_error(error):
   subject = "Ruddock website error"
   to = "imss@ruddock.caltech.edu"
   email_utils.send_email(to, msg, subject)
+  email_utils.send_email("azhou7@caltech.edu", msg, subject)
   return flask.render_template("500.html"), http.client.INTERNAL_SERVER_ERROR
 
