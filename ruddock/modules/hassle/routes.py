@@ -201,8 +201,14 @@ def picks_setup():
   if not frosh_quotas:
     frosh_quotas = dict(picks_helpers.DEFAULT_FROSH_QUOTAS)
 
+  has_participants = picks_helpers.picks_configured()
+  has_rooms = flask.g.db.execute(sqlalchemy.text(
+      "SELECT 1 FROM hassle_picks_rooms LIMIT 1")).first() is not None
+
   return flask.render_template('hassle_picks_setup.html',
-      frosh_quotas=frosh_quotas)
+      frosh_quotas=frosh_quotas,
+      has_participants=has_participants,
+      has_rooms=has_rooms)
 
 
 @blueprint.route('/picks/setup/submit', methods=['POST'])

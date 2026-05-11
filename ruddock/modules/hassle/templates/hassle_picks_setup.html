@@ -8,6 +8,17 @@
 <h2>Room Picks — Setup</h2>
 <p>Configure the preference-based picks hassle. Only the Secretary can access this page.</p>
 
+{% if not has_participants %}
+<div class="assignment-banner assignment-banner-unassigned">
+  ⚠ No pick order uploaded yet. Upload a CSV below before members submit preferences.
+</div>
+{% endif %}
+{% if not has_rooms %}
+<div class="assignment-banner assignment-banner-unassigned">
+  ⚠ Rooms not configured. Press <strong>Save Quotas</strong> below to activate the hassle.
+</div>
+{% endif %}
+
 <!-- ===== CSV Upload ===== -->
 <h3>Upload Pick Order via CSV</h3>
 <p>
