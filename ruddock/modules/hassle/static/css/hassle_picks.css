@@ -230,7 +230,7 @@
 
 /* Override global max-width so the picks page fills the viewport */
 #content {
-  max-width: 100%;
+  max-width: 1000px;
 }
 
 /* Make the picks table fill the content area */
