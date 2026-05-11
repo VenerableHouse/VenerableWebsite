@@ -379,3 +379,111 @@ def picks_reset():
   picks_helpers.clear_picks_all()
   flask.flash('Picks hassle data cleared.')
   return flask.redirect(flask.url_for('hassle.picks_setup'))
+
+
+@blueprint.route('/picks/setup/csv', methods=['POST'])
+@login_required(Permissions.HASSLE)
+def picks_setup_csv_upload():
+  """
+  Upload a CSV to set the pick order and roommate pairs.
+
+  CSV format (one row per pick unit, rows define pick order):
+    Name1[, Name2[, UCC_Alley]]
+
+  Name1 / Name2 must match member names exactly (case-insensitive).
+  UCC_Alley is an optional integer 1-6 for on-campus alley UCC guarantee.
+
+  Only hassle_picks_participants is updated; rooms and frosh quotas are unchanged.
+  All previously submitted preferences are cleared (cascade).
+  """
+  import csv
+  import io
+  import sqlalchemy
+
+  file = flask.request.files.get('csv_file')
+  if not file or file.filename == '':
+    flask.flash('No file selected.')
+    return flask.redirect(flask.url_for('hassle.picks_setup'))
+
+  try:
+    stream = io.StringIO(file.stream.read().decode('utf-8-sig'))
+  except UnicodeDecodeError:
+    flask.flash('Could not read file — make sure it is saved as UTF-8.')
+    return flask.redirect(flask.url_for('hassle.picks_setup'))
+
+  # Build name → user_id lookup (case-insensitive).
+  all_members = picks_helpers.get_all_members()
+  name_to_uid = {m['name'].strip().lower(): m['user_id'] for m in all_members}
+
+  errors = []
+  units = []  # list of {'uids': [uid, ...], 'ucc_alley': int|None}
+
+  for lineno, row in enumerate(csv.reader(stream), start=1):
+    row = [cell.strip() for cell in row]
+    # Drop empty trailing cells.
+    while row and not row[-1]:
+      row.pop()
+    if not row:
+      continue  # blank line
+
+    # Extract optional UCC alley from last column if it's a digit.
+    ucc_alley = None
+    if row and row[-1].isdigit():
+      ucc_alley = int(row[-1])
+      if ucc_alley not in range(1, 7):
+        errors.append('Row {}: UCC alley must be 1–6, got {}'.format(lineno, ucc_alley))
+        continue
+      row = row[:-1]
+
+    if len(row) == 0 or len(row) > 2:
+      errors.append('Row {}: expected 1 or 2 names, got {}'.format(lineno, len(row)))
+      continue
+
+    uids = []
+    for name in row:
+      uid = name_to_uid.get(name.lower())
+      if uid is None:
+        errors.append('Row {}: unrecognized name "{}"'.format(lineno, name))
+      else:
+        uids.append(uid)
+
+    if not errors:
+      units.append({'uids': uids, 'ucc_alley': ucc_alley})
+
+  if errors:
+    flask.flash('CSV upload failed — fix the following errors and re-upload: '
+                + ' | '.join(errors))
+    return flask.redirect(flask.url_for('hassle.picks_setup'))
+
+  # Build participant list.
+  participant_list = []  # (user_id, pick_position, ucc_alley, pair_id)
+  pick_pos = 1
+  pair_id = 1
+
+  for unit in units:
+    current_pair_id = pair_id if len(unit['uids']) == 2 else None
+    for uid in unit['uids']:
+      participant_list.append((uid, pick_pos, unit['ucc_alley'], current_pair_id))
+      pick_pos += 1
+    if current_pair_id is not None:
+      pair_id += 1
+
+  # Commit: replace participants only (rooms + quotas unchanged).
+  with flask.g.db.begin():
+    flask.g.db.execute(sqlalchemy.text(
+        "DELETE FROM hassle_picks_preferences"))
+    flask.g.db.execute(sqlalchemy.text(
+        "DELETE FROM hassle_picks_participants"))
+    for uid, pos, ucc_alley, p_id in participant_list:
+      flask.g.db.execute(sqlalchemy.text("""
+        INSERT INTO hassle_picks_participants
+          (user_id, pick_position, ucc_alley, pair_id)
+        VALUES (:u, :p, :a, :r)
+      """), u=uid, p=pos, a=ucc_alley, r=p_id)
+
+  flask.flash('CSV uploaded: {} participants ({} pairs, {} solo) added. '
+              'Preferences cleared.'.format(
+                  len(participant_list),
+                  sum(1 for u in units if len(u['uids']) == 2),
+                  sum(1 for u in units if len(u['uids']) == 1)))
+  return flask.redirect(flask.url_for('hassle.picks_setup'))
