@@ -110,51 +110,92 @@ function syncPrefOrder() {
      <span class="legend-swatch legend-blocked">■</span> Frosh / blocked
   </p>
 
-  <div class="map-container">
-    <img src="{{ url_for('static', filename='images/map_with_beds.png') }}"
-         alt="Venerable House floor plan" class="map-bg" id="map-bg" />
-    <div class="room-overlay" id="room-overlay">
-      {% for alley, rooms in ROOMS_BY_ALLEY.items() %}
-        {% for rn in rooms %}
-          {% if rn not in PERMANENTLY_VACANT %}
-            {% set status = statuses.get(rn, 'available') %}
-            {% set row = rooms_info.get(rn) %}
-            {% if row and row['coords'] %}
-              {% set coords = row['coords'].split(',') %}
-              <div class="room-tile room-tile-{{ status }}"
-                   data-room="{{ rn }}"
-                   data-label="Room {{ rn }}"
-                   style="left:{{ coords[0] }}px; top:{{ coords[1] }}px;
-                          width:{{ coords[2] }}px; height:{{ coords[3] }}px;"
-                   title="Room {{ rn }} (Alley {{ alley }}) — {{ status }}">
-                {{ rn }}
-              </div>
-            {% endif %}
-          {% endif %}
-        {% endfor %}
-      {% endfor %}
-    </div>
-  </div>
-
-  <!-- Fallback tile grid (always shown if coords not set) -->
-  <div class="alley-grid-fallback">
-    {% for alley, rooms in ROOMS_BY_ALLEY.items() %}
-    <div class="alley-col">
-      <div class="alley-header">Alley {{ alley }}</div>
-      {% for rn in rooms %}
-        {% if rn not in PERMANENTLY_VACANT and rooms_info.get(rn) is not none %}
-          {% set status = statuses.get(rn, 'available') %}
-          <div class="room-tile room-tile-{{ status }}"
-               data-room="{{ rn }}"
-               data-label="Room {{ rn }}"
-               title="Room {{ rn }} — {{ status }}">
-            {{ rn }}
-          </div>
-        {% endif %}
-      {% endfor %}
-    </div>
-    {% endfor %}
-  </div>
+  <!-- ===== Building Floor Plan ===== -->
+  <div class="fp">
+  <div class="fp-inner">
+  <div class="fp-grid">
+    <!-- Downstairs: wing + middle + lower -->
+    <div class="fp-bg" style="grid-row:4/span 15;grid-column:1/span 9;"></div>
+    <div class="fp-bg" style="grid-row:19/span 9;grid-column:1/span 25;"></div>
+    <div class="fp-bg" style="grid-row:28/span 12;grid-column:17/span 9;"></div>
+    <!-- Upstairs: wing + middle + lower -->
+    <div class="fp-bg" style="grid-row:1/span 18;grid-column:28/span 9;"></div>
+    <div class="fp-bg" style="grid-row:19/span 9;grid-column:28/span 25;"></div>
+    <div class="fp-bg" style="grid-row:28/span 15;grid-column:44/span 9;"></div>
+    <div class="fp-svc" style="grid-row:4/span 3;grid-column:1/span 4;">K</div>
+    <div class="fp-svc" style="grid-row:8/span 2;grid-column:1/span 2;">D</div>
+    <div class="fp-svc" style="grid-row:10/span 3;grid-column:1/span 4;">AG</div>
+    <div class="fp-svc" style="grid-row:19/span 4;grid-column:9/span 3;">F</div>
+    <div class="fp-svc" style="grid-row:19/span 4;grid-column:12/span 9;">RA</div>
+    <div class="fp-svc" style="grid-row:24/span 3;grid-column:15/span 4;">K</div>
+    <div class="fp-svc" style="grid-row:24/span 3;grid-column:19/span 2;">MC</div>
+    <div class="fp-svc" style="grid-row:27/span 4;grid-column:17/span 4;">CL</div>
+    <div class="fp-svc" style="grid-row:37/span 3;grid-column:22/span 4;">M</div>
+    <div class="fp-svc" style="grid-row:4/span 3;grid-column:28/span 4;">PGR</div>
+    <div class="fp-svc" style="grid-row:8/span 2;grid-column:28/span 2;">D</div>
+    <div class="fp-svc" style="grid-row:10/span 3;grid-column:28/span 4;">M</div>
+    <div class="fp-svc" style="grid-row:13/span 8;grid-column:28/span 4;">RA</div>
+    <div class="fp-svc" style="grid-row:21/span 1;grid-column:28/span 3;">OD</div>
+    <div class="fp-svc" style="grid-row:19/span 4;grid-column:36/span 3;">F</div>
+    <div class="fp-svc" style="grid-row:24/span 3;grid-column:42/span 4;">K</div>
+    <div class="fp-svc" style="grid-row:24/span 3;grid-column:46/span 2;">MC</div>
+    <div class="fp-svc" style="grid-row:27/span 7;grid-column:44/span 4;">L</div>
+    <div class="fp-svc" style="grid-row:37/span 3;grid-column:49/span 4;">AG</div>
+    {% set _s = statuses.get(138, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:4/span 3;grid-column:6/span 4;" data-room="138" data-label="Room 138" title="Room 138 / Loft — {{_s}}"><span class="fp-rn">138</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(136, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:7/span 3;grid-column:6/span 4;" data-room="136" data-label="Room 136" title="Room 136 / Sky — {{_s}}"><span class="fp-rn">136</span><span class="fp-rt">Sky</span></div>
+    {% set _s = statuses.get(134, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:10/span 3;grid-column:6/span 4;" data-room="134" data-label="Room 134" title="Room 134 / Loft — {{_s}}"><span class="fp-rn">134</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(132, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:13/span 3;grid-column:6/span 4;" data-room="132" data-label="Room 132" title="Room 132 / Loft — {{_s}}"><span class="fp-rn">132</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(130, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:16/span 3;grid-column:6/span 4;" data-room="130" data-label="Room 130" title="Room 130 / Bunk — {{_s}}"><span class="fp-rn">130</span><span class="fp-rt">Bunk</span></div>
+    {% set _s = statuses.get(133, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:13/span 3;grid-column:1/span 4;" data-room="133" data-label="Room 133" title="Room 133 / Sky — {{_s}}"><span class="fp-rn">133</span><span class="fp-rt">Sky</span></div>
+    {% set _s = statuses.get(131, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:16/span 3;grid-column:1/span 4;" data-room="131" data-label="Room 131" title="Room 131 / ADA — {{_s}}"><span class="fp-rn">131</span><span class="fp-rt">ADA</span></div>
+    {% set _s = statuses.get(114, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:19/span 3;grid-column:22/span 4;" data-room="114" data-label="Room 114" title="Room 114 / Loft — {{_s}}"><span class="fp-rn">114</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(112, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:22/span 3;grid-column:22/span 4;" data-room="112" data-label="Room 112" title="Room 112 / Sky — {{_s}}"><span class="fp-rn">112</span><span class="fp-rt">Sky</span></div>
+    {% set _s = statuses.get(110, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:25/span 3;grid-column:22/span 4;" data-room="110" data-label="Room 110" title="Room 110 / Loft — {{_s}}"><span class="fp-rn">110</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(108, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:28/span 3;grid-column:22/span 4;" data-room="108" data-label="Room 108" title="Room 108 / Loft — {{_s}}"><span class="fp-rn">108</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(106, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:31/span 3;grid-column:22/span 4;" data-room="106" data-label="Room 106" title="Room 106 / Sky — {{_s}}"><span class="fp-rn">106</span><span class="fp-rt">Sky</span></div>
+    {% set _s = statuses.get(104, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:34/span 3;grid-column:22/span 4;" data-room="104" data-label="Room 104" title="Room 104 — {{_s}}"><span class="fp-rn">104</span></div>
+    {% set _s = statuses.get(105, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:31/span 3;grid-column:17/span 4;" data-room="105" data-label="Room 105" title="Room 105 / Bunk — {{_s}}"><span class="fp-rn">105</span><span class="fp-rt">Bunk</span></div>
+    {% set _s = statuses.get(103, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:34/span 3;grid-column:17/span 4;" data-room="103" data-label="Room 103" title="Room 103 / Loft — {{_s}}"><span class="fp-rn">103</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(101, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:37/span 3;grid-column:17/span 4;" data-room="101" data-label="Room 101" title="Room 101 / Sky — {{_s}}"><span class="fp-rn">101</span><span class="fp-rt">Sky</span></div>
+    {% set _s = statuses.get(127, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:22/span 3;grid-column:1/span 4;" data-room="127" data-label="Room 127" title="Room 127 / Loft — {{_s}}"><span class="fp-rn">127</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(125, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:25/span 3;grid-column:1/span 5;" data-room="125" data-label="Room 125" title="Room 125 / Loft — {{_s}}"><span class="fp-rn">125</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(123, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:24/span 4;grid-column:6/span 3;" data-room="123" data-label="Room 123" title="Room 123 / Sky — {{_s}}"><span class="fp-rn">123</span><span class="fp-rt">Sky</span></div>
+    {% set _s = statuses.get(121, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:24/span 4;grid-column:9/span 3;" data-room="121" data-label="Room 121" title="Room 121 / Loft — {{_s}}"><span class="fp-rn">121</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(119, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:24/span 4;grid-column:12/span 3;" data-room="119" data-label="Room 119" title="Room 119 / Bunk — {{_s}}"><span class="fp-rn">119</span><span class="fp-rt">Bunk</span></div>
+    {% set _s = statuses.get(229, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:22/span 3;grid-column:28/span 4;" data-room="229" data-label="Room 229" title="Room 229 / Loft — {{_s}}"><span class="fp-rn">229</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(227, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:25/span 3;grid-column:28/span 5;" data-room="227" data-label="Room 227" title="Room 227 / Loft — {{_s}}"><span class="fp-rn">227</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(244, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:1/span 3;grid-column:33/span 4;" data-room="244" data-label="Room 244" title="Room 244 / Loft — {{_s}}"><span class="fp-rn">244</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(242, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:4/span 3;grid-column:33/span 4;" data-room="242" data-label="Room 242" title="Room 242 / Sky — {{_s}}"><span class="fp-rn">242</span><span class="fp-rt">Sky</span></div>
+    {% set _s = statuses.get(240, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:7/span 3;grid-column:33/span 4;" data-room="240" data-label="Room 240" title="Room 240 / Loft — {{_s}}"><span class="fp-rn">240</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(238, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:10/span 3;grid-column:33/span 4;" data-room="238" data-label="Room 238" title="Room 238 / Loft — {{_s}}"><span class="fp-rn">238</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(236, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:13/span 3;grid-column:33/span 4;" data-room="236" data-label="Room 236" title="Room 236 / Loft — {{_s}}"><span class="fp-rn">236</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(234, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:16/span 3;grid-column:33/span 4;" data-room="234" data-label="Room 234" title="Room 234 / Bunk — {{_s}}"><span class="fp-rn">234</span><span class="fp-rt">Bunk</span></div>
+    {% set _s = statuses.get(220, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:19/span 3;grid-column:39/span 3;" data-room="220" data-label="Room 220" title="Room 220 / Bunk — {{_s}}"><span class="fp-rn">220</span><span class="fp-rt">Bunk</span></div>
+    {% set _s = statuses.get(218, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:19/span 3;grid-column:42/span 3;" data-room="218" data-label="Room 218" title="Room 218 / Sky — {{_s}}"><span class="fp-rn">218</span><span class="fp-rt">Sky</span></div>
+    {% set _s = statuses.get(216, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:19/span 3;grid-column:45/span 3;" data-room="216" data-label="Room 216" title="Room 216 / Loft — {{_s}}"><span class="fp-rn">216</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(214, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:19/span 3;grid-column:48/span 5;" data-room="214" data-label="Room 214" title="Room 214 / Sky — {{_s}}"><span class="fp-rn">214</span><span class="fp-rt">Sky</span></div>
+    {% set _s = statuses.get(225, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:24/span 4;grid-column:33/span 3;" data-room="225" data-label="Room 225" title="Room 225 / Loft — {{_s}}"><span class="fp-rn">225</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(223, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:24/span 4;grid-column:36/span 3;" data-room="223" data-label="Room 223" title="Room 223 / Sky — {{_s}}"><span class="fp-rn">223</span><span class="fp-rt">Sky</span></div>
+    {% set _s = statuses.get(221, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:24/span 4;grid-column:39/span 3;" data-room="221" data-label="Room 221" title="Room 221 / Loft — {{_s}}"><span class="fp-rn">221</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(212, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:22/span 3;grid-column:49/span 4;" data-room="212" data-label="Room 212" title="Room 212 / Loft — {{_s}}"><span class="fp-rn">212</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(210, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:25/span 3;grid-column:49/span 4;" data-room="210" data-label="Room 210" title="Room 210 / Sky — {{_s}}"><span class="fp-rn">210</span><span class="fp-rt">Sky</span></div>
+    {% set _s = statuses.get(208, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:28/span 3;grid-column:49/span 4;" data-room="208" data-label="Room 208" title="Room 208 / Loft — {{_s}}"><span class="fp-rn">208</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(206, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:31/span 3;grid-column:49/span 4;" data-room="206" data-label="Room 206" title="Room 206 / Bunk — {{_s}}"><span class="fp-rn">206</span><span class="fp-rt">Bunk</span></div>
+    {% set _s = statuses.get(205, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:34/span 3;grid-column:44/span 4;" data-room="205" data-label="Room 205" title="Room 205 / Loft — {{_s}}"><span class="fp-rn">205</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(204, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:34/span 3;grid-column:49/span 4;" data-room="204" data-label="Room 204" title="Room 204 / Loft — {{_s}}"><span class="fp-rn">204</span><span class="fp-rt">Loft</span></div>
+    {% set _s = statuses.get(203, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:37/span 3;grid-column:44/span 4;" data-room="203" data-label="Room 203" title="Room 203 / Sky — {{_s}}"><span class="fp-rn">203</span><span class="fp-rt">Sky</span></div>
+    {% set _s = statuses.get(201, "available") %}<div class="fp-room room-tile-{{_s}}" style="grid-row:40/span 3;grid-column:44/span 4;" data-room="201" data-label="Room 201" title="Room 201 / Loft — {{_s}}"><span class="fp-rn">201</span><span class="fp-rt">Loft</span></div>
+  </div><!-- end fp-grid -->
+  <!-- Building outlines: simplified Z-shapes, 8 vertices each, 2 concave Z-steps.
+       Grid cell: 19px wide × 15px tall. CSS col N starts at (N-1)*19, row N at (N-1)*15. -->
+  <svg class="fp-outline" width="988" height="630" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="0,45 171,45 171,270 475,270 475,585 304,585 304,405 0,405"
+             fill="none" stroke="#333" stroke-width="4" stroke-linejoin="miter"/>
+    <polygon points="513,0 684,0 684,270 988,270 988,630 817,630 817,405 513,405"
+             fill="none" stroke="#333" stroke-width="4" stroke-linejoin="miter"/>
+  </svg>
+  </div><!-- end fp-inner -->
+  </div><!-- end fp -->
 
   <!-- ===== Preference List ===== -->
   <h3>My Selections (up to 10, in preference order)</h3>
