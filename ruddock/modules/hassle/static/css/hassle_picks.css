@@ -234,12 +234,6 @@ table.userlist {
 /* ----- Building floor plan ----- */
 .fp { overflow-x: auto; margin-bottom: 1em; }
 
-.fp-inner {
-  position: relative;
-  width: 988px;
-  height: 630px;
-}
-
 .fp-grid {
   display: grid;
   grid-template-columns: repeat(52, 19px);
@@ -248,7 +242,6 @@ table.userlist {
   font-size: 9px;
   line-height: 1.1;
   width: 988px;
-  height: 630px;
 }
 
 .fp-bg {
@@ -286,11 +279,11 @@ table.userlist {
 }
 
 .fp-outline {
-  position: absolute;
-  top: 0;
-  left: 0;
+  grid-row: 1 / span 42;
+  grid-column: 1 / span 52;
   pointer-events: none;
-  z-index: 3;
+  z-index: 10;
+  overflow: visible;
 }
 
 /* floor plan status colours (override .room-tile-* for fp context) */
