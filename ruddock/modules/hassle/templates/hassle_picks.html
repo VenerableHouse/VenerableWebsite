@@ -110,7 +110,6 @@
       <tr>
         <th>#</th>
         <th>Name</th>
-        <th>Pair</th>
         <th>Alley UCC</th>
         <th>Assigned Room</th>
         <th>Status</th>
@@ -118,6 +117,7 @@
     </thead>
     <tbody>
       {% set shown_pairs = [] %}
+      {% set ns = namespace(row_num=0) %}
       {% for row in summary %}
         {% if row['pair_id'] and row['pair_id'] in shown_pairs %}
           {# skip — already shown as part of the pair row above #}
@@ -130,18 +130,14 @@
               {% if partner.append(other) %}{% endif %}
             {% endif %}
           {% endfor %}
+          {% set ns.row_num = ns.row_num + 1 %}
           <tr>
-            <td>{{ row['pick_position'] }}</td>
+            <td>{{ ns.row_num }}</td>
             <td>
               {{ row['name'] }}
               {% if partner %}
                 <br><small>+ {{ partner[0]['name'] }}</small>
               {% endif %}
-            </td>
-            <td>
-              {% if row['pair_id'] %}
-                <span class="pair-badge">Pair {{ row['pair_id'] }}</span>
-              {% else %}—{% endif %}
             </td>
             <td>{{ 'Alley ' ~ row['ucc_alley'] if row['ucc_alley'] else '—' }}</td>
             <td>{{ row['room'] if row['room'] else '—' }}</td>

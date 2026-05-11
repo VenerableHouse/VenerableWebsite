@@ -223,7 +223,7 @@ def get_pair_partner_id(user_id, participants):
 def get_picks_rooms():
   """Returns all rooms in the hassle with their alley and UCC flag."""
   return flask.g.db.execute(sqlalchemy.text("""
-    SELECT pr.room_number, r.alley, pr.is_ucc
+    SELECT pr.room_number, r.alley, pr.is_ucc, r.coords
     FROM hassle_picks_rooms pr
     JOIN rooms r ON pr.room_number = r.room_number
     ORDER BY pr.room_number

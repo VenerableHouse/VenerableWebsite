@@ -221,14 +221,12 @@
 
 /* ----- Picks overview table uses existing .userlist style ----- */
 
-/* ----- Pair badge ----- */
-.pair-badge {
-  display: inline-block;
-  background: #6a5acd;
-  color: white;
-  font-size: 0.7em;
-  font-weight: bold;
-  padding: 1px 5px;
-  border-radius: 3px;
-  vertical-align: middle;
+/* Override global max-width so the picks page fills the viewport */
+#content {
+  max-width: 100%;
+}
+
+/* Make the picks table fill the content area */
+table.userlist {
+  width: 100%;
 }
