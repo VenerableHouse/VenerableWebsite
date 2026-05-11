@@ -2,6 +2,12 @@
    hassle_picks.css — Preference-based room picks hassle UI
    ========================================================= */
 
+/* ----- Floor plan container ----- */
+.fp {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 /* ----- Room tile base ----- */
 .room-tile {
   display: inline-block;
@@ -212,6 +218,7 @@
   vertical-align: top;
   margin-right: 1.5em;
   margin-bottom: 1em;
+  max-width: 100%;
 }
 
 .room-vacant td, .room-forced-frosh td {
