@@ -218,13 +218,9 @@ def picks_setup_submit():
     except (ValueError, TypeError):
       quotas[alley] = picks_helpers.DEFAULT_FROSH_QUOTAS.get(alley, 0)
 
-  # --- Parse rooms ---
-  room_numbers = [int(r) for r in form.getlist('rooms')]
-  # Always include FORCED_FROSH so they appear red on the map.
-  for rn in picks_helpers.FORCED_FROSH:
-    if rn not in room_numbers:
-      room_numbers.append(rn)
-  ucc_rooms = set(int(r) for r in form.getlist('ucc_rooms'))
+  # --- Rooms: auto-include everything except permanently vacant ---
+  room_numbers = list(picks_helpers.ALL_PICKABLE_ROOMS | picks_helpers.FORCED_FROSH)
+  ucc_rooms = set()
 
   # --- Parse participants ---
   # pair_with_{uid} contains the user_id of the partner, or '' for solo.

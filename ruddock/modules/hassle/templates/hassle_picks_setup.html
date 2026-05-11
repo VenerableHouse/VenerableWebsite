@@ -194,47 +194,6 @@ Emily W, Sequoia</pre>
     </tbody>
   </table>
 
-  <!-- ===== Room Selection ===== -->
-  <h3>Rooms in Hassle</h3>
-  <p>Check rooms to include. Check "UCC" to mark a room as expected to be taken by a UCC officer (shown orange).</p>
-  {% for alley, rooms in ROOMS_BY_ALLEY.items() %}
-  <div class="alley-block">
-    <strong>Alley {{ alley }}</strong>
-    <table class="rooms_table">
-      <thead>
-        <tr><th>Room</th><th>Include</th><th>UCC (orange)</th></tr>
-      </thead>
-      <tbody>
-        {% for rn in rooms %}
-          {% if rn in PERMANENTLY_VACANT %}
-            <tr class="room-vacant">
-              <td>{{ rn }} <em>(vacant)</em></td>
-              <td colspan="2"><em>Not available</em></td>
-            </tr>
-          {% elif rn in FORCED_FROSH %}
-            <tr class="room-forced-frosh">
-              <td>{{ rn }} <em>(forced frosh)</em></td>
-              <td colspan="2"><em>Always frosh</em></td>
-            </tr>
-          {% else %}
-            <tr>
-              <td>{{ rn }}</td>
-              <td>
-                <input type="checkbox" name="rooms" value="{{ rn }}"
-                  {{ 'checked' if rn in current_rooms }} />
-              </td>
-              <td>
-                <input type="checkbox" name="ucc_rooms" value="{{ rn }}"
-                  {{ 'checked' if rn in current_rooms and current_rooms[rn]['is_ucc'] }} />
-              </td>
-            </tr>
-          {% endif %}
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% endfor %}
-
   <!-- ===== Pick Order ===== -->
   <h3>Pick Order</h3>
   <p>Drag members into the list to add them as participants. Drag rows to reorder.

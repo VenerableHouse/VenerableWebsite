@@ -142,7 +142,7 @@ function syncPrefOrder() {
     <div class="alley-col">
       <div class="alley-header">Alley {{ alley }}</div>
       {% for rn in rooms %}
-        {% if rn not in PERMANENTLY_VACANT %}
+        {% if rn not in PERMANENTLY_VACANT and rooms_info.get(rn) is not none %}
           {% set status = statuses.get(rn, 'available') %}
           <div class="room-tile room-tile-{{ status }}"
                data-room="{{ rn }}"
