@@ -165,12 +165,26 @@ def picks_index():
       'status': status,
     })
 
+  statuses = {}
+  for rn, row in rooms_info.items():
+    if rn in picks_helpers.PERMANENTLY_VACANT:
+      statuses[rn] = 'vacant'
+    elif rn in assignments.values():
+      statuses[rn] = 'assigned'
+    elif rn in blocked or rn in picks_helpers.FORCED_FROSH:
+      statuses[rn] = 'blocked'
+    elif row['is_ucc']:
+      statuses[rn] = 'ucc'
+    else:
+      statuses[rn] = 'available'
+
   return flask.render_template('hassle_picks.html',
       summary=summary,
       rooms_info=rooms_info,
       assignments=assignments,
       blocked=blocked,
       frosh_quotas=frosh_quotas,
+      statuses=statuses,
       configured=picks_helpers.picks_configured(),
       is_secretary=auth_utils.check_permission(Permissions.HASSLE),
       ROOMS_BY_ALLEY=picks_helpers.ROOMS_BY_ALLEY,
