@@ -148,33 +148,33 @@ document.addEventListener('DOMContentLoaded', function() {
 <h2>Room Picks — Setup</h2>
 <p>Configure the preference-based picks hassle. Only the Secretary can access this page.</p>
 
-<form action="{{ url_for('hassle.picks_setup_submit') }}" method="POST" onsubmit="syncPickOrder()">
-
-  <!-- ===== CSV Upload ===== -->
-  <h3>Upload Pick Order via CSV</h3>
-  <p>
-    Upload a CSV where each row is one pick unit (pair or solo), listed in pick order.<br>
-    Format: <code>Name1[, Name2[, UCC_Alley]]</code><br>
-    Names must match exactly as shown in the member list (case-insensitive).
-    UCC_Alley is an optional integer 1–6.
-  </p>
-  <p>Example:
-    <pre style="background:#f5f5f5;padding:6px;display:inline-block">Aaron Zhou, Bikrant Aaron, 5
+<!-- ===== CSV Upload ===== -->
+<h3>Upload Pick Order via CSV</h3>
+<p>
+  Upload a CSV where each row is one pick unit (pair or solo), listed in pick order.<br>
+  Format: <code>Name1[, Name2[, UCC_Alley]]</code><br>
+  Names must match exactly as shown in the member list (case-insensitive).
+  UCC_Alley is an optional integer 1–6.
+</p>
+<p>Example:
+  <pre style="background:#f5f5f5;padding:6px;display:inline-block">Aaron Zhou, Bikrant Aaron, 5
 Sophie D, Chris C
 Matthew
 Emily W, Sequoia</pre>
-  </p>
-  <p><em>Uploading replaces the current pick order and clears all submitted preferences.
-     Rooms and frosh quotas are unaffected.</em></p>
-  <form action="{{ url_for('hassle.picks_setup_csv_upload') }}" method="POST"
-        enctype="multipart/form-data">
-    <input type="file" name="csv_file" accept=".csv,text/csv" required />
-    <button type="submit"
-            onclick="return confirm('This will replace the current pick order and clear all preferences. Continue?')">
-      Upload CSV
-    </button>
-  </form>
-  <hr>
+</p>
+<p><em>Uploading replaces the current pick order and clears all submitted preferences.
+   Rooms and frosh quotas are unaffected.</em></p>
+<form action="{{ url_for('hassle.picks_setup_csv_upload') }}" method="POST"
+      enctype="multipart/form-data">
+  <input type="file" name="csv_file" accept=".csv,text/csv" required />
+  <button type="submit"
+          onclick="return confirm('This will replace the current pick order and clear all preferences. Continue?')">
+    Upload CSV
+  </button>
+</form>
+<hr>
+
+<form action="{{ url_for('hassle.picks_setup_submit') }}" method="POST" onsubmit="syncPickOrder()">
 
   <!-- ===== Frosh Quotas ===== -->
   <h3>Frosh Room Quotas</h3>
