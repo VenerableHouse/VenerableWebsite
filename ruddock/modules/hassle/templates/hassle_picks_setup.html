@@ -1,0 +1,246 @@
+{% extends "layout.html" %}
+{% block head %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('hassle.static', filename='css/hassle_picks.css') }}" />
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+// Sync hidden inputs from the sortable list before submit.
+function syncPickOrder() {
+  var ids = [];
+  document.querySelectorAll('#pick-list .pick-row').forEach(function(el) {
+    ids.push(el.dataset.uid);
+  });
+  var container = document.getElementById('ordered-ids-container');
+  container.innerHTML = '';
+  ids.forEach(function(uid) {
+    var inp = document.createElement('input');
+    inp.type = 'hidden';
+    inp.name = 'ordered_user_ids[]';
+    inp.value = uid;
+    container.appendChild(inp);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Sortable pick order list.
+  Sortable.create(document.getElementById('pick-list'), {
+    animation: 150,
+    handle: '.drag-handle',
+    onEnd: function() { syncPickOrder(); }
+  });
+
+  // Move member from bench to pick list.
+  document.querySelectorAll('.add-to-picks').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var uid = this.dataset.uid;
+      var name = this.dataset.name;
+      var isUcc = this.dataset.ucc;
+      addToPickList(uid, name, isUcc);
+      this.closest('tr').remove();
+      syncPickOrder();
+    });
+  });
+});
+
+function addToPickList(uid, name, isUcc) {
+  var list = document.getElementById('pick-list');
+  var pos = list.children.length + 1;
+  var li = document.createElement('li');
+  li.className = 'pick-row';
+  li.dataset.uid = uid;
+
+  var uccOptions = '';
+  for (var a = 1; a <= 6; a++) {
+    uccOptions += '<option value="' + a + '">' + a + '</option>';
+  }
+
+  li.innerHTML =
+    '<span class="drag-handle">☰</span> ' +
+    '<span class="pick-pos"></span>. ' +
+    (isUcc ? '<span class="ucc-badge">UCC</span> ' : '') +
+    '<strong>' + name + '</strong>' +
+    '&nbsp;&nbsp;Alley UCC: ' +
+    '<select name="ucc_alley_' + uid + '">' +
+    '<option value="">None</option>' + uccOptions +
+    '</select>' +
+    '&nbsp;<button type="button" class="remove-pick" onclick="removePick(this)">✕</button>';
+
+  list.appendChild(li);
+  updatePositions();
+  syncPickOrder();
+}
+
+function removePick(btn) {
+  var row = btn.closest('.pick-row');
+  var uid = row.dataset.uid;
+  var name = row.querySelector('strong').textContent;
+  row.remove();
+  updatePositions();
+  syncPickOrder();
+  // Re-add to bench.
+  addToBench(uid, name);
+}
+
+function addToBench(uid, name) {
+  var bench = document.getElementById('bench-body');
+  var tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td>' + name + '</td>' +
+    '<td><button type="button" class="add-to-picks" ' +
+    'data-uid="' + uid + '" data-name="' + name + '" data-ucc="">' +
+    'Add to picks</button></td>';
+  tr.querySelector('.add-to-picks').addEventListener('click', function() {
+    addToPickList(uid, name, '');
+    tr.remove();
+    syncPickOrder();
+  });
+  bench.appendChild(tr);
+}
+
+function updatePositions() {
+  document.querySelectorAll('#pick-list .pick-row').forEach(function(el, i) {
+    var posSpan = el.querySelector('.pick-pos');
+    if (posSpan) posSpan.textContent = i + 1;
+  });
+}
+</script>
+{% endblock head %}
+
+{% block body %}
+<h2>Room Picks — Setup</h2>
+<p>Configure the preference-based picks hassle. Only the Secretary can access this page.</p>
+
+<form action="{{ url_for('hassle.picks_setup_submit') }}" method="POST" onsubmit="syncPickOrder()">
+
+  <!-- ===== Frosh Quotas ===== -->
+  <h3>Frosh Room Quotas</h3>
+  <p>How many rooms in each alley should be left for incoming frosh.</p>
+  <table>
+    <thead><tr><th>Alley</th><th>Frosh rooms</th></tr></thead>
+    <tbody>
+      {% for alley in range(1, 7) %}
+      <tr>
+        <td>Alley {{ alley }}</td>
+        <td>
+          <input type="number" name="quota_{{ alley }}" min="0"
+            value="{{ frosh_quotas.get(alley, 0) }}" style="width:60px" />
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- ===== Room Selection ===== -->
+  <h3>Rooms in Hassle</h3>
+  <p>Check rooms to include. Check "UCC" to mark a room as expected to be taken by a UCC officer (shown orange).</p>
+  {% for alley, rooms in ROOMS_BY_ALLEY.items() %}
+  <div class="alley-block">
+    <strong>Alley {{ alley }}</strong>
+    <table class="rooms_table">
+      <thead>
+        <tr><th>Room</th><th>Include</th><th>UCC (orange)</th></tr>
+      </thead>
+      <tbody>
+        {% for rn in rooms %}
+          {% if rn in PERMANENTLY_VACANT %}
+            <tr class="room-vacant">
+              <td>{{ rn }} <em>(vacant)</em></td>
+              <td colspan="2"><em>Not available</em></td>
+            </tr>
+          {% elif rn in FORCED_FROSH %}
+            <tr class="room-forced-frosh">
+              <td>{{ rn }} <em>(forced frosh)</em></td>
+              <td colspan="2"><em>Always frosh</em></td>
+            </tr>
+          {% else %}
+            <tr>
+              <td>{{ rn }}</td>
+              <td>
+                <input type="checkbox" name="rooms" value="{{ rn }}"
+                  {{ 'checked' if rn in current_rooms }} />
+              </td>
+              <td>
+                <input type="checkbox" name="ucc_rooms" value="{{ rn }}"
+                  {{ 'checked' if rn in current_rooms and current_rooms[rn]['is_ucc'] }} />
+              </td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+
+  <!-- ===== Pick Order ===== -->
+  <h3>Pick Order</h3>
+  <p>Drag members into the list to add them as participants. Drag rows to reorder.
+     Set "Alley UCC" if a member is guaranteed a room in a specific alley.
+  </p>
+
+  <div style="display:flex; gap:2em; flex-wrap:wrap; align-items:flex-start">
+    <!-- Ordered pick list -->
+    <div>
+      <strong>Pick Order (1 = picks first)</strong>
+      <ul id="pick-list" class="pick-list">
+        {% for p in current_participants.values() | sort(attribute='pick_position') %}
+        <li class="pick-row" data-uid="{{ p['user_id'] }}">
+          <span class="drag-handle">☰</span>
+          <span class="pick-pos">{{ p['pick_position'] }}</span>.
+          {% for m in members %}{% if m['user_id'] == p['user_id'] %}
+            {% if m['is_ucc_office'] %}<span class="ucc-badge">UCC</span>{% endif %}
+            <strong>{{ m['name'] }}</strong>
+          {% endif %}{% endfor %}
+          &nbsp;&nbsp;Alley UCC:
+          <select name="ucc_alley_{{ p['user_id'] }}">
+            <option value="">None</option>
+            {% for a in range(1,7) %}
+            <option value="{{ a }}" {{ 'selected' if p['ucc_alley'] == a }}>{{ a }}</option>
+            {% endfor %}
+          </select>
+          &nbsp;<button type="button" class="remove-pick" onclick="removePick(this)">✕</button>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Bench (not yet in hassle) -->
+    <div>
+      <strong>Not in hassle (click to add)</strong>
+      <table>
+        <tbody id="bench-body">
+          {% set participant_ids = current_participants.keys() | list %}
+          {% for m in members %}
+          {% if m['user_id'] not in participant_ids %}
+          <tr>
+            <td>
+              {% if m['is_ucc_office'] %}<span class="ucc-badge">UCC</span>{% endif %}
+              {{ m['name'] }}
+            </td>
+            <td>
+              <button type="button" class="add-to-picks"
+                data-uid="{{ m['user_id'] }}"
+                data-name="{{ m['name'] }}"
+                data-ucc="{{ 'ucc' if m['is_ucc_office'] else '' }}">
+                Add to picks
+              </button>
+            </td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Hidden container for ordered IDs (populated by syncPickOrder on submit) -->
+  <div id="ordered-ids-container"></div>
+
+  <br>
+  <button type="submit">Save Setup</button>
+  &nbsp;
+  <a href="{{ url_for('hassle.picks_index') }}">Cancel</a>
+  &nbsp;
+  <a href="{{ url_for('hassle.picks_reset') }}"
+     onclick="return confirm('Clear ALL picks data?')">Reset picks data</a>
+</form>
+{% endblock body %}

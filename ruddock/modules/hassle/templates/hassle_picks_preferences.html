@@ -1,0 +1,180 @@
+{% extends "layout.html" %}
+{% block head %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('hassle.static', filename='css/hassle_picks.css') }}" />
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  {% if not not_participant %}
+  // Sortable preference list.
+  Sortable.create(document.getElementById('pref-list'), {
+    animation: 150,
+    handle: '.drag-handle',
+    onEnd: syncPrefOrder
+  });
+
+  // Click a room tile to add to preferences.
+  document.querySelectorAll('.room-tile-available, .room-tile-wanted, .room-tile-ucc').forEach(function(tile) {
+    tile.addEventListener('click', function() {
+      var rn = this.dataset.room;
+      var label = this.dataset.label;
+      addPref(rn, label);
+    });
+  });
+  {% endif %}
+});
+
+var MAX_PREFS = 10;
+
+function addPref(rn, label) {
+  var list = document.getElementById('pref-list');
+  // Don't add duplicates.
+  if (document.querySelector('.pref-row[data-room="' + rn + '"]')) return;
+  if (list.children.length >= MAX_PREFS) {
+    alert('You can select at most 10 rooms.');
+    return;
+  }
+  var li = document.createElement('li');
+  li.className = 'pref-row';
+  li.dataset.room = rn;
+  li.innerHTML =
+    '<span class="drag-handle">☰</span> ' +
+    '<span class="pref-rank"></span>. Room ' + rn +
+    ' <span class="room-label">' + label + '</span>' +
+    ' <button type="button" onclick="removePref(this)">✕</button>';
+  list.appendChild(li);
+  updateRanks();
+  syncPrefOrder();
+}
+
+function removePref(btn) {
+  btn.closest('.pref-row').remove();
+  updateRanks();
+  syncPrefOrder();
+}
+
+function updateRanks() {
+  document.querySelectorAll('#pref-list .pref-row').forEach(function(el, i) {
+    var span = el.querySelector('.pref-rank');
+    if (span) span.textContent = i + 1;
+  });
+}
+
+function syncPrefOrder() {
+  var container = document.getElementById('pref-inputs-container');
+  container.innerHTML = '';
+  document.querySelectorAll('#pref-list .pref-row').forEach(function(el) {
+    var inp = document.createElement('input');
+    inp.type = 'hidden';
+    inp.name = 'pref_rooms[]';
+    inp.value = el.dataset.room;
+    container.appendChild(inp);
+  });
+}
+</script>
+{% endblock head %}
+
+{% block body %}
+<h2>Room Picks — My Preferences</h2>
+
+{% if not_participant %}
+  <p>You are not registered as a participant in the current picks hassle.
+     Contact the Secretary to be added.</p>
+{% else %}
+
+  {% if my_room %}
+  <div class="assignment-banner assignment-banner-assigned">
+    Your current assignment: <strong>Room {{ my_room }}</strong>
+  </div>
+  {% else %}
+  <div class="assignment-banner assignment-banner-unassigned">
+    Not yet assigned — submit your preferences below.
+  </div>
+  {% endif %}
+
+  <!-- ===== Room Map / Grid ===== -->
+  <h3>Room Map</h3>
+  <p>Click an available room (white or yellow) to add it to your preferences.
+     <span class="legend-swatch legend-available">■</span> Available
+     <span class="legend-swatch legend-wanted">■</span> Available but wanted by others
+     <span class="legend-swatch legend-ucc">■</span> UCC (expected to be taken early)
+     <span class="legend-swatch legend-assigned">■</span> Assigned
+     <span class="legend-swatch legend-assigned-you">■</span> Your room
+     <span class="legend-swatch legend-blocked">■</span> Frosh / blocked
+  </p>
+
+  <div class="map-container">
+    <img src="{{ url_for('static', filename='images/map_with_beds.png') }}"
+         alt="Venerable House floor plan" class="map-bg" id="map-bg" />
+    <div class="room-overlay" id="room-overlay">
+      {% for alley, rooms in ROOMS_BY_ALLEY.items() %}
+        {% for rn in rooms %}
+          {% if rn not in PERMANENTLY_VACANT %}
+            {% set status = statuses.get(rn, 'available') %}
+            {% set row = rooms_info.get(rn) %}
+            {% if row and row['coords'] %}
+              {% set coords = row['coords'].split(',') %}
+              <div class="room-tile room-tile-{{ status }}"
+                   data-room="{{ rn }}"
+                   data-label="Room {{ rn }}"
+                   style="left:{{ coords[0] }}px; top:{{ coords[1] }}px;
+                          width:{{ coords[2] }}px; height:{{ coords[3] }}px;"
+                   title="Room {{ rn }} (Alley {{ alley }}) — {{ status }}">
+                {{ rn }}
+              </div>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Fallback tile grid (always shown if coords not set) -->
+  <div class="alley-grid-fallback">
+    {% for alley, rooms in ROOMS_BY_ALLEY.items() %}
+    <div class="alley-col">
+      <div class="alley-header">Alley {{ alley }}</div>
+      {% for rn in rooms %}
+        {% if rn not in PERMANENTLY_VACANT %}
+          {% set status = statuses.get(rn, 'available') %}
+          <div class="room-tile room-tile-{{ status }}"
+               data-room="{{ rn }}"
+               data-label="Room {{ rn }}"
+               title="Room {{ rn }} — {{ status }}">
+            {{ rn }}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ===== Preference List ===== -->
+  <h3>My Selections (up to 10, in preference order)</h3>
+  <p>Drag to reorder. Click ✕ to remove.</p>
+
+  <form action="{{ url_for('hassle.picks_prefs_submit') }}" method="POST"
+        onsubmit="syncPrefOrder()">
+    <ul id="pref-list" class="pref-list">
+      {% for rn in my_prefs %}
+      <li class="pref-row" data-room="{{ rn }}">
+        <span class="drag-handle">☰</span>
+        <span class="pref-rank">{{ loop.index }}</span>. Room {{ rn }}
+        <button type="button" onclick="removePref(this)">✕</button>
+      </li>
+      {% endfor %}
+    </ul>
+    <div id="pref-inputs-container">
+      {% for rn in my_prefs %}
+      <input type="hidden" name="pref_rooms[]" value="{{ rn }}" />
+      {% endfor %}
+    </div>
+    <br>
+    <button type="submit">Save Preferences</button>
+  </form>
+
+{% endif %}
+
+<br>
+<a href="{{ url_for('hassle.picks_index') }}">← View everyone's picks</a>
+{% endblock body %}

@@ -1,0 +1,135 @@
+{% extends "layout.html" %}
+{% block head %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('hassle.static', filename='css/hassle_picks.css') }}" />
+{% endblock head %}
+
+{% block body %}
+<h2>Room Picks — Overview</h2>
+
+{% if not configured %}
+  <p>The picks hassle has not been configured yet.</p>
+  {% if is_secretary %}
+  <a href="{{ url_for('hassle.picks_setup') }}">
+    <button type="button">Set up picks hassle</button>
+  </a>
+  {% else %}
+  <p>Contact the Secretary to set up the hassle.</p>
+  {% endif %}
+{% else %}
+
+  {% if is_secretary %}
+  <div style="margin-bottom:1em">
+    <a href="{{ url_for('hassle.picks_setup') }}">
+      <button type="button">Edit Setup</button>
+    </a>
+    <a href="{{ url_for('hassle.picks_reset') }}"
+       onclick="return confirm('Clear ALL picks data? This cannot be undone.')">
+      <button type="button">Reset Picks Data</button>
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- ===== Room Map / Grid ===== -->
+  <h3>Room Map</h3>
+  <p>
+    <span class="legend-swatch legend-available">■</span> Available &nbsp;
+    <span class="legend-swatch legend-wanted">■</span> Wanted &nbsp;
+    <span class="legend-swatch legend-ucc">■</span> UCC &nbsp;
+    <span class="legend-swatch legend-assigned">■</span> Assigned &nbsp;
+    <span class="legend-swatch legend-blocked">■</span> Frosh / blocked
+  </p>
+
+  <!-- Overlay map (uses coords column when populated) -->
+  <div class="map-container">
+    <img src="{{ url_for('static', filename='images/map_with_beds.png') }}"
+         alt="Venerable House floor plan" class="map-bg" />
+    <div class="room-overlay">
+      {% for alley, rooms in ROOMS_BY_ALLEY.items() %}
+        {% for rn in rooms %}
+          {% if rn not in PERMANENTLY_VACANT %}
+            {% set row = rooms_info.get(rn) %}
+            {% if row and row['coords'] %}
+              {% set coords = row['coords'].split(',') %}
+              {% if rn in assignments.values() %}
+                {% set status = 'assigned' %}
+              {% elif rn in blocked %}
+                {% set status = 'blocked' %}
+              {% elif row['is_ucc'] %}
+                {% set status = 'ucc' %}
+              {% else %}
+                {% set status = 'available' %}
+              {% endif %}
+              <div class="room-tile room-tile-{{ status }}"
+                   style="left:{{ coords[0] }}px; top:{{ coords[1] }}px;
+                          width:{{ coords[2] }}px; height:{{ coords[3] }}px;"
+                   title="Room {{ rn }} (Alley {{ alley }}) — {{ status }}">
+                {{ rn }}
+              </div>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Fallback alley grid -->
+  <div class="alley-grid-fallback">
+    {% for alley, rooms in ROOMS_BY_ALLEY.items() %}
+    <div class="alley-col">
+      <div class="alley-header">Alley {{ alley }}
+        <span class="quota-note">({{ frosh_quotas.get(alley, '?') }} frosh)</span>
+      </div>
+      {% for rn in rooms %}
+        {% if rn not in PERMANENTLY_VACANT %}
+          {% if rn in assignments.values() %}
+            {% set status = 'assigned' %}
+          {% elif rn in FORCED_FROSH %}
+            {% set status = 'blocked' %}
+          {% elif rn in blocked %}
+            {% set status = 'blocked' %}
+          {% elif rooms_info.get(rn) and rooms_info[rn]['is_ucc'] %}
+            {% set status = 'ucc' %}
+          {% else %}
+            {% set status = 'available' %}
+          {% endif %}
+          <div class="room-tile room-tile-{{ status }}"
+               title="Room {{ rn }} — {{ status }}">
+            {{ rn }}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ===== Everyone's Picks Table ===== -->
+  <h3>Everyone's Current Picks</h3>
+  <table class="userlist">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Alley UCC</th>
+        <th>Assigned Room</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in summary %}
+      <tr>
+        <td>{{ row['pick_position'] }}</td>
+        <td>{{ row['name'] }}</td>
+        <td>{{ 'Alley ' ~ row['ucc_alley'] if row['ucc_alley'] else '—' }}</td>
+        <td>{{ row['room'] if row['room'] else '—' }}</td>
+        <td>{{ row['status'] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endif %}
+
+<br>
+<a href="{{ url_for('hassle.picks_preferences') }}">→ My room preferences</a>
+{% endblock body %}
