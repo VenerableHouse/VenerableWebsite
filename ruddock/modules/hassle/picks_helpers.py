@@ -574,12 +574,26 @@ def get_room_statuses(current_user_id, assignments, blocked, rooms_info,
         for rn in all_prefs.get(p['user_id'], []):
           wanted_rooms.add(rn)
 
+  # Rooms already assigned to lower-priority pickers — hassle-able (yellow).
+  hassle_rooms = set()
+  if user_position is not None:
+    lower_priority_users = {
+        p['user_id'] for p in participants
+        if p['pick_position'] > user_position
+        and (partner_id is None or p['user_id'] != partner_id)
+    }
+    for uid in lower_priority_users:
+      if uid in assignments:
+        hassle_rooms.add(assignments[uid])
+
   statuses = {}
   for rn, row in rooms_info.items():
     if rn in PERMANENTLY_VACANT:
       statuses[rn] = 'vacant'
     elif my_room == rn:
       statuses[rn] = 'assigned_you'
+    elif rn in hassle_rooms:
+      statuses[rn] = 'wanted'
     elif rn in assignments.values():
       statuses[rn] = 'assigned'
     elif rn in blocked:
