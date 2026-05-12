@@ -46,9 +46,11 @@
         <tr>
           <td>{{ ns.row_num }}</td>
           <td>
-            {{ p['name'] }}
+            <a href="{{ url_for('hassle.picks_preferences', **{'as': p['user_id']}) }}">{{ p['name'] }}</a>
             {% if p['ucc_alley'] %}<br><small>UCC Alley {{ p['ucc_alley'] }}</small>{% endif %}
-            {% if partner %}<br><small>+ {{ partner[0]['name'] }}</small>{% endif %}
+            {% if partner %}
+              <br><small>+ <a href="{{ url_for('hassle.picks_preferences', **{'as': partner[0]['user_id']}) }}">{{ partner[0]['name'] }}</a></small>
+            {% endif %}
           </td>
           <td>{{ room if room else '—' }}</td>
           <td>

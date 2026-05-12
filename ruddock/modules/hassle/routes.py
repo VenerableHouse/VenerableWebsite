@@ -268,7 +268,20 @@ def picks_preferences():
 
   is_secretary = auth_utils.check_permission(Permissions.HASSLE)
 
-  if not picks_helpers.is_participant(user_id):
+  # Secretary can view the page from any participant's perspective.
+  view_as_name = None
+  as_id_str = flask.request.args.get('as')
+  if as_id_str is not None:
+    if not is_secretary:
+      flask.abort(403)
+    try:
+      view_user_id = int(as_id_str)
+    except (ValueError, TypeError):
+      flask.abort(400)
+  else:
+    view_user_id = user_id
+
+  if not picks_helpers.is_participant(view_user_id):
     if is_secretary:
       return flask.redirect(flask.url_for('hassle.picks_all_preferences'))
     return flask.render_template('hassle_picks_preferences.html',
@@ -278,15 +291,15 @@ def picks_preferences():
   rooms_rows = picks_helpers.get_picks_rooms()
   rooms_info = {row['room_number']: row for row in rooms_rows}
   all_prefs = picks_helpers.get_all_picks_preferences()
-  my_prefs = [rn for rn in all_prefs.get(user_id, [])]
+  my_prefs = [rn for rn in all_prefs.get(view_user_id, [])]
 
   assignments, blocked = picks_helpers.run_picks_algorithm()
-  my_room = assignments.get(user_id)
+  my_room = assignments.get(view_user_id)
 
   statuses = picks_helpers.get_room_statuses(
-      user_id, assignments, blocked, rooms_info, all_prefs, participants)
+      view_user_id, assignments, blocked, rooms_info, all_prefs, participants)
 
-  partner_id = picks_helpers.get_pair_partner_id(user_id, participants)
+  partner_id = picks_helpers.get_pair_partner_id(view_user_id, participants)
   partner_name = None
   if partner_id is not None:
     for p in participants:
@@ -294,8 +307,15 @@ def picks_preferences():
         partner_name = p['name']
         break
 
+  if as_id_str is not None:
+    for p in participants:
+      if p['user_id'] == view_user_id:
+        view_as_name = p['name']
+        break
+
   return flask.render_template('hassle_picks_preferences.html',
       not_participant=False,
+      view_as_name=view_as_name,
       my_prefs=my_prefs,
       my_room=my_room,
       statuses=statuses,
