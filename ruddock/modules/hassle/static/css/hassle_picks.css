@@ -53,14 +53,14 @@
   background: #ffcccc;
   border-color: #cc0000;
   color: #880000;
-  cursor: not-allowed;
+  cursor: pointer;
 }
 
 .room-tile-assigned {
   background: #cccccc;
   border-color: #666666;
   color: #333333;
-  cursor: not-allowed;
+  cursor: pointer;
 }
 
 .room-tile-assigned_you {
@@ -301,10 +301,10 @@ table.userlist {
 .fp-canvas .room-tile-wanted      { background-image: linear-gradient(rgba(195,150,0,0.62), rgba(195,150,0,0.62)); cursor: pointer; }
 .fp-canvas .room-tile-wanted:hover{ background-image: linear-gradient(rgba(195,150,0,0.80), rgba(195,150,0,0.80)); }
 .fp-canvas .room-tile-ucc         { background-image: linear-gradient(rgba(225,80,0,0.60),  rgba(225,80,0,0.60));  cursor: pointer; }
-.fp-canvas .room-tile-assigned    { background-image: linear-gradient(rgba(70,70,70,0.68),  rgba(70,70,70,0.68));  color: white; cursor: not-allowed; }
+.fp-canvas .room-tile-assigned    { background-image: linear-gradient(rgba(70,70,70,0.68),  rgba(70,70,70,0.68));  color: white; cursor: pointer; }
 .fp-canvas .room-tile-assigned_you{ background-image: linear-gradient(rgba(20,130,20,0.82), rgba(20,130,20,0.82)); border: 2px solid #1a6a1a; color: white; }
 .fp-canvas .room-tile-assigned_you .fp-rt { color: #b0e8b0; }
-.fp-canvas .room-tile-blocked     { background-image: linear-gradient(rgba(180,0,0,0.52),   rgba(180,0,0,0.52));   color: white; cursor: not-allowed; }
+.fp-canvas .room-tile-blocked     { background-image: linear-gradient(rgba(180,0,0,0.52),   rgba(180,0,0,0.52));   color: white; cursor: pointer; }
 .fp-canvas .room-tile-blocked .fp-rt { color: #ffaaaa; }
 
 /* ----- Floor labels ----- */
