@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
     onEnd: syncPrefOrder
   });
 
-  // Click a room tile to add to preferences.
-  document.querySelectorAll('.room-tile-available, .room-tile-wanted, .room-tile-ucc').forEach(function(tile) {
+  // Click any room tile (except your own or permanently vacant) to add to preferences.
+  document.querySelectorAll('.fp-room:not(.room-tile-vacant):not(.room-tile-assigned_you), .room-tile:not(.room-tile-vacant):not(.room-tile-assigned_you)').forEach(function(tile) {
     tile.addEventListener('click', function() {
       var rn = this.dataset.room;
       var parts = this.title.split(' / ');
@@ -93,9 +93,9 @@ function syncPrefOrder() {
 
   <!-- ===== Room Map / Grid ===== -->
   <h3>Room Map</h3>
-  <p>Click an available room (white or yellow) to add it to your preferences.
+  <p>Click any room to add it to your preferences (except your own assigned room).
      <span class="legend-swatch legend-available">■</span> Available
-     <span class="legend-swatch legend-wanted">■</span> Available but wanted by others
+     <span class="legend-swatch legend-wanted">■</span> Wanted by others / hassle-able
      <span class="legend-swatch legend-ucc">■</span> UCC (expected to be taken early)
      <span class="legend-swatch legend-assigned">■</span> Assigned
      <span class="legend-swatch legend-assigned-you">■</span> Your room

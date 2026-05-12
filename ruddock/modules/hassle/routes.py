@@ -333,7 +333,9 @@ def picks_prefs_submit():
   if my_room:
     flask.flash('Preferences saved. Your current assignment: Room {}.'.format(my_room))
   else:
-    flask.flash('Preferences saved. No room currently assigned — check back after others submit.')
+    flask.flash(
+        'Preferences saved, but none of your selected rooms could be assigned to you '
+        'under the current picks order. Consider adding more rooms to your list.')
   return flask.redirect(flask.url_for('hassle.picks_preferences'))
 
 
