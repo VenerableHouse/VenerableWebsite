@@ -244,6 +244,20 @@ def picks_setup_submit():
   return flask.redirect(flask.url_for('hassle.picks_setup'))
 
 
+@blueprint.route('/picks/preferences/all')
+@login_required(Permissions.HASSLE)
+def picks_all_preferences():
+  """Secretary view: all participants' ranked preferences."""
+  participants = picks_helpers.get_picks_participants()
+  all_prefs = picks_helpers.get_all_picks_preferences()
+  assignments, _ = picks_helpers.run_picks_algorithm()
+  return flask.render_template('hassle_picks_all_prefs.html',
+      participants=participants,
+      all_prefs=all_prefs,
+      assignments=assignments,
+      configured=picks_helpers.picks_configured())
+
+
 @blueprint.route('/picks/preferences')
 @login_required()
 def picks_preferences():
@@ -252,7 +266,11 @@ def picks_preferences():
   if user_id is None:
     flask.abort(403)
 
+  is_secretary = auth_utils.check_permission(Permissions.HASSLE)
+
   if not picks_helpers.is_participant(user_id):
+    if is_secretary:
+      return flask.redirect(flask.url_for('hassle.picks_all_preferences'))
     return flask.render_template('hassle_picks_preferences.html',
         not_participant=True)
 

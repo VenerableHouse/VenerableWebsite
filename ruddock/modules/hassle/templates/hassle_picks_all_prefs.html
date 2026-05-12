@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+{% block head %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('hassle.static', filename='css/hassle_picks.css') }}" />
+{% endblock head %}
+
+{% block body %}
+<h2>Room Picks — All Preferences</h2>
+
+{% if not configured %}
+  <p>The picks hassle has not been configured yet.</p>
+  <a href="{{ url_for('hassle.picks_setup') }}"><button type="button">Set up picks hassle</button></a>
+{% else %}
+
+<p>Read-only view of every participant's ranked preferences and current assignment.</p>
+
+<table class="userlist" style="width:100%; table-layout:fixed; word-break:break-word;">
+  <thead>
+    <tr>
+      <th width="5%">#</th>
+      <th width="30%">Name</th>
+      <th width="15%">Assigned Room</th>
+      <th>Preferences (in order)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% set shown_pairs = [] %}
+    {% set ns = namespace(row_num=0) %}
+    {% for p in participants %}
+      {% if p['pair_id'] and p['pair_id'] in shown_pairs %}
+        {# skip — already shown as part of the pair row above #}
+      {% else %}
+        {% if p['pair_id'] %}{% if shown_pairs.append(p['pair_id']) %}{% endif %}{% endif %}
+
+        {# find pair partner, if any #}
+        {% set partner = [] %}
+        {% for other in participants %}
+          {% if other['pair_id'] and other['pair_id'] == p['pair_id'] and other['user_id'] != p['user_id'] %}
+            {% if partner.append(other) %}{% endif %}
+          {% endif %}
+        {% endfor %}
+
+        {% set ns.row_num = ns.row_num + 1 %}
+        {% set prefs = all_prefs.get(p['user_id'], []) %}
+        {% set room = assignments.get(p['user_id']) %}
+        <tr>
+          <td>{{ ns.row_num }}</td>
+          <td>
+            {{ p['name'] }}
+            {% if p['ucc_alley'] %}<br><small>UCC Alley {{ p['ucc_alley'] }}</small>{% endif %}
+            {% if partner %}<br><small>+ {{ partner[0]['name'] }}</small>{% endif %}
+          </td>
+          <td>{{ room if room else '—' }}</td>
+          <td>
+            {% if prefs %}
+              <ol style="margin:0; padding-left:1.2em;">
+                {% for rn in prefs %}
+                  <li>Room {{ rn }}</li>
+                {% endfor %}
+              </ol>
+            {% else %}
+              <em>No preferences submitted</em>
+            {% endif %}
+          </td>
+        </tr>
+      {% endif %}
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endif %}
+
+<br>
+<a href="{{ url_for('hassle.picks_index') }}">← Back to overview</a>
+{% endblock body %}
