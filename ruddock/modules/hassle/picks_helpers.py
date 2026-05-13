@@ -472,7 +472,7 @@ def get_blocked_rooms(assignments, frosh_quotas, participants, rooms_info,
         frosh_set.add(r)
       # Also include FORCED_FROSH rooms in this alley (always frosh).
       for r in FORCED_FROSH:
-        if rooms_info.get(r, {}).get('alley') == alley:
+        if r in rooms_info and rooms_info[r]['alley'] == alley:
           frosh_set.add(r)
 
       components = _connected_components(frosh_set, ROOM_ADJACENCY)
