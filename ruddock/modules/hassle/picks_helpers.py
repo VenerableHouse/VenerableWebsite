@@ -436,21 +436,25 @@ def get_blocked_rooms(assignments, frosh_quotas, participants, rooms_info,
 
     # 2. Alley UCC guarantee: ensure at least one room remains in Alley X
     #    for each unassigned alley-X UCC participant who picks after this.
+    #    Only relevant when rn is IN that alley — a pick in a different alley
+    #    cannot reduce availability in Alley X.
     would_block = False
     for p in unassigned_participants:
       ucc_alley = p['ucc_alley']
-      if ucc_alley is None:
+      if ucc_alley is None or ucc_alley != alley:
         continue
-      # Count rooms available in that alley after assigning rn.
+      # Assigning rn takes one slot; check post-assignment quota state.
+      if assigned_by_alley[alley] + 1 >= max_picks:
+        # Quota exhausted — all remaining rooms become frosh-blocked.
+        would_block = True
+        break
       available_in_ucc_alley = [
-        r for r in rooms_by_alley.get(ucc_alley, [])
+        r for r in rooms_by_alley.get(alley, [])
         if r not in assigned_rooms
         and r not in FORCED_FROSH
         and r != rn
-        and assigned_by_alley[ucc_alley] + (1 if r == rn else 0) < max_picks
       ]
-      if len(available_in_ucc_alley) == 0:
-        # This pick would leave the alley-UCC member with no room.
+      if not available_in_ucc_alley:
         would_block = True
         break
     if would_block:
