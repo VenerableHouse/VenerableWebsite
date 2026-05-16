@@ -26,6 +26,9 @@ PERMANENTLY_VACANT = frozenset({131})
 # Rooms that are always frosh (count toward quota; included in adjacency checks).
 FORCED_FROSH = frozenset({112})
 
+# Rooms that must never end up as frosh; any pick that would cause this is blocked.
+NEVER_FROSH = frozenset({114})
+
 # Undirected adjacency graph.  Two rooms are adjacent if they are either:
 #   (a) sequentially next to each other on the SAME corridor side, or
 #   (b) directly across the hallway from each other (directly opposing).
@@ -482,6 +485,17 @@ def get_blocked_rooms(assignments, frosh_quotas, participants, rooms_info,
       components = _connected_components(frosh_set, ROOM_ADJACENCY)
       if any(len(c) >= 3 for c in components):
         blocked.add(rn)
+
+    # 4. NEVER_FROSH protection: block any pick that would exhaust this alley's
+    #    quota while a NEVER_FROSH room in the same alley is still unassigned.
+    if assigned_by_alley[alley] + 1 >= max_picks:
+      for protected in NEVER_FROSH:
+        if (protected != rn
+            and protected in rooms_info
+            and rooms_info[protected]['alley'] == alley
+            and protected not in assigned_rooms):
+          blocked.add(rn)
+          break
 
   return frozenset(blocked)
 
