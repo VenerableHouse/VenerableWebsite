@@ -81,6 +81,12 @@ function syncPrefOrder() {
      Contact the Secretary to be added.</p>
 {% else %}
 
+  {% if frozen %}
+  <div class="assignment-banner" style="background:#f8d7da; border:1px solid #c00; color:#600;">
+    Preferences are currently <strong>frozen</strong>. Contact the Secretary to make changes.
+  </div>
+  {% endif %}
+
   {% if partner_name %}
   <div class="assignment-banner" style="background:#eef3ff; border:1px solid #99b; color:#335;">
     You are paired with <strong>{{ partner_name }}</strong>.
@@ -199,6 +205,15 @@ function syncPrefOrder() {
   <h3>{% if view_as_name %}{{ view_as_name }}'s Selections{% else %}My Selections{% endif %} (up to 10, in preference order)</h3>
   <p>Drag to reorder. Click ✕ to remove.</p>
 
+  {% if frozen %}
+  <ol class="pref-list" style="padding-left:1.5em;">
+    {% for rn in my_prefs %}
+    <li>Room {{ rn }}{% if ROOM_TYPES.get(rn) %} <span class="room-label">{{ ROOM_TYPES.get(rn) }}</span>{% endif %}</li>
+    {% else %}
+    <li><em>No preferences submitted</em></li>
+    {% endfor %}
+  </ol>
+  {% else %}
   {% if view_as_name %}
   <form action="{{ url_for('hassle.picks_prefs_submit_for', target_uid=edit_target_uid) }}" method="POST"
         onsubmit="syncPrefOrder()">
@@ -225,6 +240,7 @@ function syncPrefOrder() {
       {% if view_as_name %}Save Preferences for {{ view_as_name }}{% else %}Save Preferences{% endif %}
     </button>
   </form>
+  {% endif %}
 
 {% endif %}
 

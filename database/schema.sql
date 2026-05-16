@@ -188,6 +188,13 @@ CREATE TABLE hassle_picks_frosh_quotas (
   PRIMARY KEY (alley)
 );
 
+-- Presence of a row means preference submissions are frozen (nobody can
+-- submit or modify preferences until the Secretary unfreezes).
+CREATE TABLE hassle_picks_frozen (
+  sentinel INTEGER NOT NULL DEFAULT 1,
+  PRIMARY KEY (sentinel)
+);
+
 -- Ranked room preferences submitted by each participant (up to 10).
 -- rank 1 = top choice.
 CREATE TABLE hassle_picks_preferences (

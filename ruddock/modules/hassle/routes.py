@@ -187,6 +187,7 @@ def picks_index():
       frosh_quotas=frosh_quotas,
       statuses=statuses,
       all_prefs=all_prefs,
+      frozen=picks_helpers.is_picks_frozen(),
       configured=picks_helpers.picks_configured(),
       is_secretary=auth_utils.check_permission(Permissions.HASSLE),
       ROOMS_BY_ALLEY=picks_helpers.ROOMS_BY_ALLEY,
@@ -315,6 +316,7 @@ def picks_preferences():
 
   return flask.render_template('hassle_picks_preferences.html',
       not_participant=False,
+      frozen=picks_helpers.is_picks_frozen(),
       view_as_name=view_as_name,
       edit_target_uid=view_user_id if view_as_name else None,
       my_prefs=my_prefs,
@@ -335,6 +337,10 @@ def picks_prefs_submit():
   user_id = auth_utils.get_user_id(flask.session['username'])
   if user_id is None:
     flask.abort(403)
+
+  if picks_helpers.is_picks_frozen():
+    flask.flash('Preferences are currently frozen. Contact the Secretary.')
+    return flask.redirect(flask.url_for('hassle.picks_preferences'))
 
   if not picks_helpers.is_participant(user_id):
     flask.flash('You are not a participant in this hassle.')
@@ -364,6 +370,10 @@ def picks_prefs_submit():
 @login_required(Permissions.HASSLE)
 def picks_prefs_submit_for(target_uid):
   """Secretary: save room preferences on behalf of any participant."""
+  if picks_helpers.is_picks_frozen():
+    flask.flash('Preferences are currently frozen. Unfreeze before making changes.')
+    return flask.redirect(flask.url_for('hassle.picks_preferences', **{'as': target_uid}))
+
   participants = picks_helpers.get_picks_participants()
   target = next((p for p in participants if p['user_id'] == target_uid), None)
   if target is None:
@@ -388,6 +398,24 @@ def picks_prefs_submit_for(target_uid):
     flask.flash('Preferences saved for {}. No room currently assigned.'.format(
         target['name']))
   return flask.redirect(flask.url_for('hassle.picks_preferences', **{'as': target_uid}))
+
+
+@blueprint.route('/picks/freeze', methods=['POST'])
+@login_required(Permissions.HASSLE)
+def picks_freeze():
+  """Freeze preference submissions (Secretary only)."""
+  picks_helpers.set_picks_frozen(True)
+  flask.flash('Preferences are now frozen. No one can submit or modify preferences.')
+  return flask.redirect(flask.url_for('hassle.picks_index'))
+
+
+@blueprint.route('/picks/unfreeze', methods=['POST'])
+@login_required(Permissions.HASSLE)
+def picks_unfreeze():
+  """Unfreeze preference submissions (Secretary only)."""
+  picks_helpers.set_picks_frozen(False)
+  flask.flash('Preferences are now unfrozen. Participants can submit preferences again.')
+  return flask.redirect(flask.url_for('hassle.picks_index'))
 
 
 @blueprint.route('/picks/reset')

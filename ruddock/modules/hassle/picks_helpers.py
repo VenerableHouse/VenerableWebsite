@@ -135,7 +135,7 @@ ROOM_TYPES = {
 # ---------------------------------------------------------------------------
 
 def clear_picks_all():
-  """Truncates all four picks tables inside a transaction."""
+  """Truncates all picks tables (including frozen state) inside a transaction."""
   with flask.g.db.begin():
     flask.g.db.execute(sqlalchemy.text(
         "DELETE FROM hassle_picks_preferences"))
@@ -145,6 +145,26 @@ def clear_picks_all():
         "DELETE FROM hassle_picks_participants"))
     flask.g.db.execute(sqlalchemy.text(
         "DELETE FROM hassle_picks_frosh_quotas"))
+    flask.g.db.execute(sqlalchemy.text(
+        "DELETE FROM hassle_picks_frozen"))
+
+
+def is_picks_frozen():
+  """Returns True if preference submissions are currently frozen."""
+  row = flask.g.db.execute(sqlalchemy.text(
+      "SELECT 1 FROM hassle_picks_frozen LIMIT 1")).first()
+  return row is not None
+
+
+def set_picks_frozen(frozen):
+  """Freeze (frozen=True) or unfreeze (frozen=False) preference submissions."""
+  with flask.g.db.begin():
+    if frozen:
+      flask.g.db.execute(sqlalchemy.text(
+          "INSERT IGNORE INTO hassle_picks_frozen (sentinel) VALUES (1)"))
+    else:
+      flask.g.db.execute(sqlalchemy.text(
+          "DELETE FROM hassle_picks_frozen"))
 
 
 def set_picks_participants(ordered_list):
