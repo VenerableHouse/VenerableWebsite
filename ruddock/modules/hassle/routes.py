@@ -1,9 +1,11 @@
 import json
 import flask
+import sqlalchemy
 
 from ruddock.resources import Permissions
 from ruddock.decorators import login_required
-from ruddock.modules.hassle import blueprint, helpers
+from ruddock.modules.hassle import blueprint, helpers, picks_helpers
+import ruddock.auth_utils as auth_utils
 
 @blueprint.route('/')
 @login_required(Permissions.HASSLE)
@@ -126,3 +128,408 @@ def ajax_get_frosh():
   """AJAX endpoint that returns the user IDs of current frosh."""
   results = list(x['user_id'] for x in helpers.get_frosh())
   return json.dumps(results)
+
+
+# ---------------------------------------------------------------------------
+# Preference-based picks hassle routes (/hassle/picks/)
+# ---------------------------------------------------------------------------
+
+@blueprint.route('/picks/')
+@login_required()
+def picks_index():
+  """Overview page: shows current algorithm state for all participants."""
+  participants = picks_helpers.get_picks_participants()
+  rooms_rows = picks_helpers.get_picks_rooms()
+  rooms_info = {row['room_number']: row for row in rooms_rows}
+  frosh_quotas = picks_helpers.get_frosh_quotas()
+  all_prefs = picks_helpers.get_all_picks_preferences()
+
+  assignments, blocked = picks_helpers.run_picks_algorithm()
+
+  # Build per-participant summary rows.
+  summary = []
+  for p in participants:
+    uid = p['user_id']
+    room = assignments.get(uid)
+    if room is None:
+      prefs = all_prefs.get(uid, [])
+      status = 'No preferences' if not prefs else 'No valid room'
+    else:
+      status = 'Assigned'
+    summary.append({
+      'user_id': uid,
+      'name': p['name'],
+      'pick_position': p['pick_position'],
+      'ucc_alley': p['ucc_alley'],
+      'pair_id': p['pair_id'],
+      'room': room,
+      'status': status,
+    })
+
+  statuses = {}
+  for rn, row in rooms_info.items():
+    if rn in picks_helpers.PERMANENTLY_VACANT:
+      statuses[rn] = 'vacant'
+    elif rn in assignments.values():
+      statuses[rn] = 'assigned'
+    elif rn in blocked or rn in picks_helpers.FORCED_FROSH:
+      statuses[rn] = 'blocked'
+    elif row['is_ucc']:
+      statuses[rn] = 'ucc'
+    else:
+      statuses[rn] = 'available'
+
+  return flask.render_template('hassle_picks.html',
+      summary=summary,
+      rooms_info=rooms_info,
+      assignments=assignments,
+      blocked=blocked,
+      frosh_quotas=frosh_quotas,
+      statuses=statuses,
+      all_prefs=all_prefs,
+      frozen=picks_helpers.is_picks_frozen(),
+      configured=picks_helpers.picks_configured(),
+      is_secretary=auth_utils.check_permission(Permissions.HASSLE),
+      ROOMS_BY_ALLEY=picks_helpers.ROOMS_BY_ALLEY,
+      PERMANENTLY_VACANT=picks_helpers.PERMANENTLY_VACANT,
+      FORCED_FROSH=picks_helpers.FORCED_FROSH)
+
+
+@blueprint.route('/picks/setup')
+@login_required(Permissions.HASSLE)
+def picks_setup():
+  """Secretary setup page: upload pick-order CSV and configure frosh quotas."""
+  frosh_quotas = picks_helpers.get_frosh_quotas()
+  if not frosh_quotas:
+    frosh_quotas = dict(picks_helpers.DEFAULT_FROSH_QUOTAS)
+
+  has_participants = picks_helpers.picks_configured()
+  has_rooms = flask.g.db.execute(sqlalchemy.text(
+      "SELECT 1 FROM hassle_picks_rooms LIMIT 1")).first() is not None
+
+  return flask.render_template('hassle_picks_setup.html',
+      frosh_quotas=frosh_quotas,
+      has_participants=has_participants,
+      has_rooms=has_rooms)
+
+
+@blueprint.route('/picks/setup/submit', methods=['POST'])
+@login_required(Permissions.HASSLE)
+def picks_setup_submit():
+  """Save frosh quota configuration. Participants are set via CSV upload."""
+  form = flask.request.form
+
+  quotas = {}
+  for alley in range(1, 7):
+    val = form.get('quota_{}'.format(alley), '')
+    try:
+      quotas[alley] = max(0, int(val))
+    except (ValueError, TypeError):
+      quotas[alley] = picks_helpers.DEFAULT_FROSH_QUOTAS.get(alley, 0)
+
+  room_numbers = list(picks_helpers.ALL_PICKABLE_ROOMS | picks_helpers.FORCED_FROSH)
+
+  with flask.g.db.begin():
+    flask.g.db.execute(sqlalchemy.text("DELETE FROM hassle_picks_rooms"))
+    flask.g.db.execute(sqlalchemy.text("DELETE FROM hassle_picks_frosh_quotas"))
+    for alley, quota in quotas.items():
+      flask.g.db.execute(sqlalchemy.text(
+          "INSERT INTO hassle_picks_frosh_quotas (alley, quota) VALUES (:a, :q)"),
+          a=alley, q=quota)
+    for rn in room_numbers:
+      flask.g.db.execute(sqlalchemy.text(
+          "INSERT INTO hassle_picks_rooms (room_number, is_ucc) VALUES (:r, :u)"),
+          r=rn, u=False)
+
+  flask.flash('Frosh quotas saved.')
+  return flask.redirect(flask.url_for('hassle.picks_setup'))
+
+
+@blueprint.route('/picks/preferences/all')
+@login_required(Permissions.HASSLE)
+def picks_all_preferences():
+  """Secretary view: all participants' ranked preferences."""
+  participants = picks_helpers.get_picks_participants()
+  all_prefs = picks_helpers.get_all_picks_preferences()
+  assignments, _ = picks_helpers.run_picks_algorithm()
+  return flask.render_template('hassle_picks_all_prefs.html',
+      participants=participants,
+      all_prefs=all_prefs,
+      assignments=assignments,
+      configured=picks_helpers.picks_configured())
+
+
+@blueprint.route('/picks/preferences')
+@login_required()
+def picks_preferences():
+  """Member preference page: view/edit up to 10 room preferences."""
+  user_id = auth_utils.get_user_id(flask.session['username'])
+  if user_id is None:
+    flask.abort(403)
+
+  is_secretary = auth_utils.check_permission(Permissions.HASSLE)
+
+  # Secretary can view the page from any participant's perspective.
+  view_as_name = None
+  as_id_str = flask.request.args.get('as')
+  if as_id_str is not None:
+    if not is_secretary:
+      flask.abort(403)
+    try:
+      view_user_id = int(as_id_str)
+    except (ValueError, TypeError):
+      flask.abort(400)
+  else:
+    view_user_id = user_id
+
+  if not picks_helpers.is_participant(view_user_id):
+    if is_secretary:
+      return flask.redirect(flask.url_for('hassle.picks_all_preferences'))
+    return flask.render_template('hassle_picks_preferences.html',
+        not_participant=True)
+
+  participants = picks_helpers.get_picks_participants()
+  rooms_rows = picks_helpers.get_picks_rooms()
+  rooms_info = {row['room_number']: row for row in rooms_rows}
+  all_prefs = picks_helpers.get_all_picks_preferences()
+  my_prefs = [rn for rn in all_prefs.get(view_user_id, [])]
+
+  assignments, blocked = picks_helpers.run_picks_algorithm()
+  my_room = assignments.get(view_user_id)
+
+  statuses = picks_helpers.get_room_statuses(
+      view_user_id, assignments, blocked, rooms_info, all_prefs, participants)
+
+  partner_id = picks_helpers.get_pair_partner_id(view_user_id, participants)
+  partner_name = None
+  if partner_id is not None:
+    for p in participants:
+      if p['user_id'] == partner_id:
+        partner_name = p['name']
+        break
+
+  if as_id_str is not None:
+    for p in participants:
+      if p['user_id'] == view_user_id:
+        view_as_name = p['name']
+        break
+
+  return flask.render_template('hassle_picks_preferences.html',
+      not_participant=False,
+      frozen=picks_helpers.is_picks_frozen(),
+      view_as_name=view_as_name,
+      edit_target_uid=view_user_id if view_as_name else None,
+      my_prefs=my_prefs,
+      my_room=my_room,
+      statuses=statuses,
+      rooms_info=rooms_info,
+      partner_name=partner_name,
+      ROOMS_BY_ALLEY=picks_helpers.ROOMS_BY_ALLEY,
+      PERMANENTLY_VACANT=picks_helpers.PERMANENTLY_VACANT,
+      FORCED_FROSH=picks_helpers.FORCED_FROSH,
+      ROOM_TYPES=picks_helpers.ROOM_TYPES)
+
+
+@blueprint.route('/picks/preferences/submit', methods=['POST'])
+@login_required()
+def picks_prefs_submit():
+  """Save preferences for the current user and re-run algorithm."""
+  user_id = auth_utils.get_user_id(flask.session['username'])
+  if user_id is None:
+    flask.abort(403)
+
+  if picks_helpers.is_picks_frozen():
+    flask.flash('Preferences are currently frozen. Contact the Secretary.')
+    return flask.redirect(flask.url_for('hassle.picks_preferences'))
+
+  if not picks_helpers.is_participant(user_id):
+    flask.flash('You are not a participant in this hassle.')
+    return flask.redirect(flask.url_for('hassle.picks_preferences'))
+
+  ordered_rooms = []
+  for rn_str in flask.request.form.getlist('pref_rooms[]'):
+    try:
+      ordered_rooms.append(int(rn_str))
+    except (ValueError, TypeError):
+      pass
+
+  picks_helpers.set_preferences(user_id, ordered_rooms)
+
+  assignments, _ = picks_helpers.run_picks_algorithm()
+  my_room = assignments.get(user_id)
+  if my_room:
+    flask.flash('Preferences saved. Your current assignment: Room {}.'.format(my_room))
+  else:
+    flask.flash(
+        'Preferences saved, but none of your selected rooms could be assigned to you '
+        'under the current picks order. Consider adding more rooms to your list.')
+  return flask.redirect(flask.url_for('hassle.picks_preferences'))
+
+
+@blueprint.route('/picks/preferences/submit-for/<int:target_uid>', methods=['POST'])
+@login_required(Permissions.HASSLE)
+def picks_prefs_submit_for(target_uid):
+  """Secretary: save room preferences on behalf of any participant."""
+  if picks_helpers.is_picks_frozen():
+    flask.flash('Preferences are currently frozen. Unfreeze before making changes.')
+    return flask.redirect(flask.url_for('hassle.picks_preferences', **{'as': target_uid}))
+
+  participants = picks_helpers.get_picks_participants()
+  target = next((p for p in participants if p['user_id'] == target_uid), None)
+  if target is None:
+    flask.flash('User is not a participant in this hassle.')
+    return flask.redirect(flask.url_for('hassle.picks_index'))
+
+  ordered_rooms = []
+  for rn_str in flask.request.form.getlist('pref_rooms[]'):
+    try:
+      ordered_rooms.append(int(rn_str))
+    except (ValueError, TypeError):
+      pass
+
+  picks_helpers.set_preferences(target_uid, ordered_rooms)
+
+  assignments, _ = picks_helpers.run_picks_algorithm()
+  room = assignments.get(target_uid)
+  if room:
+    flask.flash('Preferences saved for {}. Assignment: Room {}.'.format(
+        target['name'], room))
+  else:
+    flask.flash('Preferences saved for {}. No room currently assigned.'.format(
+        target['name']))
+  return flask.redirect(flask.url_for('hassle.picks_preferences', **{'as': target_uid}))
+
+
+@blueprint.route('/picks/freeze', methods=['POST'])
+@login_required(Permissions.HASSLE)
+def picks_freeze():
+  """Freeze preference submissions (Secretary only)."""
+  picks_helpers.set_picks_frozen(True)
+  flask.flash('Preferences are now frozen. No one can submit or modify preferences.')
+  return flask.redirect(flask.url_for('hassle.picks_index'))
+
+
+@blueprint.route('/picks/unfreeze', methods=['POST'])
+@login_required(Permissions.HASSLE)
+def picks_unfreeze():
+  """Unfreeze preference submissions (Secretary only)."""
+  picks_helpers.set_picks_frozen(False)
+  flask.flash('Preferences are now unfrozen. Participants can submit preferences again.')
+  return flask.redirect(flask.url_for('hassle.picks_index'))
+
+
+@blueprint.route('/picks/reset')
+@login_required(Permissions.HASSLE)
+def picks_reset():
+  """Reset all picks data (Secretary only)."""
+  picks_helpers.clear_picks_all()
+  flask.flash('Picks hassle data cleared.')
+  return flask.redirect(flask.url_for('hassle.picks_setup'))
+
+
+@blueprint.route('/picks/setup/csv', methods=['POST'])
+@login_required(Permissions.HASSLE)
+def picks_setup_csv_upload():
+  """
+  Upload a CSV to set the pick order and roommate pairs.
+
+  CSV format (one row per pick unit, rows define pick order):
+    Name1[, Name2[, UCC_Alley]]
+
+  Name1 / Name2 must match member names exactly (case-insensitive).
+  UCC_Alley is an optional integer 1-6 for on-campus alley UCC guarantee.
+
+  Only hassle_picks_participants is updated; rooms and frosh quotas are unchanged.
+  All previously submitted preferences are cleared (cascade).
+  """
+  import csv
+  import io
+  import sqlalchemy
+
+  file = flask.request.files.get('csv_file')
+  if not file or file.filename == '':
+    flask.flash('No file selected.')
+    return flask.redirect(flask.url_for('hassle.picks_setup'))
+
+  try:
+    stream = io.StringIO(file.stream.read().decode('utf-8-sig'))
+  except UnicodeDecodeError:
+    flask.flash('Could not read file — make sure it is saved as UTF-8.')
+    return flask.redirect(flask.url_for('hassle.picks_setup'))
+
+  # Build name → user_id lookup (case-insensitive).
+  all_members = picks_helpers.get_all_members()
+  name_to_uid = {m['name'].strip().lower(): m['user_id'] for m in all_members}
+
+  errors = []
+  units = []  # list of {'uids': [uid, ...], 'ucc_alley': int|None}
+
+  for lineno, row in enumerate(csv.reader(stream), start=1):
+    row = [cell.strip() for cell in row]
+    # Drop empty trailing cells.
+    while row and not row[-1]:
+      row.pop()
+    if not row:
+      continue  # blank line
+
+    # Extract optional UCC alley from last column if it's a digit.
+    ucc_alley = None
+    if row and row[-1].isdigit():
+      ucc_alley = int(row[-1])
+      if ucc_alley not in range(1, 7):
+        errors.append('Row {}: UCC alley must be 1–6, got {}'.format(lineno, ucc_alley))
+        continue
+      row = row[:-1]
+
+    if len(row) == 0 or len(row) > 2:
+      errors.append('Row {}: expected 1 or 2 names, got {}'.format(lineno, len(row)))
+      continue
+
+    uids = []
+    for name in row:
+      uid = name_to_uid.get(name.lower())
+      if uid is None:
+        errors.append('Row {}: unrecognized name "{}"'.format(lineno, name))
+      else:
+        uids.append(uid)
+
+    if not errors:
+      units.append({'uids': uids, 'ucc_alley': ucc_alley})
+
+  if errors:
+    flask.flash('CSV upload failed — fix the following errors and re-upload: '
+                + ' | '.join(errors))
+    return flask.redirect(flask.url_for('hassle.picks_setup'))
+
+  # Build participant list.
+  participant_list = []  # (user_id, pick_position, ucc_alley, pair_id)
+  pick_pos = 1
+  pair_id = 1
+
+  for unit in units:
+    current_pair_id = pair_id if len(unit['uids']) == 2 else None
+    for uid in unit['uids']:
+      participant_list.append((uid, pick_pos, unit['ucc_alley'], current_pair_id))
+      pick_pos += 1
+    if current_pair_id is not None:
+      pair_id += 1
+
+  # Commit: replace participants only (rooms + quotas unchanged).
+  with flask.g.db.begin():
+    flask.g.db.execute(sqlalchemy.text(
+        "DELETE FROM hassle_picks_preferences"))
+    flask.g.db.execute(sqlalchemy.text(
+        "DELETE FROM hassle_picks_participants"))
+    for uid, pos, ucc_alley, p_id in participant_list:
+      flask.g.db.execute(sqlalchemy.text("""
+        INSERT INTO hassle_picks_participants
+          (user_id, pick_position, ucc_alley, pair_id)
+        VALUES (:u, :p, :a, :r)
+      """), u=uid, p=pos, a=ucc_alley, r=p_id)
+
+  flask.flash('CSV uploaded: {} participants ({} pairs, {} solo) added. '
+              'Preferences cleared.'.format(
+                  len(participant_list),
+                  sum(1 for u in units if len(u['uids']) == 2),
+                  sum(1 for u in units if len(u['uids']) == 1)))
+  return flask.redirect(flask.url_for('hassle.picks_setup'))

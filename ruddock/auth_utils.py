@@ -359,6 +359,8 @@ def generate_admin_links():
   if check_permission(Permissions.HASSLE):
     links.append(AdminLink('Room hassle',
       flask.url_for('hassle.run_hassle', _external=True)))
+    links.append(AdminLink('Room picks setup',
+      flask.url_for('hassle.picks_setup', _external=True)))
   if check_permission(Permissions.ROTATION):
     links.append(AdminLink('Rotation',
       flask.url_for('rotation.show_portal', _external=True)))
