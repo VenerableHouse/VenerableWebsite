@@ -316,6 +316,7 @@ def picks_preferences():
   return flask.render_template('hassle_picks_preferences.html',
       not_participant=False,
       view_as_name=view_as_name,
+      edit_target_uid=view_user_id if view_as_name else None,
       my_prefs=my_prefs,
       my_room=my_room,
       statuses=statuses,
@@ -357,6 +358,36 @@ def picks_prefs_submit():
         'Preferences saved, but none of your selected rooms could be assigned to you '
         'under the current picks order. Consider adding more rooms to your list.')
   return flask.redirect(flask.url_for('hassle.picks_preferences'))
+
+
+@blueprint.route('/picks/preferences/submit-for/<int:target_uid>', methods=['POST'])
+@login_required(Permissions.HASSLE)
+def picks_prefs_submit_for(target_uid):
+  """Secretary: save room preferences on behalf of any participant."""
+  participants = picks_helpers.get_picks_participants()
+  target = next((p for p in participants if p['user_id'] == target_uid), None)
+  if target is None:
+    flask.flash('User is not a participant in this hassle.')
+    return flask.redirect(flask.url_for('hassle.picks_index'))
+
+  ordered_rooms = []
+  for rn_str in flask.request.form.getlist('pref_rooms[]'):
+    try:
+      ordered_rooms.append(int(rn_str))
+    except (ValueError, TypeError):
+      pass
+
+  picks_helpers.set_preferences(target_uid, ordered_rooms)
+
+  assignments, _ = picks_helpers.run_picks_algorithm()
+  room = assignments.get(target_uid)
+  if room:
+    flask.flash('Preferences saved for {}. Assignment: Room {}.'.format(
+        target['name'], room))
+  else:
+    flask.flash('Preferences saved for {}. No room currently assigned.'.format(
+        target['name']))
+  return flask.redirect(flask.url_for('hassle.picks_preferences', **{'as': target_uid}))
 
 
 @blueprint.route('/picks/reset')

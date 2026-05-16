@@ -159,9 +159,16 @@
           <tr>
             <td>{{ ns.row_num }}</td>
             <td>
-              {{ row['name'] }}
-              {% if partner %}
-                <br><small>+ {{ partner[0]['name'] }}</small>
+              {% if is_secretary %}
+                <a href="{{ url_for('hassle.picks_preferences', **{'as': row['user_id']}) }}">{{ row['name'] }}</a>
+                {% if partner %}
+                  <br><small>+ <a href="{{ url_for('hassle.picks_preferences', **{'as': partner[0]['user_id']}) }}">{{ partner[0]['name'] }}</a></small>
+                {% endif %}
+              {% else %}
+                {{ row['name'] }}
+                {% if partner %}
+                  <br><small>+ {{ partner[0]['name'] }}</small>
+                {% endif %}
               {% endif %}
             </td>
             <td>{{ row['room'] if row['room'] else '—' }}</td>

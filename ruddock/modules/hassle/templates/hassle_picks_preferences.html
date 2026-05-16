@@ -71,7 +71,7 @@ function syncPrefOrder() {
 
 {% if view_as_name %}
 <div class="assignment-banner" style="background:#fff3cd; border:1px solid #c8a000; color:#5a4000;">
-  Secretary view — reading preferences as <strong>{{ view_as_name }}</strong>. Changes cannot be saved from this view.
+  Secretary: editing preferences for <strong>{{ view_as_name }}</strong>.
   <a href="{{ url_for('hassle.picks_all_preferences') }}" style="margin-left:1em;">← All preferences</a>
 </div>
 {% endif %}
@@ -197,19 +197,15 @@ function syncPrefOrder() {
 
   <!-- ===== Preference List ===== -->
   <h3>{% if view_as_name %}{{ view_as_name }}'s Selections{% else %}My Selections{% endif %} (up to 10, in preference order)</h3>
-  {% if not view_as_name %}<p>Drag to reorder. Click ✕ to remove.</p>{% endif %}
+  <p>Drag to reorder. Click ✕ to remove.</p>
 
   {% if view_as_name %}
-  <ol class="pref-list" style="padding-left:1.5em;">
-    {% for rn in my_prefs %}
-    <li>Room {{ rn }}{% if ROOM_TYPES.get(rn) %} <span class="room-label">{{ ROOM_TYPES.get(rn) }}</span>{% endif %}</li>
-    {% else %}
-    <li><em>No preferences submitted</em></li>
-    {% endfor %}
-  </ol>
+  <form action="{{ url_for('hassle.picks_prefs_submit_for', target_uid=edit_target_uid) }}" method="POST"
+        onsubmit="syncPrefOrder()">
   {% else %}
   <form action="{{ url_for('hassle.picks_prefs_submit') }}" method="POST"
         onsubmit="syncPrefOrder()">
+  {% endif %}
     <ul id="pref-list" class="pref-list">
       {% for rn in my_prefs %}
       <li class="pref-row" data-room="{{ rn }}">
@@ -225,9 +221,10 @@ function syncPrefOrder() {
       {% endfor %}
     </div>
     <br>
-    <button type="submit">Save Preferences</button>
+    <button type="submit">
+      {% if view_as_name %}Save Preferences for {{ view_as_name }}{% else %}Save Preferences{% endif %}
+    </button>
   </form>
-  {% endif %}
 
 {% endif %}
 
