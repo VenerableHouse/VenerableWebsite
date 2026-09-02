@@ -1,7 +1,9 @@
 {% extends "layout.html" %}
 {% block body %}
 <h2 style="text-align: center" >Welcome to Venerable House!</h2>
-<img src="{{ url_for('static', filename='images/house-photo.jpg') }}" alt="Venerable House" style="max-width: 100%; height: auto;">
+<div id="house-photo">
+  <img class="house-photo__still" src="{{ url_for('static', filename='images/house-photo-a.jpg') }}" alt="Venerable House">
+</div>
 <p> Check out our <a href="https://www.instagram.com/venerable.house/">Instagram</a>! @venerable.house
 </p>
 <p>Venerable House was founded in 1960 and is one of the eight undergraduate Houses at the California Institute of Technology.
@@ -16,4 +18,11 @@
 </p>
 <br>
 Photos taken by our historians can be found <a href="https://www.flickr.com/photos/venerablehouse/">here</a>.
+<script src="{{ url_for('static', filename='js/house-photo-blend.js') }}" defer
+        data-still-a="{{ url_for('static', filename='images/house-photo-a.jpg') }}"
+        data-still-b="{{ url_for('static', filename='images/house-photo-b.jpg') }}"
+        data-video-webm="{{ url_for('static', filename='videos/house-blend.webm') }}"
+        data-video-mp4="{{ url_for('static', filename='videos/house-blend.mp4') }}"
+        data-video-reverse-webm="{{ url_for('static', filename='videos/house-blend-reverse.webm') }}"
+        data-video-reverse-mp4="{{ url_for('static', filename='videos/house-blend-reverse.mp4') }}"></script>
 {% endblock body %}

@@ -332,3 +332,38 @@ table th.sort-up:after {
     font: inherit;
     margin: 0;
 }
+
+/* Homepage house photo blend -- see static/js/house-photo-blend.js */
+#house-photo {
+  position: relative;
+  display: block;
+  max-width: 100%;
+  /* A triple-click is the trigger, so stop it selecting the surrounding text. */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+#house-photo .house-photo__still,
+#house-photo .house-photo__video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+#house-photo .house-photo__video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+  /* Masks the resolution step between the full-res still and the transition
+     clip. It only ever happens while the photo is already in motion. */
+  transition: opacity 120ms linear;
+}
+#house-photo .house-photo__video.is-visible {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  #house-photo .house-photo__video {
+    display: none;
+  }
+}
