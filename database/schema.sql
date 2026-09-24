@@ -153,6 +153,63 @@ CREATE TABLE hassle_roommates (
     ON DELETE CASCADE
 );
 
+-- Preference-based room picks hassle (runs alongside /hassle/).
+
+-- Participants in the picks hassle, ordered by pick_position (1 = picks first).
+-- ucc_alley: if set, this participant is an on-campus Alley-N UCC and may only
+-- be assigned a room in that alley; the system also blocks other pickers from
+-- exhausting all rooms in that alley before this person picks.
+-- pair_id: participants sharing the same pair_id pick together as a unit and
+-- are assigned to the same room. NULL means solo picker.
+CREATE TABLE hassle_picks_participants (
+  user_id       INTEGER NOT NULL,
+  pick_position INTEGER NOT NULL,
+  ucc_alley     INTEGER,
+  pair_id       INTEGER,
+  PRIMARY KEY (user_id),
+  UNIQUE (pick_position),
+  FOREIGN KEY (user_id) REFERENCES members (user_id) ON DELETE CASCADE
+);
+
+-- Rooms included in the picks hassle.
+-- is_ucc: shown orange in the UI to signal the room is expected to be claimed
+-- by a UCC officer early; has no algorithmic effect.
+CREATE TABLE hassle_picks_rooms (
+  room_number INTEGER NOT NULL,
+  is_ucc      BOOLEAN NOT NULL DEFAULT FALSE,
+  PRIMARY KEY (room_number),
+  FOREIGN KEY (room_number) REFERENCES rooms (room_number) ON DELETE CASCADE
+);
+
+-- Secretary-configurable frosh room quota per alley.
+CREATE TABLE hassle_picks_frosh_quotas (
+  alley INTEGER NOT NULL,
+  quota INTEGER NOT NULL,
+  PRIMARY KEY (alley)
+);
+
+-- Presence of a row means preference submissions are frozen (nobody can
+-- submit or modify preferences until the Secretary unfreezes).
+CREATE TABLE hassle_picks_frozen (
+  sentinel INTEGER NOT NULL DEFAULT 1,
+  PRIMARY KEY (sentinel)
+);
+
+-- Ranked room preferences submitted by each participant (up to 10).
+-- rank 1 = top choice.
+CREATE TABLE hassle_picks_preferences (
+  user_id     INTEGER NOT NULL,
+  room_number INTEGER NOT NULL,
+  rank        INTEGER NOT NULL,
+  PRIMARY KEY (user_id, room_number),
+  UNIQUE (user_id, rank),
+  CHECK (rank BETWEEN 1 AND 10),
+  FOREIGN KEY (user_id) REFERENCES hassle_picks_participants (user_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (room_number) REFERENCES hassle_picks_rooms (room_number)
+    ON DELETE CASCADE
+);
+
 -- TODO(dkong): remove this table.
 CREATE TABLE updating_email_lists (
   listname VARCHAR(20) NOT NULL,

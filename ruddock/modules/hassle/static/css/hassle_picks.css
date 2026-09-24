@@ -1,0 +1,322 @@
+/* =========================================================
+   hassle_picks.css — Preference-based room picks hassle UI
+   ========================================================= */
+
+/* ----- Floor plan container ----- */
+.fp {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* ----- Room tile base ----- */
+.room-tile {
+  display: inline-block;
+  padding: 4px 6px;
+  margin: 2px;
+  border: 2px solid #aaa;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: bold;
+  cursor: default;
+  text-align: center;
+  min-width: 40px;
+  user-select: none;
+}
+
+/* Status colours */
+.room-tile-available {
+  background: #ffffff;
+  border-color: #888;
+  cursor: pointer;
+}
+.room-tile-available:hover {
+  background: #e8f4e8;
+  border-color: #4a8;
+}
+
+.room-tile-wanted {
+  background: #fff8c0;
+  border-color: #c8a000;
+  cursor: pointer;
+}
+.room-tile-wanted:hover {
+  background: #ffe87a;
+}
+
+.room-tile-ucc {
+  background: #ffe0b2;
+  border-color: #e65100;
+  cursor: pointer;
+}
+
+.room-tile-blocked {
+  background: #ffcccc;
+  border-color: #cc0000;
+  color: #880000;
+  cursor: pointer;
+}
+
+.room-tile-assigned {
+  background: #cccccc;
+  border-color: #666666;
+  color: #333333;
+  cursor: pointer;
+}
+
+.room-tile-assigned_you {
+  background: #c8f0c8;
+  border: 3px solid #2a7a2a;
+  color: #1a5a1a;
+  font-weight: bold;
+}
+
+/* ----- Map overlay ----- */
+.map-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1em;
+}
+
+.map-bg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.room-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.room-overlay .room-tile {
+  position: absolute;
+  font-size: 0.7em;
+  padding: 2px 3px;
+  margin: 0;
+  opacity: 0.85;
+  box-sizing: border-box;
+}
+
+/* ----- Fallback alley grid (always shown; hidden when coords populated) ----- */
+.alley-grid-fallback {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.alley-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 64px;
+}
+
+.alley-header {
+  font-weight: bold;
+  font-size: 0.85em;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.quota-note {
+  font-size: 0.75em;
+  font-weight: normal;
+  color: #666;
+}
+
+/* ----- Legend swatches ----- */
+.legend-swatch {
+  font-size: 1.1em;
+  margin-right: 2px;
+}
+.legend-available  { color: #888; }
+.legend-wanted     { color: #c8a000; }
+.legend-ucc        { color: #e65100; }
+.legend-assigned   { color: #666; }
+.legend-assigned-you { color: #2a7a2a; }
+.legend-blocked    { color: #cc0000; }
+
+/* ----- Assignment banner ----- */
+.assignment-banner {
+  padding: 10px 16px;
+  border-radius: 4px;
+  margin-bottom: 1em;
+  font-size: 1.05em;
+}
+.assignment-banner-assigned {
+  background: #d4f0d4;
+  border: 1px solid #4a8;
+  color: #1a5a1a;
+}
+.assignment-banner-unassigned {
+  background: #fff3cd;
+  border: 1px solid #c8a000;
+  color: #7a5a00;
+}
+
+/* ----- Preference list ----- */
+.pref-list, .pick-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  min-height: 40px;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  max-width: 480px;
+}
+
+.pref-row, .pick-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-bottom: 1px solid #eee;
+  background: #fafafa;
+}
+.pref-row:last-child, .pick-row:last-child {
+  border-bottom: none;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: #999;
+  font-size: 1.1em;
+  flex-shrink: 0;
+}
+
+.pref-rank, .pick-pos {
+  font-weight: bold;
+  min-width: 20px;
+  color: #555;
+  flex-shrink: 0;
+}
+
+.room-label {
+  color: #666;
+  font-size: 0.85em;
+}
+
+/* ----- UCC badge ----- */
+.ucc-badge {
+  display: inline-block;
+  background: #e65100;
+  color: white;
+  font-size: 0.7em;
+  font-weight: bold;
+  padding: 1px 5px;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-right: 3px;
+}
+
+/* ----- Setup page alley blocks ----- */
+.alley-block {
+  display: inline-block;
+  vertical-align: top;
+  margin-right: 1.5em;
+  margin-bottom: 1em;
+  max-width: 100%;
+}
+
+.room-vacant td, .room-forced-frosh td {
+  color: #999;
+  font-style: italic;
+}
+
+/* ----- Picks overview table uses existing .userlist style ----- */
+
+/* Make the picks table fill the content area */
+table.userlist {
+  width: 100%;
+}
+
+/* ----- Building floor plan ----- */
+.fp { overflow-x: auto; margin-bottom: 1em; }
+
+.fp-canvas {
+  position: relative;
+  width: 884px;
+  height: 588px;
+  font-size: 9px;
+  line-height: 1.1;
+}
+
+.fp-bg, .fp-svc, .fp-room, .fp-outline {
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.fp-bg { background: #f0f0f0; }
+
+/* ----- Alley tint colours ----- */
+.fp-alley-1 { --alley-bg: rgba(210,  0,   0,   0.13); }  /* red */
+.fp-alley-2 { --alley-bg: rgba(0,    0,   180, 0.13); }  /* dark blue */
+.fp-alley-3 { --alley-bg: rgba(0,    155, 0,   0.13); }  /* green */
+.fp-alley-4 { --alley-bg: rgba(120,  0,   190, 0.13); }  /* purple */
+.fp-alley-5 { --alley-bg: rgba(30,   150, 225, 0.18); }  /* sky blue */
+.fp-alley-6 { --alley-bg: rgba(0,    185, 185, 0.18); }  /* cyan */
+
+.fp-room {
+  border: 1px solid #aaa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1px;
+  overflow: hidden;
+  z-index: 2;
+  background-color: var(--alley-bg, #fff);
+}
+.fp-room:hover { filter: brightness(0.92); }
+.fp-rn { font-size: 9px; font-weight: 700; }
+.fp-rt { font-size: 7.5px; color: #555; }
+
+.fp-svc {
+  background: #d4d4d4;
+  border: 1px solid #aaa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7.5px;
+  color: #444;
+  text-align: center;
+  z-index: 2;
+}
+
+.fp-outline {
+  top: 0; left: 0;
+  width: 884px; height: 588px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ----- Floor plan status colours ----- */
+/* Status uses background-image so it overlays the alley background-color */
+.fp-canvas .room-tile-available   { cursor: pointer; }
+.fp-canvas .room-tile-available:hover { background-image: linear-gradient(rgba(0,160,0,0.12), rgba(0,160,0,0.12)); }
+.fp-canvas .room-tile-wanted      { background-image: linear-gradient(rgba(195,150,0,0.62), rgba(195,150,0,0.62)); cursor: pointer; }
+.fp-canvas .room-tile-wanted:hover{ background-image: linear-gradient(rgba(195,150,0,0.80), rgba(195,150,0,0.80)); }
+.fp-canvas .room-tile-ucc         { background-image: linear-gradient(rgba(225,80,0,0.60),  rgba(225,80,0,0.60));  cursor: pointer; }
+.fp-canvas .room-tile-assigned    { background-image: linear-gradient(rgba(70,70,70,0.68),  rgba(70,70,70,0.68));  color: white; cursor: pointer; }
+.fp-canvas .room-tile-assigned_you{ background-image: linear-gradient(rgba(20,130,20,0.82), rgba(20,130,20,0.82)); border: 2px solid #1a6a1a; color: white; }
+.fp-canvas .room-tile-assigned_you .fp-rt { color: #b0e8b0; }
+.fp-canvas .room-tile-blocked     { background-image: linear-gradient(rgba(180,0,0,0.52),   rgba(180,0,0,0.52));   color: white; cursor: pointer; }
+.fp-canvas .room-tile-blocked .fp-rt { color: #ffaaaa; }
+
+/* ----- Floor labels ----- */
+.fp-floor-labels {
+  display: flex;
+  width: 884px;
+  margin-top: 5px;
+}
+.fp-floor-label {
+  font-size: 0.82em;
+  color: #555;
+  font-style: italic;
+  text-align: center;
+  letter-spacing: 0.03em;
+}

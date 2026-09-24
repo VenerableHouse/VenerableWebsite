@@ -55,6 +55,9 @@
         <a class="header-link" href="{{ url_for('users.view_profile', username=session['username']) }}">
           <div class="navbar-link">{{ session['username'] }}</div>
         </a>
+        <a class="header-link" href="{{ url_for('hassle.picks_preferences') }}">
+          <div class="navbar-link">Room Picks</div>
+        </a>
         {% if session['show_admin'] %}
           <a class="header-link" href="{{ url_for('admin.admin_home') }}">
             <div class="navbar-link">Admin</div>

@@ -45,7 +45,7 @@ $(document).ready(function() {
 
 <h3>Picked rooms</h3>
 <div id="events">
-  <table>
+  <table style="width: 100%; table-layout: fixed;">
     <thead>
       <tr>
         {% for alley in alleys %}
@@ -77,8 +77,8 @@ $(document).ready(function() {
   <br>
 </div>
 
-<div id="event_form">
-  <div style="display: inline-block; padding-right: 20px; vertical-align: top">
+<div id="event_form" style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start;">
+  <div style="flex-shrink: 0;">
     <form action="{{ url_for('hassle.hassle_event') }}" method="POST">
       <table class="form">
         <tr>
@@ -136,9 +136,9 @@ $(document).ready(function() {
       <br><br>
     </form>
   </div>
-  <div style="display: inline-block; vertical-align: top">
+  <div style="min-width: 0;">
     <img src="{{ url_for('static', filename='images/map_with_beds.png') }}"
-      alt="Ruddock House Map">
+      alt="Ruddock House Map" style="max-width: 100%; height: auto;">
   </div>
 </div>
 
