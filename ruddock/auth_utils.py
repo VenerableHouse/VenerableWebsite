@@ -354,6 +354,8 @@ def generate_admin_links():
   if check_permission(Permissions.USERS):
     links.append(AdminLink('Add members',
       flask.url_for('admin.add_members', _external=True)))
+    links.append(AdminLink('Edit members',
+      flask.url_for('admin.edit_members', _external=True)))
     links.append(AdminLink('Manage positions',
       flask.url_for('admin.manage_positions', _external=True)))
   if check_permission(Permissions.HASSLE):

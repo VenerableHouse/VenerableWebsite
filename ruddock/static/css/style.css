@@ -45,6 +45,17 @@ button {
   padding-left: 15px;
   padding-right: 15px;
 }
+.edit_member_button {
+  border: 0px;
+  background-color: #e8e8e8;
+  padding: 10px;
+  padding-left: 15px;
+  padding-right: 15px;
+  margin: 10px;
+}
+.edit_member_button:hover {
+    background-color: #dddddd;
+}
 table {
   background-color: #f7f7f7;
   border: 0px;
