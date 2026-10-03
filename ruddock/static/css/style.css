@@ -358,10 +358,6 @@ table th.sort-up:after {
   position: relative;
   display: block;
   max-width: 100%;
-  /* A triple-click is the trigger, so stop it selecting the surrounding text. */
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
 }
 #house-photo .house-photo__still,
 #house-photo .house-photo__video {

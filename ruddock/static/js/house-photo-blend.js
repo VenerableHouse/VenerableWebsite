@@ -17,8 +17,7 @@
   var IDLE_MS = 60000;      // wall clock since load, foreground or background
   var LEAD_MS = 20000;      // start fetching this far ahead of the ambient trigger
   var SLOW_SECONDS = 15;    // the ambient drift
-  var FAST_SECONDS = 0.7;   // the triple-click "do it now"
-  var TAP_WINDOW_MS = 500;  // triple-tap detection on touch
+  var FAST_SECONDS = 0.7;   // the hover "do it now"
 
   var container = document.getElementById('house-photo');
   if (!container) return;
@@ -35,7 +34,10 @@
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   var state = 'a';
+  var desiredState = 'a';
+  var desiredSeconds = FAST_SECONDS;
   var busy = false;
+  var waitingForMedia = false;
   var armed = false;
   var autoTimer = null;
   var videos = {};
@@ -79,7 +81,7 @@
 
   /* Plays one of the two pre-rendered clips. The pacing curve is already baked
    * into the frames, so speed is just playbackRate -- the same clip serves both
-   * the slow ambient drift and the fast triple-click. */
+   * the slow ambient drift and the fast hover. */
   function run(direction, seconds) {
     var video = videos[direction];
     var target = direction === 'forward' ? 'b' : 'a';
@@ -87,10 +89,18 @@
 
     var duration = video.duration;
     if (!duration || !isFinite(duration)) {
-      // Not buffered yet (triple-clicked within the first moments). Swap outright
-      // and start fetching, so the next toggle animates.
+      // On the first hover the clips may not have metadata yet. Keep the still
+      // visible while they load, then start the requested transition instead of
+      // abruptly swapping the photo.
+      if (waitingForMedia) return;
+      waitingForMedia = true;
+      function startWhenReady() {
+        video.removeEventListener('loadedmetadata', startWhenReady);
+        waitingForMedia = false;
+        if (desiredState !== state) transitionTo(desiredState, desiredSeconds);
+      }
+      video.addEventListener('loadedmetadata', startWhenReady);
       arm();
-      swapStill(target);
       return;
     }
 
@@ -105,6 +115,7 @@
       swapStill(target);
       video.classList.remove('is-visible');
       busy = false;
+      if (desiredState !== state) transitionTo(desiredState, desiredSeconds);
     }
     video.addEventListener('ended', finish);
     video.addEventListener('error', finish);
@@ -120,13 +131,15 @@
     }
   }
 
-  function toggle(seconds) {
-    if (busy) return;
+  function transitionTo(to, seconds) {
+    desiredState = to;
+    desiredSeconds = seconds;
+    if (busy || state === to) return;
     if (reduceMotion) {
-      swapStill(state === 'a' ? 'b' : 'a');
+      swapStill(to);
       return;
     }
-    run(state === 'a' ? 'forward' : 'reverse', seconds);
+    run(to === 'b' ? 'forward' : 'reverse', seconds);
   }
 
   function cancelAuto() {
@@ -138,31 +151,29 @@
 
   // --- triggers -------------------------------------------------------------
 
-  // Note: addEventListener, never window.onclick -- includes/header.html assigns
-  // window.onclick directly for the constitution dropdown and would clobber it.
-  container.addEventListener('click', function (event) {
-    if (event.detail === 3) {   // native triple-click counter
-      cancelAuto();
-      toggle(FAST_SECONDS);
-    }
+  // Only react when a non-touch pointer enters the photo, not when it moves
+  // between the container and its still image. The video layers ignore pointer
+  // events.
+  container.addEventListener('pointerover', function (event) {
+    if (event.pointerType === 'touch') return;
+    if (event.relatedTarget && container.contains(event.relatedTarget)) return;
+    cancelAuto();
+    transitionTo('b', FAST_SECONDS);
   });
-
-  var taps = 0;
-  var tapTimer = null;
-  container.addEventListener('touchend', function () {
-    taps += 1;
-    clearTimeout(tapTimer);
-    tapTimer = setTimeout(function () { taps = 0; }, TAP_WINDOW_MS);
-    if (taps >= 3) {
-      taps = 0;
-      cancelAuto();
-      toggle(FAST_SECONDS);
-    }
-  }, {passive: true});
+  container.addEventListener('pointerout', function (event) {
+    if (event.pointerType === 'touch') return;
+    if (event.relatedTarget && container.contains(event.relatedTarget)) return;
+    transitionTo('a', FAST_SECONDS);
+  });
+  container.addEventListener('pointerup', function (event) {
+    if (event.pointerType !== 'touch') return;
+    cancelAuto();
+    transitionTo(desiredState === 'a' ? 'b' : 'a', FAST_SECONDS);
+  });
 
   // --- boot -----------------------------------------------------------------
 
-  if (reduceMotion) return;   // no clips fetched at all; triple-click still swaps
+  if (reduceMotion) return;   // no clips fetched at all; hover still swaps
 
   videos.forward = makeVideo(script.getAttribute('data-video-webm'),
                              script.getAttribute('data-video-mp4'));
@@ -180,6 +191,6 @@
   setTimeout(arm, Math.max(0, IDLE_MS - LEAD_MS - elapsed));
   autoTimer = setTimeout(function () {
     autoTimer = null;
-    if (state === 'a') toggle(SLOW_SECONDS);
+    if (state === 'a') transitionTo('b', SLOW_SECONDS);
   }, Math.max(0, IDLE_MS - elapsed));
 })();
