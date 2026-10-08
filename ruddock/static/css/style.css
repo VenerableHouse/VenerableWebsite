@@ -151,24 +151,6 @@ ul {
   font-weight: bold;
 }
 
-/* Homepage announcement */
-#chez-ven-banner {
-  background-color: hsl(210 100 30.4);
-  box-sizing: border-box;
-  color: white;
-  padding: 12px 20px;
-  margin-top:-9px;
-  margin-bottom:24px;
-  text-align: center;
-  width: 100%;
-  font-size: 1.5em;
-}
-#chez-ven-banner a {
-  color: white;
-  font-weight: bold;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
 
 /* Footer */
 #contact {
